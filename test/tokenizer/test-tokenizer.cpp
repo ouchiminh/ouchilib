@@ -29,5 +29,6 @@ k1,1,2
 k2,3,4)" };
     ouchi::parser::csv_parser<char> pcsv;
     CHECK_NOTHROW(pcsv.parse(csv));
-    CHECK_EQUAL(pcsv.at("head2", "k2"), "3");
+    CHECK_EQUAL(pcsv.at("head3", "k2"), "4");
+    CHECK_TRUE(pcsv.at("head3", "k2") != "2");
 }
