@@ -19,8 +19,14 @@ public:
     using index_t = std::variant<string_view, size_t>;
 
     csv_parser()
-        : x_{data_}
-        , y_{data_}
+        : x_{ data_ }
+        , y_{ data_ }
+        , sep_{ separators }
+    {}
+    csv_parser(const tokenizer::separator<CharT>& sp)
+        : x_{ data_ }
+        , y_{ data_ }
+        , sep_{ sp }
     {}
     void parse(string_view text) {
         std::basic_stringstream<CharT> ss{text.data()};
@@ -104,9 +110,7 @@ private:
     } y_;
     void parseline(string_view line)
     {
-        constexpr CharT separators[] = { '\t', ',', '\0' };
-        tokenizer::separator<CharT> sep{ separators };
-        tokenizer::tokenizer<CharT> tok{line, sep};
+        tokenizer::tokenizer<CharT> tok{line, sep_};
         auto wordc = std::count_if(tok.begin(), tok.end(), [](auto&& i) { return i.first == tokenizer::token::separator; });
         data_.emplace_back(wordc + 1);
         auto& dataline = data_.back();
@@ -121,6 +125,8 @@ private:
         }
     }
     std::vector<std::vector<string>> data_;
+    tokenizer::separator<CharT> sep_;
+    static constexpr CharT separators[] = { '\t', ',', '\0' };
 };
 
 }
