@@ -1,0 +1,15 @@
+﻿{
+	"setting":
+	[
+    {
+      "file": "./log/app.log",
+      "upper": 5,
+      "lower": 3
+    },
+    {
+      "file": "./log/app.txt",
+      "upper": 5,
+      "lower": 0
+    }
+	]
+}
