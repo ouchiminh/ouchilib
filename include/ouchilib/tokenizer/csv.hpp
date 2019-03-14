@@ -11,19 +11,19 @@
 namespace ouchi::parser{
 
 template <class CharT>
-class csv_parser {
+class csv {
 public:
     using string = std::basic_string<CharT>;
     using string_view = std::basic_string_view<CharT>;
     using istream = std::basic_istream<CharT>;
     using index_t = std::variant<string_view, size_t>;
 
-    csv_parser()
+    csv()
         : x_{ data_ }
         , y_{ data_ }
         , sep_{ separators }
     {}
-    csv_parser(const tokenizer::separator<CharT>& sp)
+    csv(const tokenizer::separator<CharT>& sp)
         : x_{ data_ }
         , y_{ data_ }
         , sep_{ sp }
