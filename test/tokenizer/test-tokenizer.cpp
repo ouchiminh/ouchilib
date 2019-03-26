@@ -47,16 +47,30 @@ DEFINE_TEST(csv_u16bom_test)
     CHECK_NOTHROW(pcsv.parse(csv));
     CHECK_EQUAL(pcsv.at(u"key1", u"data1"), u"data1");
 }
+DEFINE_TEST(csv_wcharbom_test)
+{
+    const wchar_t(&csv)[] = { L"\xFEFFkey1,key2,key3\ndata1,data2,data3" };
+    ouchi::parser::csv<wchar_t> pcsv;
+    CHECK_NOTHROW(pcsv.parse(csv));
+    CHECK_EQUAL(pcsv.at(L"key1", L"data1"), L"data1");
+}
 
 #if 1
-std::locale::id std::codecvt<char16_t, char, struct _Mbstatet>::id;
 
-DEFINE_TEST(csv_fileu16bom_test)
+DEFINE_TEST(csv_file_wchar_bom_test)
 {
-    ouchi::parser::csv<char16_t> pcsv;
+    ouchi::parser::csv<wchar_t> pcsv;
     REQUIRE_TRUE(std::filesystem::exists("test.csv"));
-    pcsv.parse("test.csv", std::locale{});
+    pcsv.parse("test.csv", std::locale(std::locale::empty(), new std::codecvt_utf16<wchar_t, 0x10ffff, std::consume_header>));
     REQUIRE_TRUE(pcsv.get().size());
-    CHECK_EQUAL(pcsv.at(u"key1", 0), u"key1");
+    CHECK_EQUAL(pcsv.at(L"key1", 0), L"key1");
+}
+DEFINE_TEST(csv_file_u8_bom_test)
+{
+    ouchi::parser::csv<char> pcsv;
+    REQUIRE_TRUE(std::filesystem::exists("u8test.csv"));
+    pcsv.parse("u8test.csv", std::locale{});
+    REQUIRE_TRUE(pcsv.get().size());
+    CHECK_EQUAL(pcsv.at(u8"key1", 0), u8"key1");
 }
 #endif

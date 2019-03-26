@@ -18,7 +18,7 @@ constexpr CharT bom[] = { CharT{} };
 template<> constexpr unsigned char bom<char>[3] = { 0xEF, 0xBB, 0xBF };
 template<> constexpr char16_t bom<char16_t> = 0xFEFF;
 template<> constexpr char32_t bom<char32_t> = 0x0000FEFF;
-
+template<> constexpr wchar_t bom<wchar_t> = 0xFEFF;
 }
 
 template <class CharT>
@@ -180,7 +180,26 @@ inline void csv<char16_t>::parse(istream & text)
     // BOM読み捨て
     text.read(&bombuffer, 1);
     if (bombuffer != detail::bom<char16_t>)
-        text.seekg(-3, std::ios::cur);
+        text.seekg(-1, std::ios::cur);
+
+    while (text) {
+        string line;
+        std::getline(text, line);
+        if (line.size())
+            parseline(line);
+        if (data_.front().size() != data_.back().size())
+            throw std::runtime_error("parse failed. syntax error");
+    }
+}
+template<>
+inline void csv<wchar_t>::parse(istream & text)
+{
+    wchar_t bombuffer;
+
+    // BOM読み捨て
+    text.read(&bombuffer, 1);
+    if (bombuffer != detail::bom<wchar_t>)
+        text.seekg(-1, std::ios::cur);
 
     while (text) {
         string line;
@@ -199,7 +218,7 @@ inline void csv<char32_t>::parse(istream & text)
     // BOM読み捨て
     text.read(&bombuffer, 1);
     if (bombuffer != detail::bom<char32_t>)
-        text.seekg(-3, std::ios::cur);
+        text.seekg(-1, std::ios::cur);
 
     while (text) {
         string line;
