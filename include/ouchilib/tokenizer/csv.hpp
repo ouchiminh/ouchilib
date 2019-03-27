@@ -35,6 +35,8 @@ public:
     using string_view = std::basic_string_view<CharT>;
     using istream = std::basic_istream<CharT>;
     using ifstream = std::basic_ifstream<CharT>;
+    using ostream = std::basic_ostream<CharT>;
+    using ofstream = std::basic_ofstream<CharT>;
     using index_t = std::variant<string_view, size_t>;
 
     csv()
@@ -109,6 +111,21 @@ public:
         ->std::vector<string>&
     {
         return data_.at(y);
+    }
+    void write(const std::filesystem::path& path, std::locale l, const CharT separator = (CharT)',')
+    {
+        ofstream out(path);
+        out.imbue(l);
+        write(out, separator);
+    }
+    void write(ostream& out, const CharT separator = (CharT)',')
+    {
+        for (const auto& line) {
+            for (const auto& word) {
+                out << word << separator;
+            }
+            out << (CharT)'\n';
+        }
     }
 private:
     struct xidx {
