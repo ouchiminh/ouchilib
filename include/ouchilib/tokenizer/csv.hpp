@@ -40,13 +40,13 @@ public:
     using index_t = std::variant<string_view, size_t>;
 
     csv()
-        : x_{ data_ }
-        , y_{ data_ }
+        : column{ data_ }
+        , row{ data_ }
         , sep_{ separators }
     {}
     csv(const tokenizer::separator<CharT>& sp)
-        : x_{ data_ }
-        , y_{ data_ }
+        : column{ data_ }
+        , row{ data_ }
         , sep_{ sp }
     {}
     void parse(string_view text) {
@@ -75,16 +75,16 @@ public:
     const string& at(index_t x,
                      index_t y) const
     {
-        auto idxx = std::visit(x_, x);
-        auto idxy = std::visit(y_, y);
+        auto idxx = std::visit(column, x);
+        auto idxy = std::visit(row, y);
         return data_.at(idxy).at(idxx);
     }
     [[nodiscard]]
     string& at(index_t x,
                index_t y)
     {
-        auto idxx = std::visit(x_, x);
-        auto idxy = std::visit(y_, y);
+        auto idxx = std::visit(column, x);
+        auto idxy = std::visit(row, y);
         return data_.at(idxy).at(idxx);
     }
 
@@ -118,16 +118,15 @@ public:
         out.imbue(l);
         write(out, separator);
     }
-    void write(ostream& out, const CharT separator = (CharT)',')
+    void write(ostream& out, const CharT separator = (CharT)',') const
     {
-        for (const auto& line) {
-            for (const auto& word) {
+        for (const auto& line : get()) {
+            for (const auto& word : line) {
                 out << word << separator;
             }
             out << (CharT)'\n';
         }
     }
-private:
     struct xidx {
         xidx(std::vector<std::vector<string>>& d) : data{d} {}
         size_t operator()(string_view key) const
@@ -137,9 +136,9 @@ private:
             return std::distance(scanline.begin(), pos);
         }
         size_t operator()(size_t key) const noexcept { return key; }
-
+    private:
         std::vector<std::vector<string>>& data;
-    } x_;
+    } column;
     struct yidx {
         yidx(std::vector<std::vector<string>>& d) : data{d} {}
         size_t operator()(string_view key) const
@@ -149,9 +148,11 @@ private:
             return data.size();
         }
         size_t operator()(size_t key) const noexcept { return key; }
-
+    private:
         std::vector<std::vector<string>>& data;
-    } y_;
+    } row;
+
+private:
     void parseline(string_view line)
     {
         tokenizer::tokenizer<CharT> tok{line, sep_};
