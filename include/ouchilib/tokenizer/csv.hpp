@@ -13,12 +13,19 @@ namespace ouchi::parser{
 
 namespace detail {
 
-template<typename CharT>
-constexpr CharT bom[] = { CharT{} };
-template<> constexpr unsigned char bom<char>[3] = { 0xEF, 0xBB, 0xBF };
-template<> constexpr char16_t bom<char16_t> = 0xFEFF;
-template<> constexpr char32_t bom<char32_t> = 0x0000FEFF;
-template<> constexpr wchar_t bom<wchar_t> = 0xFEFF;
+template<class CharT>
+void skip_utf8_bom(std::basic_istream<CharT>&){}
+
+template<>
+void skip_utf8_bom<char>(std::basic_istream<char>& stream)
+{
+    constexpr char bom[3] = { 0xEF, 0xBB, 0xBF };
+    char bombuffer[3];
+    stream.read(bombuffer, sizeof bombuffer);
+    if (!std::equal(std::begin(bom), std::end(bom), bombuffer))
+        stream.seekg(-sizeof bombuffer, std::ios::cur);
+}
+
 }
 
 template <class CharT>
@@ -50,7 +57,18 @@ public:
         fs.imbue(l);
         parse(fs);
     }
-    void parse(istream& text);
+    void parse(istream& text)
+    {
+        detail::skip_utf8_bom(text);
+        while (text) {
+            string line;
+            std::getline(text, line);
+            if (line.size())
+                parseline(line);
+            if (data_.front().size() != data_.back().size())
+                throw std::runtime_error("parse failed. syntax error");
+        }
+    }
     [[nodiscard]]
     const string& at(index_t x,
                      index_t y) const
@@ -138,96 +156,5 @@ private:
     static constexpr CharT separators[] = { '\t', ',', '\0' };
     
 };
-
-template<class CharT>
-inline void csv<CharT>::parse(istream & text)
-{
-    while (text) {
-        string line;
-        std::getline(text, line);
-        if (line.size())
-            parseline(line);
-        if (data_.front().size() != data_.back().size())
-            throw std::runtime_error("parse failed. syntax error");
-    }
-}
-
-template<>
-inline void csv<char>::parse(istream & text)
-{
-    unsigned char bombuffer[3];
-
-    // BOM読み捨て
-    text.read(reinterpret_cast<char*>(bombuffer), 3);
-    if (!std::equal(std::begin(detail::bom<char>), std::end(detail::bom<char>), std::begin(bombuffer)))
-        text.seekg(-3, std::ios::cur);
-
-    while (text) {
-        string line;
-        std::getline(text, line);
-        if (line.size())
-            parseline(line);
-        if (data_.front().size() != data_.back().size())
-            throw std::runtime_error("parse failed. syntax error");
-    }
-}
-
-template<>
-inline void csv<char16_t>::parse(istream & text)
-{
-    char16_t bombuffer;
-
-    // BOM読み捨て
-    text.read(&bombuffer, 1);
-    if (bombuffer != detail::bom<char16_t>)
-        text.seekg(-1, std::ios::cur);
-
-    while (text) {
-        string line;
-        std::getline(text, line);
-        if (line.size())
-            parseline(line);
-        if (data_.front().size() != data_.back().size())
-            throw std::runtime_error("parse failed. syntax error");
-    }
-}
-template<>
-inline void csv<wchar_t>::parse(istream & text)
-{
-    wchar_t bombuffer;
-
-    // BOM読み捨て
-    text.read(&bombuffer, 1);
-    if (bombuffer != detail::bom<wchar_t>)
-        text.seekg(-1, std::ios::cur);
-
-    while (text) {
-        string line;
-        std::getline(text, line);
-        if (line.size())
-            parseline(line);
-        if (data_.front().size() != data_.back().size())
-            throw std::runtime_error("parse failed. syntax error");
-    }
-}
-template<>
-inline void csv<char32_t>::parse(istream & text)
-{
-    char32_t bombuffer;
-
-    // BOM読み捨て
-    text.read(&bombuffer, 1);
-    if (bombuffer != detail::bom<char32_t>)
-        text.seekg(-1, std::ios::cur);
-
-    while (text) {
-        string line;
-        std::getline(text, line);
-        if (line.size())
-            parseline(line);
-        if (data_.front().size() != data_.back().size())
-            throw std::runtime_error("parse failed. syntax error");
-    }
-}
 
 }
