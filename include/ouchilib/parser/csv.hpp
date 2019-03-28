@@ -14,10 +14,10 @@ namespace ouchi::parser{
 namespace detail {
 
 template<class CharT>
-void skip_utf8_bom(std::basic_istream<CharT>&){}
+inline void skip_utf8_bom(std::basic_istream<CharT>&){}
 
 template<>
-void skip_utf8_bom<char>(std::basic_istream<char>& stream)
+inline void skip_utf8_bom<char>(std::basic_istream<char>& stream)
 {
     constexpr char bom[3] = { 0xEF, 0xBB, 0xBF };
     char bombuffer[3];
