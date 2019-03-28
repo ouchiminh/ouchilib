@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <locale>
 #include <cassert>
-#include "tokenizer.hpp"
+#include "ouchilib/tokenizer/tokenizer.hpp"
 
 namespace ouchi::parser{
 

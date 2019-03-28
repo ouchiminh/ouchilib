@@ -1,7 +1,7 @@
 ﻿
 #include "../test.hpp"
 #include "ouchilib/tokenizer/tokenizer.hpp"
-#include "ouchilib/tokenizer/csv.hpp"
+#include "ouchilib/parser/csv.hpp"
 #if 0
 DEFINE_TEST(tokenizer_tokenize_test)
 {
@@ -60,5 +60,13 @@ DEFINE_TEST(csv_file_u8_bom_test)
     pcsv.parse("u8test.csv", locale);
     REQUIRE_TRUE(pcsv.get().size());
     CHECK_EQUAL(pcsv.at(u8"キー1", 0), u8"キー1");
+}
+DEFINE_TEST(csv_file_u8_kishocho_test)
+{
+    constexpr auto filename = "tsuyu_iriake.csv";
+    ouchi::parser::csv<char> csv;
+    REQUIRE_TRUE(std::filesystem::exists(filename));
+    csv.parse(filename, std::locale{ "" });
+    std::cout << csv.at(u8"関東甲信地方", u8"2000") << '\n';
 }
 #endif
