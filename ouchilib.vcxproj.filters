@@ -107,7 +107,7 @@
     <ClInclude Include="test\time\measure-time-test.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\ouchilib\tokenizer\csv.hpp">
+    <ClInclude Include="include\ouchilib\parser\csv.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

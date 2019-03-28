@@ -134,10 +134,10 @@
     <ClInclude Include="include\ouchilib\log\format.hpp" />
     <ClInclude Include="include\ouchilib\log\out.hpp" />
     <ClInclude Include="include\ouchilib\log\rule.hpp" />
+    <ClInclude Include="include\ouchilib\parser\csv.hpp" />
     <ClInclude Include="include\ouchilib\task\erase_condition.hpp" />
     <ClInclude Include="include\ouchilib\task\task.hpp" />
     <ClInclude Include="include\ouchilib\task\tasksystem.hpp" />
-    <ClInclude Include="include\ouchilib\tokenizer\csv.hpp" />
     <ClInclude Include="include\ouchilib\tokenizer\separator.hpp" />
     <ClInclude Include="include\ouchilib\tokenizer\tokenizer.hpp" />
     <ClInclude Include="include\ouchilib\utl\convertible.hpp" />
