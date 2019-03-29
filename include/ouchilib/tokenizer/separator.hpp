@@ -23,7 +23,7 @@ constexpr bool begin_with(InputIterator first, InputIterator last,
 
 } // detail
 
-enum class token { word = false, separator = true };
+enum class primitive_token { word = false, separator = true };
 
 template<class CharT>
 class separator {
@@ -62,16 +62,16 @@ public:
     /// <returns>トークン, トークンの終わりの位置</returns>
     [[nodiscard]]
     auto operator()(string_view str)  const
-        ->std::pair<token, typename string_view::const_iterator>
+        ->std::pair<primitive_token, typename string_view::const_iterator>
     {
-        std::pair<token, typename string_view::const_iterator> retval;
+        std::pair<primitive_token, typename string_view::const_iterator> retval;
         if (auto match = is_separator(str); match != separators_.end()) {
-            retval.first = token::separator;
+            retval.first = primitive_token::separator;
             retval.second = std::next(str.begin(), std::min(match->size(), str.size()));
             return retval;
         }
 
-        retval.first = token::word;
+        retval.first = primitive_token::word;
         for (retval.second = ++str.begin();
              retval.second != str.end() && is_separator(&*retval.second) == separators_.end();
              ++retval.second);

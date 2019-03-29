@@ -156,13 +156,15 @@ private:
     void parseline(string_view line)
     {
         tokenizer::tokenizer<CharT> tok{line, sep_};
-        auto wordc = std::count_if(tok.begin(), tok.end(), [](auto&& i) { return i.first == tokenizer::token::separator; });
+        auto wordc = std::count_if(tok.begin(), tok.end(),
+                                   [](auto&& i)
+                                   { return (tokenizer::primitive_token)i.first == tokenizer::primitive_token::separator; });
         data_.emplace_back(wordc + 1);
         auto& dataline = data_.back();
         size_t cur = 0;
         assert(dataline.size() == wordc + 1);
         for (auto&&[type, str] : tok) {
-            if (type == tokenizer::token::separator) {
+            if (type == tokenizer::token_type::primitive_separator) {
                 ++cur;
                 continue;
             }
