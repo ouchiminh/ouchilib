@@ -17,7 +17,7 @@ DEFINE_TEST(tokenizer_tokenize_test)
 
 DEFINE_TEST(string_separator_test)
 {
-    ouchi::tokenizer::separator<char> sep{ std::in_place, { ",", " ", "->" } };
+    ouchi::tokenizer::separator<char> sep{ std::in_place, { ">", "-", "->" } };
     ouchi::tokenizer::tokenizer<char> t("a->b", sep);
     std::vector<std::string_view> tokens{ "a", "->", "b" };
     int i = 0;

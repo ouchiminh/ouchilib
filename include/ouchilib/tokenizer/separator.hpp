@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <string_view>
+#include <algorithm>
 
 namespace ouchi::tokenizer {
 
@@ -42,7 +43,10 @@ public:
     }
     explicit separator(std::in_place_t, std::initializer_list<string> separators)
         : separators_{ separators }
-    {}
+    {
+        std::sort(separators_.begin(), separators_.end(),
+                  [](const auto& a, const auto& b) {return a.size() > b.size(); });
+    }
 
     /// <summary>
     /// strの最初の位置から始まる文字列がどの種類のトークンか調べる
@@ -67,7 +71,7 @@ public:
         return retval;
     }
 
-    // cがseparators_で始まる場合マッチしたseparators_の要素を指すイテレータを返す
+    // cがseparatorで始まる場合マッチしたseparators_の要素を指すイテレータを返す
     [[nodiscard]]
     auto is_separator(string_view c) const {
         for (auto itr = separators_.begin();
