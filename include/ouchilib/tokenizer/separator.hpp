@@ -1,9 +1,26 @@
 ﻿#pragma once
-#include <set>
+#include <vector>
 #include <string>
 #include <string_view>
 
 namespace ouchi::tokenizer {
+
+namespace detail {
+
+template<class InputIterator,
+    class InputIterator2,
+    class Compare = std::equal_to<>>
+bool begin_with(InputIterator first, InputIterator last,
+                InputIterator2 value_first, InputIterator2 value_last)
+{
+    Compare c;
+    while (value_first != value_last && first != last) {
+        if(!c(*value_first++, *first++)) return false;
+    }
+    return true;
+}
+
+} // detail
 
 enum class token { word = false, separator = true };
 
@@ -13,8 +30,18 @@ public:
     using string = std::basic_string<CharT>;
     using string_view = std::basic_string_view<CharT>;
 
+    /// <summary>
+    /// セパレータとして扱う文字が全て1符号単位で表せる場合
+    /// </summary>
+    /// <param name="separators"></param>
     explicit separator(string_view separators)
-        : separators_{separators.begin(), separators.end()}
+    {
+        for (auto&& c : separators) {
+            separators_.emplace_back(1, c);
+        }
+    }
+    explicit separator(std::in_place_t, std::initializer_list<string> separators)
+        : separators_{ separators }
     {}
 
     /// <summary>
@@ -27,23 +54,32 @@ public:
         ->std::pair<token, typename string_view::const_iterator>
     {
         std::pair<token, typename string_view::const_iterator> retval;
-        if (is_separator(str.front())) {
+        if (auto match = is_separator(str); match != separators_.end()) {
             retval.first = token::separator;
-            retval.second = ++str.begin();
+            retval.second = std::next(str.begin(), match->size());
             return retval;
         }
+
         retval.first = token::word;
         for (retval.second = ++str.begin();
-             retval.second != str.end() && !is_separator(*retval.second);
+             retval.second != str.end() && is_separator(&*retval.second) == separators_.end();
              ++retval.second);
         return retval;
     }
+
+    // cがseparators_で始まる場合マッチしたseparators_の要素を指すイテレータを返す
     [[nodiscard]]
-    bool is_separator(CharT c) const {
-        return separators_.count(c);
+    auto is_separator(string_view c) const {
+        for (auto itr = separators_.begin();
+             itr != separators_.end();
+             ++itr) {
+            if(detail::begin_with(c.begin(), c.end(), itr->begin(), itr->end()))
+                return itr;
+        }
+        return separators_.end();
     }
 private:
-    std::set<CharT> separators_;
+    std::vector<string> separators_;
 };
 
 }

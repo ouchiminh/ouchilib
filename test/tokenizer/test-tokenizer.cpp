@@ -2,13 +2,28 @@
 #include "../test.hpp"
 #include "ouchilib/tokenizer/tokenizer.hpp"
 #include "ouchilib/parser/csv.hpp"
-#if 0
+#if 1
 DEFINE_TEST(tokenizer_tokenize_test)
 {
     ouchi::tokenizer::separator<char> sep(", ;");
-    ouchi::tokenizer::tokenizer<char> t(",,abc,def ghi;jk,,,", sep);
-    for (auto i : t) {
-        std::cout << i.second << '\n';
+    ouchi::tokenizer::tokenizer<char> t(",,abc,def ghi;jk,", sep);
+    std::vector<std::string_view> tokens{ ",", ",", "abc", ",", "def", " ", "ghi", ";", "jk", "," };
+    int i = 0;
+    for (auto c : t) {
+        REQUIRE_EQUAL(tokens[i], c.second);
+        ++i;
+    }
+}
+
+DEFINE_TEST(string_separator_test)
+{
+    ouchi::tokenizer::separator<char> sep{ std::in_place, { ",", " ", "->" } };
+    ouchi::tokenizer::tokenizer<char> t("a->b", sep);
+    std::vector<std::string_view> tokens{ "a", "->", "b" };
+    int i = 0;
+    for (auto c : t) {
+        REQUIRE_EQUAL(tokens[i], c.second);
+        ++i;
     }
 }
 #endif

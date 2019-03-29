@@ -19,11 +19,11 @@ inline void skip_utf8_bom(std::basic_istream<CharT>&){}
 template<>
 inline void skip_utf8_bom<char>(std::basic_istream<char>& stream)
 {
-    constexpr char bom[3] = { 0xEF, 0xBB, 0xBF };
-    char bombuffer[3];
-    stream.read(bombuffer, sizeof bombuffer);
+    constexpr unsigned char bom[3] = { 0xEF, 0xBB, 0xBF };
+    unsigned char bombuffer[3];
+    stream.read((char*)bombuffer, sizeof bombuffer);
     if (!std::equal(std::begin(bom), std::end(bom), bombuffer))
-        stream.seekg(-sizeof bombuffer, std::ios::cur);
+        stream.seekg(-(long long)sizeof bombuffer, std::ios::cur);
 }
 
 }
