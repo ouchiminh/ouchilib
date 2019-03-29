@@ -84,4 +84,21 @@ DEFINE_TEST(csv_file_u8_kishocho_test)
     csv.parse(filename, std::locale{ "" });
     std::cout << csv.at(u8"関東甲信地方", u8"2000") << '\n';
 }
+#   if 1
+DEFINE_TEST(source_code_tokenize_test)
+{
+    constexpr auto filename = "testsourcecode.c";
+    ouchi::tokenizer::separator<char> sep("!#%^&*()-=+\\|~ []{};':\"/?.>,<\t",
+                                          { "->", "<<", ">>", "&&" });
+    REQUIRE_TRUE(std::filesystem::exists(filename));
+    std::string filebody;
+    std::ifstream file(filename);
+    while (std::getline(file, filebody)) {
+        ouchi::tokenizer::tokenizer<char> t(filebody, sep);
+        for (auto && token : t) {
+            std::cout << token.second << '\n';
+        }
+    }
+}
+#   endif
 #endif

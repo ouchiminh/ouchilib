@@ -13,10 +13,20 @@ public:
     using string_view = std::basic_string_view<CharT>;
     enum class launch_policy { deferd, immediate };
     tokenizer(string_view str,
-              const separator<CharT> sep,
+              const separator<CharT>& sep,
               launch_policy lp = launch_policy::deferd)
         : str_{ str }
         , sep_{ sep }
+    {
+        if (lp == launch_policy::immediate)
+            tokenize();
+    }
+
+    tokenizer(string_view str,
+              separator<CharT>&& sep,
+              launch_policy lp = launch_policy::deferd)
+        : str_{ str }
+        , sep_{ std::move(sep) }
     {
         if (lp == launch_policy::immediate)
             tokenize();

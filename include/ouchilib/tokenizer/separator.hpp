@@ -41,11 +41,18 @@ public:
             separators_.emplace_back(1, c);
         }
     }
-    explicit separator(std::in_place_t, std::initializer_list<string> separators)
+    separator(std::in_place_t, std::initializer_list<string> separators)
         : separators_{ separators }
     {
         std::sort(separators_.begin(), separators_.end(),
                   [](const auto& a, const auto& b) {return a.size() > b.size(); });
+    }
+    separator(string_view separators, std::initializer_list<string> string_separators)
+        : separator{ std::in_place, string_separators }
+    {
+        for (auto&& c : separators) {
+            separators_.emplace_back(1, c);
+        }
     }
 
     /// <summary>
@@ -60,7 +67,7 @@ public:
         std::pair<token, typename string_view::const_iterator> retval;
         if (auto match = is_separator(str); match != separators_.end()) {
             retval.first = token::separator;
-            retval.second = std::next(str.begin(), match->size());
+            retval.second = std::next(str.begin(), std::min(match->size(), str.size()));
             return retval;
         }
 
