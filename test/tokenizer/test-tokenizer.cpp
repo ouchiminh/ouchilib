@@ -2,6 +2,7 @@
 #include "../test.hpp"
 #include "ouchilib/tokenizer/tokenizer.hpp"
 #include "ouchilib/parser/csv.hpp"
+#include "ouchilib/tokenizer/tokenize_algorithm.hpp"
 #if 1
 DEFINE_TEST(tokenizer_tokenize_test)
 {
@@ -84,7 +85,7 @@ DEFINE_TEST(csv_file_u8_kishocho_test)
     csv.parse(filename, std::locale{ "" });
     std::cout << csv.at(u8"関東甲信地方", u8"2000") << '\n';
 }
-#   if 1
+#   if 0
 DEFINE_TEST(source_code_tokenize_test)
 {
     constexpr auto filename = "testsourcecode.c";
@@ -95,9 +96,23 @@ DEFINE_TEST(source_code_tokenize_test)
     std::ifstream file(filename);
     while (std::getline(file, filebody)) {
         ouchi::tokenizer::tokenizer<char> t(filebody, sep);
+        t | ouchi::tokenizer::skip<char>{' ', '\t'};
         for (auto && token : t) {
             std::cout << token.second << '\n';
         }
+    }
+}
+#   endif
+#   if 1
+DEFINE_TEST(merge_test)
+{
+    std::string str = R"(aiu eo "aiu eo" 'aiue o')";
+    ouchi::tokenizer::separator<char> sep("!#%^&*()-=+\\|~ []{};':\"/?.>,<\t",
+                                          { "->", "<<", ">>", "&&" });
+    ouchi::tokenizer::tokenizer<char> t(str, sep);
+    t | ouchi::tokenizer::merge_enclosed<char>{"\"", "''"};
+    for (auto&& token : t) {
+        std::cout << token.second << '\n';
     }
 }
 #   endif
