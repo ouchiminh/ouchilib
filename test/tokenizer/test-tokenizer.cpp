@@ -110,7 +110,8 @@ DEFINE_TEST(merge_test)
     ouchi::tokenizer::separator<char> sep("!#%^&*()-=+\\|~ []{};':\"/?.>,<\t",
                                           { "->", "<<", ">>", "&&" });
     ouchi::tokenizer::tokenizer<char> t(str, sep);
-    t | ouchi::tokenizer::merge_enclosed<char>{"\"", "''"};
+    t | ouchi::tokenizer::merge_enclosed<char>{"\"", "''"} |
+        ouchi::tokenizer::skip<char>{' ', '\t'};
     for (auto&& token : t) {
         std::cout << token.second << '\n';
     }
