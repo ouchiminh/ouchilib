@@ -10,8 +10,8 @@ namespace detail {
 template<class InputIterator,
     class InputIterator2,
     class Compare = std::equal_to<>>
-bool begin_with(InputIterator first, InputIterator last,
-                InputIterator2 value_first, InputIterator2 value_last)
+constexpr bool begin_with(InputIterator first, InputIterator last,
+                          InputIterator2 value_first, InputIterator2 value_last)
 {
     Compare c;
     while (value_first != value_last && first != last) {
