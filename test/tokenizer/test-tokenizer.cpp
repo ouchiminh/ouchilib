@@ -1,4 +1,6 @@
 ﻿
+#include <numeric>
+#include <array>
 #include "../test.hpp"
 #include "ouchilib/tokenizer/tokenizer.hpp"
 #include "ouchilib/parser/csv.hpp"
@@ -28,6 +30,35 @@ DEFINE_TEST(string_separator_test)
     }
 }
 #endif
+
+DEFINE_TEST(binary_find_test)
+{
+    std::array<int, 10> v;
+    std::iota(v.begin(), v.end(), 0);
+    {
+        auto f = ouchi::tokenizer::detail::binary_find(v.begin(), v.end(), 2);
+        REQUIRE_TRUE(f != v.end());
+        CHECK_EQUAL(*f, 2);
+    }
+    {
+        auto r = ouchi::tokenizer::detail::binary_find(v.begin(), v.end(), 0);
+        REQUIRE_TRUE(r != v.end());
+        CHECK_EQUAL(*r, 0);
+    }
+    {
+        auto r = ouchi::tokenizer::detail::binary_find(v.begin(), v.end(), 9);
+        REQUIRE_TRUE(r != v.end());
+        CHECK_EQUAL(*r, 9);
+    }
+    {
+        auto r = ouchi::tokenizer::detail::binary_find(v.begin(), v.end(), 10);
+        REQUIRE_TRUE(r == v.end());
+    }
+    {
+        auto r = ouchi::tokenizer::detail::binary_find(v.begin(), v.end(), -1);
+        REQUIRE_TRUE(r == v.end());
+    }
+}
 
 DEFINE_TEST(csv_parser_parse_test)
 {
@@ -89,7 +120,7 @@ DEFINE_TEST(csv_file_u8_kishocho_test)
 DEFINE_TEST(source_code_tokenize_test)
 {
     constexpr auto filename = "testsourcecode.c";
-    ouchi::tokenizer::separator<char> sep("!#%^&*()-=+\\|~ []{};':\"/?.>,<\t",
+    ouchi::tokenizer::separator<char> sep("!#%^&*()-=+|~ []{};':\"/?.>,<\t",
                                           { "->", "<<", ">>", "&&" });
     REQUIRE_TRUE(std::filesystem::exists(filename));
     std::string filebody;
@@ -108,11 +139,11 @@ DEFINE_TEST(merge_test)
 {
     std::string str = R"(aiu eo "aiu eo" 'aiue o' "")";
     std::vector<std::string> result{ "aiu", "eo", "\"aiu eo\"", "'aiue o'", "\"\"" };
-    ouchi::tokenizer::separator<char> sep("!#%^&*()-=+\\|~ []{};':\"/?.>,<\t",
+    ouchi::tokenizer::separator<char> sep("!#%^&*()-=+\\|~ []{};':\"/?.>,<\t\n",
                                           { "->", "<<", ">>", "&&" });
     ouchi::tokenizer::tokenizer<char> t(str, sep);
-    t | ouchi::tokenizer::merge_enclosed<char>{"\"", "''"} |
-        ouchi::tokenizer::skip<char>{' ', '\t'};
+    t | ouchi::tokenizer::merge_enclosed<char>{"\"", "''"}
+      | ouchi::tokenizer::skip<char>{' ', '\t'};
 
     auto res = result.begin();
     for (auto&& token : t) {

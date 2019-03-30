@@ -6,7 +6,8 @@
 
 namespace ouchi::tokenizer {
 
-enum class token_type { primitive_word = false, primitive_separator = true };
+enum class token_type { primitive_word = (unsigned)primitive_token::word,
+                        primitive_separator = (unsigned)primitive_token::separator };
 
 template<class CharT>
 class tokenizer {
