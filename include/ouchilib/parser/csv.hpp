@@ -61,6 +61,7 @@ public:
     }
     void parse(istream& text)
     {
+        data_.clear();
         detail::skip_utf8_bom(text);
         while (text) {
             string line;
