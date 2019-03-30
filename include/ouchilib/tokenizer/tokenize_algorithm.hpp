@@ -5,6 +5,27 @@
 
 namespace ouchi::tokenizer {
 
+namespace detail {
+
+// binary search [first, last)
+template<class RanItr,
+    class T = typename std::iterator_traits<RanItr>::value_type,
+    class Pred = std::less<T>,
+    std::enable_if_t<std::is_base_of_v<std::random_access_iterator_tag, typename std::iterator_traits<RanItr>::iterator_category>&&
+                     std::is_invocable_r_v<bool, Pred, T, T> >* = nullptr
+>
+constexpr RanItr binary_find(RanItr first, RanItr last, T&& value, Pred&& pred = std::less<T>{}) {
+    if (pred(value, *first) || pred(*std::next(last, -1), value)) return last;
+    auto size = std::distance(first, std::next(last, -1));
+    auto buf = first + size / 2;
+    return
+        pred(value, *buf) ? binary_find(first, buf, std::forward<T>(value), std::forward<Pred>(pred))
+        : !pred(*buf, value) ? buf
+        : binary_find(++buf, last, std::forward<T>(value), std::forward<Pred>(pred));
+}
+
+}
+
 template<class CharT, class F, std::enable_if_t<std::is_invocable_r_v<tokenizer<CharT>&, F, tokenizer<CharT>&>>* = nullptr>
 tokenizer<CharT>& operator|(tokenizer<CharT>& t, F&& tokenize_algorithm)
 {
@@ -13,21 +34,23 @@ tokenizer<CharT>& operator|(tokenizer<CharT>& t, F&& tokenize_algorithm)
 
 template<class CharT>
 struct skip {
-    constexpr skip(std::initializer_list<CharT> skip_char = { ' ', '\t' })
+    skip(std::initializer_list<CharT> skip_char = { ' ', '\t' })
         : skipper{ skip_char }
-    {}
+    {
+        std::sort(skipper.begin(), skipper.end());
+    }
 
     tokenizer<CharT>& operator() (tokenizer<CharT>& t)
     {
         for (auto i = t.begin(); i != t.end();) {
             if (i->second.size() == 1 && i->first != token_type::primitive_word &&
-                std::find(skipper.begin(), skipper.end(), i->second.front()) != skipper.end())
+                detail::binary_find(skipper.begin(), skipper.end(), i->second.front()) != skipper.end())
                 i = t.erase(i);
             else ++i;
         }
         return t;
     }
-
+private:
     std::vector<CharT> skipper;
 };
 
