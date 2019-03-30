@@ -106,14 +106,17 @@ DEFINE_TEST(source_code_tokenize_test)
 #   if 1
 DEFINE_TEST(merge_test)
 {
-    std::string str = R"(aiu eo "aiu eo" 'aiue o')";
+    std::string str = R"(aiu eo "aiu eo" 'aiue o' "")";
+    std::vector<std::string> result{ "aiu", "eo", "\"aiu eo\"", "'aiue o'", "\"\"" };
     ouchi::tokenizer::separator<char> sep("!#%^&*()-=+\\|~ []{};':\"/?.>,<\t",
                                           { "->", "<<", ">>", "&&" });
     ouchi::tokenizer::tokenizer<char> t(str, sep);
     t | ouchi::tokenizer::merge_enclosed<char>{"\"", "''"} |
         ouchi::tokenizer::skip<char>{' ', '\t'};
+
+    auto res = result.begin();
     for (auto&& token : t) {
-        std::cout << token.second << '\n';
+        REQUIRE_EQUAL(token.second, *res++);
     }
 }
 #   endif

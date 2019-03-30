@@ -33,8 +33,7 @@ struct skip {
 
 template<class CharT>
 struct merge_enclosed {
-    merge_enclosed(std::initializer_list<std::basic_string<CharT>> il
-                   = { "\"\"", "''" })
+    merge_enclosed(std::initializer_list<std::basic_string<CharT>> il = { "\"\"", "''" })
     {
         using string = std::basic_string<CharT>;
         enclosed.reserve(il.size());
@@ -51,14 +50,14 @@ struct merge_enclosed {
     tokenizer<CharT>& operator() (tokenizer<CharT>& t) const
     {
         for (const auto& e : enclosed) {
-            if (auto merge_begin = std::find_if(t.begin(), t.end(),
-                                                [&e](typename tokenizer<CharT>::value_type& p) {return p.second == e.first; });
-                merge_begin != t.end())
-            {
-                if (auto merge_end = std::find_if(std::next(merge_begin), t.end(),
-                                                  [&e](auto& p) {return p.second == e.second;});
-                    merge_end != t.end())
-                    t.merge(merge_begin, merge_end);
+            for (auto itr = t.begin(); itr != t.end();) {
+                auto mb = std::find_if(itr, t.end(),
+                                       [&e](const auto& p) {return p.second == e.first; });
+                if (mb == t.end()) { ++itr;  break; }
+                auto me = std::find_if(std::next(mb), t.end(),
+                                       [&e](const auto& p) {return p.second == e.second; });
+                if (me == t.end()) { ++itr; break; }
+                itr = t.merge(mb, me);
             }
         }
         return t;
