@@ -47,6 +47,7 @@ public:
     const_iterator end() const { return tokens_.cend(); }
     iterator begin() { return tokens_.begin(); }
     iterator end() { return tokens_.end(); }
+    typename container_type::size_type size() const noexcept { return tokens_.size(); }
 
     /// <summary>
     /// posの位置にある要素を削除する

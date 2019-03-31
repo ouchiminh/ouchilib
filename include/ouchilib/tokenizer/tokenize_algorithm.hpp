@@ -24,7 +24,7 @@ constexpr RanItr binary_find(RanItr first, RanItr last, T&& value, Pred&& pred =
         : binary_find(++buf, last, std::forward<T>(value), std::forward<Pred>(pred));
 }
 
-}
+} // detail
 
 template<class CharT, class F, std::enable_if_t<std::is_invocable_r_v<tokenizer<CharT>&, F, tokenizer<CharT>&>>* = nullptr>
 tokenizer<CharT>& operator|(tokenizer<CharT>& t, F&& tokenize_algorithm)
@@ -32,6 +32,7 @@ tokenizer<CharT>& operator|(tokenizer<CharT>& t, F&& tokenize_algorithm)
     return tokenize_algorithm(t);
 }
 
+// 任意の文字と一致した字句を削除します。
 template<class CharT>
 struct skip {
     skip(std::initializer_list<CharT> skip_char = { ' ', '\t' })
@@ -43,7 +44,7 @@ struct skip {
     tokenizer<CharT>& operator() (tokenizer<CharT>& t)
     {
         for (auto i = t.begin(); i != t.end();) {
-            if (i->second.size() == 1 && i->first != token_type::primitive_word &&
+            if (i->second.size() == 1 &&
                 detail::binary_find(skipper.begin(), skipper.end(), i->second.front()) != skipper.end())
                 i = t.erase(i);
             else ++i;
@@ -54,6 +55,7 @@ private:
     std::vector<CharT> skipper;
 };
 
+// 任意の文字列で囲まれた字句を一つのトークンにまとめます
 template<class CharT>
 struct merge_enclosed {
     merge_enclosed(std::initializer_list<std::basic_string<CharT>> il = { "\"\"", "''" })
@@ -88,5 +90,7 @@ struct merge_enclosed {
 
     std::vector<std::pair<std::basic_string<CharT>, std::basic_string<CharT>>> enclosed;
 };
+
+// 字句にトークンの種別を割り振ります
 
 }
