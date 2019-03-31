@@ -23,7 +23,7 @@ constexpr bool begin_with(InputIterator first, InputIterator last,
 
 } // detail
 
-enum class primitive_token : unsigned { word = 0xFFFF'FFFF, separator = 0xFFFF'FFFE };
+enum class primitive_token : std::uint32_t { word = 0xFFFF'FFFF, separator = 0xFFFF'FFFE };
 
 template<class CharT>
 class separator {
