@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <vector>
 #include <type_traits>
+#include <regex>
 #include "tokenizer.hpp"
 
 namespace ouchi::tokenizer {
@@ -92,5 +93,23 @@ struct merge_enclosed {
 };
 
 // 字句にトークンの種別を割り振ります
+template<class CharT>
+struct assign_token {
+    assign_token(std::initializer_list<std::pair<std::basic_regex<CharT>, token_type>> il)
+        : ttlist_{ il }
+    {}
+
+    tokenizer<CharT>& operator() (tokenizer<CharT>& t) const
+    {
+        for (auto& i : t) {
+            auto m = std::find_if(ttlist_.begin(), ttlist_.end(), [&i](auto& p) {return std::regex_match(i.second, p.first); });
+            if (m != ttlist_.end()) i.first = m->second;
+        }
+        return t;
+    }
+
+private:
+    std::vector<std::pair<std::basic_regex<CharT>, token_type>> ttlist_;
+};
 
 }
