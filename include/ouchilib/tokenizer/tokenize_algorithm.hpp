@@ -2,6 +2,7 @@
 #include <vector>
 #include <type_traits>
 #include <regex>
+#include <functional>
 #include "tokenizer.hpp"
 
 namespace ouchi::tokenizer {
@@ -9,7 +10,8 @@ namespace ouchi::tokenizer {
 namespace detail {
 
 // binary search [first, last)
-template<class RanItr,
+template<
+	class RanItr,
     class T = typename std::iterator_traits<RanItr>::value_type,
     class Pred = std::less<T>,
     std::enable_if_t<std::is_base_of_v<std::random_access_iterator_tag, typename std::iterator_traits<RanItr>::iterator_category>&&
@@ -42,7 +44,7 @@ struct skip {
         std::sort(skipper.begin(), skipper.end());
     }
 
-    tokenizer<CharT>& operator() (tokenizer<CharT>& t)
+    tokenizer<CharT>& operator() (tokenizer<CharT>& t) const
     {
         for (auto i = t.begin(); i != t.end();) {
             if (i->second.size() == 1 &&
@@ -54,6 +56,22 @@ struct skip {
     }
 private:
     std::vector<CharT> skipper;
+};
+
+// 条件を満たした字句を削除します。
+template<class CharT>
+struct erase_if {
+	erase_if(const std::function<bool(std::pair<token_type, std::basic_string<CharT>>)>& pred)
+		: pred_{ pred }
+	{}
+	tokenizer<CharT> operator()(tokenizer<CharT>& t) const
+	{
+		for (auto i = t.begin(); i != t.end();)
+			i = pred_(*i) ? t.erase(i) : std::next(i);
+		return t;
+	}
+private:
+	std::function<bool(std::pair<token_type, std::basic_string<CharT>>)> pred_;
 };
 
 // 任意の文字列で囲まれた字句を一つのトークンにまとめます
