@@ -13,18 +13,18 @@ namespace detail {
 template<
 	class RanItr,
     class T = typename std::iterator_traits<RanItr>::value_type,
-    class Pred = std::less<T>,
+    class Pred = std::less<std::remove_reference_t<T>>,
     std::enable_if_t<std::is_base_of_v<std::random_access_iterator_tag, typename std::iterator_traits<RanItr>::iterator_category>&&
-                     std::is_invocable_r_v<bool, Pred, T, T> >* = nullptr
+                     std::is_invocable_r_v<bool, Pred, const std::remove_reference_t<T>&,  const std::remove_reference_t<T>&> >* = nullptr
 >
-constexpr RanItr binary_find(RanItr first, RanItr last, T&& value, Pred&& pred = std::less<T>{}) {
-    if (pred(value, *first) || pred(*std::next(last, -1), value)) return last;
-    auto size = std::distance(first, std::next(last, -1));
-    auto buf = first + size / 2;
-    return
-        pred(value, *buf) ? binary_find(first, buf, std::forward<T>(value), std::forward<Pred>(pred))
-        : !pred(*buf, value) ? buf
-        : binary_find(++buf, last, std::forward<T>(value), std::forward<Pred>(pred));
+constexpr RanItr binary_find(RanItr first, RanItr last, T&& value, Pred&& less = std::less<std::remove_reference_t<T>>{}) {
+	if (less(value, *first) || less(*std::next(last, -1), value)) return last;
+	auto size = std::distance(first, std::next(last, -1));
+	auto buf = first + size / 2;
+	return
+		less(value, *buf) ? binary_find(first, buf, std::forward<T>(value), std::forward<Pred>(less))
+		: !less(*buf, value) ? buf
+		: binary_find(++buf, last, std::forward<T>(value), std::forward<Pred>(less));
 }
 
 } // detail
