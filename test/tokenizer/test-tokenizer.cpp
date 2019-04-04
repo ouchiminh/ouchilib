@@ -159,7 +159,7 @@ DEFINE_TEST(token_type_test)
     ouchi::tokenizer::tokenizer<char> t(str, sep);
     t | ouchi::tokenizer::merge_enclosed<char>({"\"", "''"})
       | ouchi::tokenizer::skip<char>(std::regex("[ \t]"))
-        | ouchi::tokenizer::assign_token<char>({ { std::regex("^[\"'].*[\"']$"), ouchi::tokenizer::token_type::primitive_word } });
+      | ouchi::tokenizer::assign_token<char>({ { std::regex("^[\"'].*[\"']$"), ouchi::tokenizer::token_type::primitive_word } });
 
     for (auto&& token : t) {
         REQUIRE_EQUAL(token.first, ouchi::tokenizer::token_type::primitive_word);
