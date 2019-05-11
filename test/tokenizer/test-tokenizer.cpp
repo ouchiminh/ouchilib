@@ -116,6 +116,14 @@ DEFINE_TEST(csv_file_u8_kishocho_test)
     csv.parse(filename, std::locale{ "" });
     std::cout << csv.at(u8"関東甲信地方", u8"2000") << '\n';
 }
+DEFINE_TEST(mass_csvfile_parse_test)
+{
+    constexpr auto filename = "tsuyu_iriake4.csv";
+    ouchi::parser::csv<char> csv;
+    REQUIRE_TRUE(std::filesystem::exists(filename));
+    csv.parse(filename, std::locale{ "" });
+    std::cout << csv.at(u8"関東甲信地方", u8"2000") << '\n';
+}
 #   if 0
 DEFINE_TEST(source_code_tokenize_test)
 {

@@ -51,9 +51,10 @@ template<class CharT>
 
 // 条件を満たした字句を削除します。
 template<class CharT, class Pred,
-    std::enable_if_t<std::is_invocable_r_v<bool,
-        std::remove_reference_t<Pred>,
-        std::pair<token_type, std::basic_string<CharT>>>>* = nullptr>
+         std::enable_if_t<std::is_invocable_r_v<bool,
+                                                std::remove_reference_t<Pred>,
+                                                std::pair<token_type, std::basic_string<CharT>>>
+                         >* = nullptr>
 [[nodiscard]] inline auto erase_if(Pred&& pred)
 {
     return
