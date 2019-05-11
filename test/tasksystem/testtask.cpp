@@ -4,10 +4,6 @@
 #include <string>
 #include <tuple>
 
-void task3(int i, int j)
-{
-    std::cout << i << j; 
-}
 DEFINE_TEST(test_task_instantiate)
 {
     using namespace ouchi::task;
