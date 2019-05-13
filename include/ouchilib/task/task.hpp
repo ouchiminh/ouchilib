@@ -10,6 +10,7 @@
 #include <mutex>
 #include <atomic>
 #include <tuple>
+#include <future>
 
 namespace ouchi::task {
 
@@ -53,6 +54,8 @@ public:
     using key_type = std::remove_reference_t<Key>;
     struct task_dependency;
     friend task_dependency;
+    template<class T>
+    friend class tasksystem;
 private:
 
     // this task will be lauched after all dependent task was finished.
@@ -62,19 +65,7 @@ private:
     key_type key_;
     mutable std::mutex callguard_;
     mutable std::mutex member_rw_guard_;
-
-    void add_pretask(const Key& key)
-    {
-        pretask_.insert_or_assign(key,
-                                  std::make_pair<bool, std::optional<std::any>>(false, std::nullopt));
-    }
-    void add_posttask(taskinfo& ti) { posttask_.push_back(std::ref(ti)); }
-    void set_result(const key_type& key, std::any result)
-    {
-        std::lock_guard<decltype(member_rw_guard_)> l(member_rw_guard_);
-        this->pretask_.at(key).first = true;
-        this->pretask_.at(key).second = result;
-    }
+    mutable std::once_flag callflag_;
 protected:
     template<class T>
     T get_pretask_result(const key_type& key) const
@@ -86,10 +77,35 @@ protected:
     {
         for (auto& i : posttask_) {
             i.get().set_result(key_, result);
-            i.get()();
+            //i.get()();
         }
     }
+
+    void set_result(const key_type& key, std::any result)
+    {
+        std::lock_guard<decltype(member_rw_guard_)> l(member_rw_guard_);
+        this->pretask_.at(key).first = true;
+        this->pretask_.at(key).second = result;
+    }
     virtual void run() = 0;
+    // 非同期にできない分は現在のスレッドで実行する
+    // 実行したタスクの数を返す
+    unsigned run_posttask(std::list<std::pair<std::future<void>, std::reference_wrapper<taskinfo<Key>>>>& tlist,
+                      unsigned threadcount)
+    {
+        unsigned processed = 0;
+        for (auto& i : posttask_) {
+            if (!i.get().is_ready()) continue;
+            if (threadcount > tlist.size())
+                tlist.push_back(std::make_pair(std::async(std::launch::async,
+                                                          [&i]() {i.get()(); }),
+                                               i));
+            else if (i.get().is_ready())
+                i.get()();
+            ++processed;
+        } 
+        return processed;
+    }
 public:
     taskinfo(key_type&& key)
         : key_(std::move(key))
@@ -101,12 +117,24 @@ public:
 
     const key_type& key() { return key_; }
 
+    void add_pretask(const Key& key)
+    {
+        pretask_.insert_or_assign(key,
+                                  std::make_pair<bool, std::optional<std::any>>(false, std::nullopt));
+    }
+    void add_posttask(taskinfo& ti) { posttask_.push_back(std::ref(ti)); }
+
+    bool is_ready() const noexcept
+    {
+        for (const auto& i : pretask_)
+            if (!i.second.first) return false;
+        return true;
+    }
+
     virtual void operator()() final
     {
         std::lock_guard<decltype(callguard_)> l(callguard_);
-        for (const auto& i : pretask_)
-            if (!i.second.first) return;
-        run();
+        if (is_ready()) std::call_once(callflag_, [this]() {run(); });
     }
 
     struct task_dependency{
@@ -118,22 +146,26 @@ public:
         task_dependency(const task_dependency&& td)
             : t(td.t)
         {}
-        taskinfo& operator<(task_dependency&& t2)
+        friend task_dependency&& operator<(task_dependency&& t1, task_dependency&& t2)
         {
-            (*this).t.add_pretask(t2.t.key());
-            t2.t.add_posttask((*this).t);
-            return t2.t;
+            t1.t.add_pretask(t2.t.key());
+            t2.t.add_posttask(t1.t);
+            return std::move(t2);
         }
-        taskinfo& operator>(task_dependency&& t2)
+        friend task_dependency&& operator>(task_dependency&& t1, task_dependency&& t2)
         {
-            t2.t.add_pretask((*this).t.key());
-            (*this).t.add_posttask(t2.t);
-            return t2.t;
+            t2.t.add_pretask(t1.t.key());
+            t1.t.add_posttask(t2.t);
+            return std::move(t2);
         }
     };
 
     task_dependency operator--() { return *this; }
     task_dependency operator--(int) { return *this; }
+    friend bool operator==(const taskinfo<Key>& a, const taskinfo<Key>& b)
+    {
+        return a.key() == b.key();
+    }
 };
 
 template<class Key, class F>
@@ -214,6 +246,10 @@ private:
 };
 
 template<class Key, class R, class ...Args>
-auto_arg_task(R(*f)(Args...), Key key, detail::ntuple_t<Key, sizeof...(Args)>)->auto_arg_task<std::remove_reference_t<Key>, R(*)(Args...), Args...>;
+auto_arg_task(R(*)(Args...), Key, detail::ntuple_t<Key, sizeof...(Args)>)
+->auto_arg_task<std::remove_reference_t<Key>, R(*)(Args...), Args...>;
 
+template<class Key, class R, class ...Args>
+auto_arg_task(std::function<R(Args...)>, Key, detail::ntuple_t<Key, sizeof...(Args)>)
+->auto_arg_task<std::remove_reference_t<Key>, std::function<R(Args...)>, Args...>;
 }

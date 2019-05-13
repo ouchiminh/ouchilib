@@ -60,6 +60,8 @@ DEFINE_TEST(binary_find_test)
     }
 }
 
+#if 0
+
 DEFINE_TEST(csv_parser_parse_test)
 {
     const char(&csv)[] = { "key3,key3,key3\ndata1,data2,data3" };
@@ -81,7 +83,8 @@ k2,3,4
     CHECK_TRUE(pcsv.at("head3", 1) == "2");
     CHECK_TRUE(pcsv.at(1, 1) == "1");
 }
-#if 1
+#endif
+#if 0
 
 DEFINE_TEST(csv_file_wcharbe_bom_test)
 {
