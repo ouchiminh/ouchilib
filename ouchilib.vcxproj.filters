@@ -110,8 +110,5 @@
     <ClInclude Include="include\ouchilib\tokenizer\tokenize_algorithm.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\ouchilib\task\taskexcept.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

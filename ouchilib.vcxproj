@@ -136,7 +136,6 @@
     <ClInclude Include="include\ouchilib\log\rule.hpp" />
     <ClInclude Include="include\ouchilib\parser\csv.hpp" />
     <ClInclude Include="include\ouchilib\task\task.hpp" />
-    <ClInclude Include="include\ouchilib\task\taskexcept.hpp" />
     <ClInclude Include="include\ouchilib\task\tasksystem.hpp" />
     <ClInclude Include="include\ouchilib\tokenizer\separator.hpp" />
     <ClInclude Include="include\ouchilib\tokenizer\tokenizer.hpp" />
