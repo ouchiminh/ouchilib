@@ -19,7 +19,7 @@ namespace ouchi::archive {
 		/// <param name="filepath">target</param>
 		/// <returns>
 		/// <para>false : if file does not exist, cannot be read, or failed for other reasons.</para>
-		/// <para>true : if nothing happened(succeeded)</para>
+		/// <para>true : if nothing happened(successed)</para>
 		/// </returns>
 		bool add_file(const std::filesystem::path & filepath) noexcept;
 		void remove_file(const std::filesystem::path & filepath) noexcept;
@@ -33,7 +33,7 @@ namespace ouchi::archive {
 
 		/// <summary>load designated archive file.</summary>
 		/// <param name = "filepath">path to the file will be loaded.</param>
-		/// <returns>true:succeed</returns>
+		/// <returns>true:successed</returns>
 		[[nodiscard]] bool load(const std::filesystem::path & filepath) noexcept;
 		[[nodiscard]] bool load(std::istream & in) noexcept;
 
