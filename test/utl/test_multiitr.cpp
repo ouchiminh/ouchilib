@@ -6,10 +6,13 @@ DEFINE_TEST(test_multiitr_instantiate)
 {
     std::vector<int> v1{ 1, 2, 3 };
     int v2[] = { 3, 2, 1 };
+    size_t c = 0;
 
     for (auto [i1, i2] : ouchi::multiitr{ v1, v2 }) {
         CHECK_EQUAL(i1 + i2, 4);
+        ++c;
     }
+    CHECK_EQUAL(c, 3);
     int v3[] = { 1 };
     try {
         for (auto [i1, i2] : ouchi::multiitr{ v1, v3 }) {}

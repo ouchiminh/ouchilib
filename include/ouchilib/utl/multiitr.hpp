@@ -73,7 +73,7 @@ bool equal(Args&& ...args){
 template<class C>
 size_t get_size(const C& c) { return c.size(); }
 template<class T, size_t Size>
-constexpr size_t get_size(const T(&a)[Size]) { return Size; }
+constexpr size_t get_size(const T(&)[Size]) { return Size; }
 
 }// namespace detail
 
@@ -106,7 +106,7 @@ public:
 
         friend bool operator==(const iterator& a, const iterator& b)
         {
-            return a.itrs_ == a.itrs_;
+            return a.itrs_ == b.itrs_;
         }
         friend bool operator!=(const iterator& a, const iterator& b)
         {
