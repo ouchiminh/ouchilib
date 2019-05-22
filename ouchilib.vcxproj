@@ -143,6 +143,7 @@
     <ClInclude Include="include\ouchilib\utl\convertible.hpp" />
     <ClInclude Include="include\ouchilib\utl\fps-counter.hpp" />
     <ClInclude Include="include\ouchilib\utl\meta-helper.hpp" />
+    <ClInclude Include="include\ouchilib\utl\multiitr.hpp" />
     <ClInclude Include="include\ouchilib\utl\property.hpp" />
     <ClInclude Include="include\ouchilib\utl\stream-traits.hpp" />
     <ClInclude Include="include\ouchilib\utl\time-measure.hpp" />

@@ -11,6 +11,7 @@
 #include <atomic>
 #include <tuple>
 #include <future>
+#include "ouchilib/utl/meta-helper.hpp"
 
 namespace ouchi::task {
 
@@ -30,17 +31,6 @@ using ntuple_t = typename ntuple<T, N>::type;
 
 static_assert(std::is_same_v<std::tuple<int, int>, ntuple_t<int, 2>>);
 static_assert(std::is_same_v<std::tuple<>, ntuple_t<int, 0>>);
-
-template<class F, class Tuple, size_t ...I>
-auto call_with_tuple_impl(F&& f, Tuple&& tuple, std::integer_sequence<size_t, I...>)
-{
-    return f(std::get<I>(tuple)...);
-}
-template<class F, class ...Args>
-auto call_with_tuple(F&& f, const std::tuple<Args...>& args)
-{
-    return call_with_tuple_impl(f, args, std::make_integer_sequence<size_t, sizeof...(Args)>{});
-}
 }
 
 // ex)
@@ -239,7 +229,7 @@ protected:
     }
     void run(const arg_type& arg)
     {
-        detail::call_with_tuple([this](auto && ...args) {this->exec(this->get_pretask_result<Args>(args)...); }, arg);
+        call_with_tuple([this](auto && ...args) {this->exec(this->get_pretask_result<Args>(args)...); }, arg);
     }
 private:
     arg_type args_;

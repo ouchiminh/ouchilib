@@ -82,15 +82,14 @@ DEFINE_TEST(test_tasksystem_fibonacci)
 {
     using namespace ouchi::task;
     using namespace std::literals;
-    task t40([]() {return fibonacci(40); }, "t40"sv);
-    task t41([]() {return fibonacci(41); }, "t41"sv);
-    auto_arg_task t42(+[](uintmax_t n1, uintmax_t n2) {assert(n1 + n2 == 267914296); },
+    task t10([]() {return fibonacci(10); }, "t10"sv);
+    task t11([]() {return fibonacci(11); }, "t11"sv);
+    auto_arg_task t12(+[](uintmax_t n1, uintmax_t n2) {assert(n1 + n2 == fibonacci(12)); },
                       "t42"sv, std::make_tuple("t40"sv, "t41"sv));
-    t42 <-- t40;
-    t42 <-- t41;
+    t12 <-- t10;
+    t12 <-- t11;
     tasksystem<std::string_view> ts;
-    ts.register_task(t40, t41, t42);
+    ts.register_task(t10, t11, t12);
     ts.run();
-    fibonacci(41);
     return;
 }
