@@ -4,7 +4,7 @@
 
 DEFINE_TEST(test_multiitr_instantiate)
 {
-    const int v1[] = { 1, 2, 3 };
+    std::vector<int> v1{ 1, 2, 3 };
     int v2[] = { 3, 2, 1 };
 
     for (auto [i1, i2] : ouchi::multiitr{ v1, v2 }) {
@@ -16,4 +16,3 @@ DEFINE_TEST(test_multiitr_instantiate)
         CHECK_TRUE(false);
     } catch (std::runtime_error&) {}
 }
-

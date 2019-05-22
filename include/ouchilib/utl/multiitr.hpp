@@ -3,9 +3,6 @@
 #include <tuple>
 #include <iterator>
 #include <stdexcept>
-#if 1
-#   include <vector>
-#endif
 #include "meta-helper.hpp"
 
 namespace ouchi {
