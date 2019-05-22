@@ -64,21 +64,4 @@ struct his_iterator<T[Size]> {
 template<class C>
 using his_iterator_t = typename his_iterator<C>::type;
 
-
-template<class F, class Tuple, size_t ...I>
-auto call_with_tuple_impl(F&& f, Tuple&& tuple, std::integer_sequence<size_t, I...>)
-{
-    return f(std::get<I>(tuple)...);
-}
-template<class F, class ...Args>
-auto call_with_tuple(F&& f, const std::tuple<Args...>& args)
-{
-    return call_with_tuple_impl(f, args, std::make_integer_sequence<size_t, sizeof...(Args)>{});
-}
-template<class F, class ...Args>
-auto call_with_tuple(F&& f, std::tuple<Args...>& args)
-{
-    return call_with_tuple_impl(f, args, std::make_integer_sequence<size_t, sizeof...(Args)>{});
-}
-
 }

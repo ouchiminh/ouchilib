@@ -16,13 +16,13 @@ const auto dereference_impl = [](auto&& ...args)
 template<class ...Args>
 auto dereference(const std::tuple<Args...>& t)
 {
-    call_with_tuple(dereference_impl, t);
+    std::apply(dereference_impl, t);
 }
 
 template<class ...Args>
 auto dereference(std::tuple<Args...>& t)
 {
-    return call_with_tuple(dereference_impl, t);
+    return std::apply(dereference_impl, t);
 }
 
 const auto increament_impl = [](auto& ...args) {
@@ -32,7 +32,7 @@ const auto increament_impl = [](auto& ...args) {
 template<class ...Args>
 auto increament(std::tuple<Args...>& t)
 {
-    return call_with_tuple(increament_impl, t);
+    return std::apply(increament_impl, t);
 }
 
 const auto get_begin_impl = [](auto&& ...args) {
@@ -47,22 +47,22 @@ const auto get_end_impl = [](auto&& ...args) {
 template<class ...Args>
 auto get_begin(std::tuple<Args...>& t)
 {
-    return call_with_tuple(get_begin_impl, t);
+    return std::apply(get_begin_impl, t);
 }
 template<class ...Args>
 auto get_begin(const std::tuple<Args...>& t)
 {
-    return call_with_tuple(get_begin_impl, t);
+    return std::apply(get_begin_impl, t);
 }
 template<class ...Args>
 auto get_end(std::tuple<Args...>& t)
 {
-    return call_with_tuple(get_end_impl, t);
+    return std::apply(get_end_impl, t);
 }
 template<class ...Args>
 auto get_end(const std::tuple<Args...>& t)
 {
-    return call_with_tuple(get_end_impl, t);
+    return std::apply(get_end_impl, t);
 }
 
 template<class ...Args>

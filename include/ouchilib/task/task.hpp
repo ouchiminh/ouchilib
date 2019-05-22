@@ -229,7 +229,7 @@ protected:
     }
     void run(const arg_type& arg)
     {
-        call_with_tuple([this](auto && ...args) {this->exec(this->get_pretask_result<Args>(args)...); }, arg);
+        std::apply([this](auto && ...args) {this->exec(this->get_pretask_result<Args>(args)...); }, arg);
     }
 private:
     arg_type args_;
