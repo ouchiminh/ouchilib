@@ -55,7 +55,7 @@ inline constexpr bool has_size_v = has_size<C>::value;
 
 template<class C>
 struct his_iterator {
-    using type = decltype(begin(std::declval<C>()));
+    using type = decltype(begin(std::declval<C&>()));
 };
 template<class T, size_t Size>
 struct his_iterator<T[Size]> {

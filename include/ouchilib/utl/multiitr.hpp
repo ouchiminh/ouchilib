@@ -14,19 +14,19 @@ const auto dereference_impl = [](auto&& ...args)
     return std::tie((*args)...);
 };
 template<class ...Args>
-auto dereference(const std::tuple<Args...>& t)
+decltype(auto) dereference(const std::tuple<Args...>& t)
 {
     std::apply(dereference_impl, t);
 }
 
 template<class ...Args>
-auto dereference(std::tuple<Args...>& t)
+decltype(auto) dereference(std::tuple<Args...>& t)
 {
     return std::apply(dereference_impl, t);
 }
 
 const auto increament_impl = [](auto& ...args) {
-    return std::tie((++args)...);
+    ((++args), ...);
 };
 
 template<class ...Args>
@@ -97,7 +97,7 @@ public:
         itr_t itrs_;
 
     public:
-        iterator(std::tuple<Containers& ...>& containers)
+        iterator(const std::tuple<Containers& ...>& containers)
             : itrs_(detail::get_begin(containers))
         {}
         iterator(itr_t&& iterators)
@@ -112,12 +112,12 @@ public:
         {
             return !(a == b);
         }
-        auto operator*()
+        decltype(auto) operator*()
         {
             return detail::dereference(itrs_);
         }
         iterator& operator++() {
-            itrs_ = detail::increament(itrs_);
+            detail::increament(itrs_);
             return *this;
         }
         iterator operator++(int)
