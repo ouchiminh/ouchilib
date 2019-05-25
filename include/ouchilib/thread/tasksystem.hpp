@@ -72,7 +72,6 @@ public:
             else i.get()();
             ++launched;
         }
-        std::cerr << "b:" << launched << '/' << tasks_.size() << '\n';
         // poll thread status
         while(launched < tasks_.size()){
 
@@ -85,7 +84,6 @@ public:
                 } else ++begin;
             }
         }
-        std::cerr << "a:" << launched << '/' << tasks_.size() << '\n';
         for (auto& i : working_threads_)
             i.first.wait();
         //working_threads_.clear();
