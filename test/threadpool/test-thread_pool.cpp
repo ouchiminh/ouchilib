@@ -3,6 +3,7 @@
 
 DEFINE_TEST(test_thread_pool)
 {
+    using namespace std::chrono_literals;
     constexpr unsigned c = 36;
     bool flag[c] = {};
     ouchi::thread::thread_pool tp(8);

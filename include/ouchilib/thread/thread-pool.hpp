@@ -14,7 +14,6 @@
 namespace ouchi::thread {
 
 class thread_pool {
-    std::mutex queue_mtx_;
     std::mutex work_mtx_;
 
     std::queue<std::unique_ptr<work_base>> works_;
@@ -27,15 +26,14 @@ public:
     thread_pool(size_t thread_count = 2)
     {
         auto poll = [this]() {
+            std::unique_ptr<work_base> f;
             while (true) {
-                std::unique_lock<decltype(work_mtx_)> ul(work_mtx_);
-                while (works_.empty() || pause_) {
-                    if (finish_) return;
-                    cv_.wait(ul);
-                }
-                std::unique_ptr<work_base> f;
                 {
-                    std::lock_guard<decltype(queue_mtx_)> lg(queue_mtx_);
+                    std::unique_lock<decltype(work_mtx_)> ul(work_mtx_);
+                    while (works_.empty() || pause_) {
+                        if (finish_) return;
+                        cv_.wait(ul);
+                    }
                     f = std::move(works_.front());
                     works_.pop();
                 }
@@ -53,7 +51,7 @@ public:
     ~thread_pool()
     {
         {
-            std::lock_guard<decltype(queue_mtx_)> l(queue_mtx_);
+            std::unique_lock<decltype(work_mtx_)> ul(work_mtx_);
             std::queue<std::unique_ptr<work_base>> tmp;
             works_.swap(tmp);
         }
@@ -68,11 +66,14 @@ public:
     template<class F, class ...Args>
     void emplace(Args&& ...args)
     {
-        static_assert(std::is_constructible_v<F, Args...>);
-        if constexpr (std::is_base_of_v<work_base, F>)
-            works_.push(std::make_unique<F>(std::forward<Args>(args)...));
-        else
-            works_.push(std::make_unique<detail::work<F>>(std::forward<Args>(args))...);
+        {
+            std::unique_lock<decltype(work_mtx_)> ul(work_mtx_);
+            static_assert(std::is_constructible_v<F, Args...>);
+            if constexpr (std::is_base_of_v<work_base, F>)
+                works_.push(std::make_unique<F>(std::forward<Args>(args)...));
+            else
+                works_.push(std::make_unique<detail::work<F>>(std::forward<Args>(args))...);
+        }
         cv_.notify_all();
     }
 
