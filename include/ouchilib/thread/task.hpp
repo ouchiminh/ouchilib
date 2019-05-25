@@ -83,13 +83,16 @@ protected:
     unsigned run_posttask(std::list<std::pair<std::future<void>, std::reference_wrapper<taskinfo<Key>>>>& tlist,
                       unsigned threadcount)
     {
+        std::lock_guard<decltype(member_rw_guard_)> l(member_rw_guard_);
         unsigned processed = 0;
         for (auto& i : posttask_) {
             if (!i.get().is_ready() || i.get().does_called()) continue;
-            if (threadcount > tlist.size())
+            i.get().called_ = true;
+            if (threadcount > tlist.size()) {
                 tlist.push_back(std::make_pair(std::async(std::launch::async,
                                                           [&i]() {i.get()(); }),
                                                i));
+            }
             else if (i.get().is_ready())
                 i.get()();
             ++processed;
@@ -132,9 +135,9 @@ public:
     virtual void operator()() final
     {
         std::lock_guard<decltype(member_rw_guard_)> l(member_rw_guard_);
-        if (is_ready() && !called_) { 
+        if (is_ready()) { 
             called_ = true;
-            std::call_once(callflag_, [this]() {run(); });
+            std::call_once(callflag_, [this]() { run(); });
         }
     }
 
