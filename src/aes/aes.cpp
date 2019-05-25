@@ -146,9 +146,9 @@ void ouchi::aes::invMixColumns(uint32_t * data) const noexcept {
 
 ouchi::aes::aes() : mKey{}, nr{ mKey.keyLength / 4 + 6 } {}
 
-ouchi::aes::aes(const aesKey & k, unsigned int threadnum) : mKey{ k }, nr{ mKey.keyLength / 4 + 6 } {}
+ouchi::aes::aes(const aesKey & k, [[maybe_unused]] unsigned int threadnum) : mKey{ k }, nr{ mKey.keyLength / 4 + 6 } {}
 
-ouchi::aes::aes(aesKey && k, unsigned int threadnum) : mKey{ k }, nr{ mKey.keyLength / 4 + 6 } {}
+ouchi::aes::aes(aesKey && k, [[maybe_unused]] unsigned int threadnum) : mKey{ k }, nr{ mKey.keyLength / 4 + 6 } {}
 
 void ouchi::aes::setKey(const aesKey & k) {
 	if (k.keyLength % 8 == 0 && k.keyLength / 8 < 1) throw std::runtime_error("invalid keyLength");

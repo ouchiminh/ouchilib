@@ -32,6 +32,6 @@ namespace ouchi::test {
 
 		decoder.get_encoder().setKey(ouchi::makeKey("password"));
 
-		CHECK_SPECIFIC_EXCEPTION(decoder.decrypt(out), std::runtime_error &);
+		CHECK_SPECIFIC_EXCEPTION((void)decoder.decrypt(out), std::runtime_error &);
 	}
 }

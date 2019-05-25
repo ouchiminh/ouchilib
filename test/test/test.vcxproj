@@ -30,6 +30,7 @@
     <ClCompile Include="..\aes\test-aes_utl.cpp" />
     <ClCompile Include="..\tasksystem\testtask.cpp" />
     <ClCompile Include="..\test-main.cpp" />
+    <ClCompile Include="..\threadpool\test-thread_pool.cpp" />
     <ClCompile Include="..\time\measure-time-test.cpp" />
     <ClCompile Include="..\tokenizer\test-tokenizer.cpp" />
     <ClCompile Include="..\utl\test_multiitr.cpp" />

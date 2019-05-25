@@ -105,6 +105,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(Boost_Dir)\include\boost-1_69;$(ProjectDir)\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <WarningLevel>Level4</WarningLevel>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -112,6 +113,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(Boost_Dir)\include\boost-1_69;$(ProjectDir)\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WarningLevel>Level4</WarningLevel>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -135,8 +137,10 @@
     <ClInclude Include="include\ouchilib\log\out.hpp" />
     <ClInclude Include="include\ouchilib\log\rule.hpp" />
     <ClInclude Include="include\ouchilib\parser\csv.hpp" />
-    <ClInclude Include="include\ouchilib\task\task.hpp" />
-    <ClInclude Include="include\ouchilib\task\tasksystem.hpp" />
+    <ClInclude Include="include\ouchilib\thread\task.hpp" />
+    <ClInclude Include="include\ouchilib\thread\tasksystem.hpp" />
+    <ClInclude Include="include\ouchilib\thread\thread-pool.hpp" />
+    <ClInclude Include="include\ouchilib\thread\work.hpp" />
     <ClInclude Include="include\ouchilib\tokenizer\separator.hpp" />
     <ClInclude Include="include\ouchilib\tokenizer\tokenizer.hpp" />
     <ClInclude Include="include\ouchilib\tokenizer\tokenize_algorithm.hpp" />

@@ -110,19 +110,21 @@ push_top:
 	}
 
 	m_WIndex = t_4;
-	u_32 t;
-	for (t = m_WIndex / 4; (t<16) && (MesIndex + 3<Len); t++) {
-		W[t] |= pMes[MesIndex] << 24
-			| pMes[MesIndex + 1] << 16
-			| pMes[MesIndex + 2] << 8
-			| pMes[MesIndex + 3];
-		MesIndex += 4;
-	}
+    {
+        u_32 t;
+        for (t = m_WIndex / 4; (t<16) && (MesIndex + 3<Len); t++) {
+            W[t] |= pMes[MesIndex] << 24
+                | pMes[MesIndex + 1] << 16
+                | pMes[MesIndex + 2] << 8
+                | pMes[MesIndex + 3];
+            MesIndex += 4;
+        }
 
-	for (t_4 = t * 4; (t_4<64) && (MesIndex<Len); t_4++) {
-		W[t_4 / 4] |= pMes[MesIndex++] << (24 - (t_4 % 4) * 8);
-	}
-	m_WIndex = t_4;
+        for (t_4 = t * 4; (t_4<64) && (MesIndex<Len); t_4++) {
+            W[t_4 / 4] |= pMes[MesIndex++] << (24 - (t_4 % 4) * 8);
+        }
+        m_WIndex = t_4;
+    }
 
 
 	//t_4==64の時，すでに1ブロック分のメッセージがコピーされているので
@@ -175,6 +177,6 @@ void SHA256::Final(unsigned char* pHash) {
 	CalcIntermediateHash();
 
 	for (t = 0; t<32; t++) {
-		pHash[t] = H[t / 4] >> ((3 - t % 4) * 8);
+		pHash[t] = static_cast<unsigned char>(H[t / 4] >> ((3 - t % 4) * 8));
 	}
 }

@@ -14,12 +14,14 @@ const auto dereference_impl = [](auto&& ...args)
     return std::tie((*args)...);
 };
 template<class ...Args>
+[[nodiscard]]
 decltype(auto) dereference(const std::tuple<Args...>& t)
 {
     std::apply(dereference_impl, t);
 }
 
 template<class ...Args>
+[[nodiscard]]
 decltype(auto) dereference(std::tuple<Args...>& t)
 {
     return std::apply(dereference_impl, t);
@@ -45,34 +47,41 @@ const auto get_end_impl = [](auto&& ...args) {
 };
 
 template<class ...Args>
+[[nodiscard]]
 auto get_begin(std::tuple<Args...>& t)
 {
     return std::apply(get_begin_impl, t);
 }
 template<class ...Args>
+[[nodiscard]]
 auto get_begin(const std::tuple<Args...>& t)
 {
     return std::apply(get_begin_impl, t);
 }
 template<class ...Args>
+[[nodiscard]]
 auto get_end(std::tuple<Args...>& t)
 {
     return std::apply(get_end_impl, t);
 }
 template<class ...Args>
+[[nodiscard]]
 auto get_end(const std::tuple<Args...>& t)
 {
     return std::apply(get_end_impl, t);
 }
 
 template<class ...Args>
+[[nodiscard]]
 bool equal(Args&& ...args){
     return (args & ...) == (args | ...);
 }
 
 template<class C>
+[[nodiscard]]
 size_t get_size(const C& c) { return c.size(); }
 template<class T, size_t Size>
+[[nodiscard]]
 constexpr size_t get_size(const T(&)[Size]) { return Size; }
 
 }// namespace detail
@@ -104,14 +113,17 @@ public:
             : itrs_(std::move(iterators))
         {}
 
+        [[nodiscard]]
         friend bool operator==(const iterator& a, const iterator& b)
         {
             return a.itrs_ == b.itrs_;
         }
+        [[nodiscard]]
         friend bool operator!=(const iterator& a, const iterator& b)
         {
             return !(a == b);
         }
+        [[nodiscard]]
         decltype(auto) operator*()
         {
             return detail::dereference(itrs_);
@@ -127,8 +139,9 @@ public:
             return cp;
         }
     };
-
+    [[nodiscard]]
     auto begin() { return iterator{c_}; }
+    [[nodiscard]]
     auto end() { return iterator{detail::get_end(c_)}; }
 };
 
