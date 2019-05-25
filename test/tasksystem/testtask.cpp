@@ -36,9 +36,9 @@ DEFINE_TEST(test_tasksystem)
     bool done = false;
     task t1{ []() { return 0; }, "task1"s };
     task t2{ []() { return 1; }, "task2"s };
-    auto_arg_task t3(+[](int i, int j) {std::this_thread::sleep_for(70ms); std::cerr << "done3\n"; (i == 0 && j == 1); return 12; },
+    auto_arg_task t3(+[](int i, int j) {std::this_thread::sleep_for(70ms); (i == 0 && j == 1); return 12; },
                      "task3"s, std::make_tuple("task1"s, "task2"s));
-    auto_arg_task<std::string, std::function<void(int)>, int> t4([&done](int b) {std::cerr << "done4\n"; (b == 12); done = true; },
+    auto_arg_task<std::string, std::function<void(int)>, int> t4([&done](int b) { (b == 12); done = true; },
                                                                  "task4"s, std::make_tuple("task3"s));
 
     tasksystem<std::string> ts;
