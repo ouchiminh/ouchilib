@@ -53,9 +53,9 @@ private:
     std::map<key_type, std::pair<bool, std::any>> pretask_;
     std::vector<std::reference_wrapper<taskinfo>> posttask_;
     key_type key_;
-    mutable std::mutex callguard_;
-    mutable std::mutex member_rw_guard_;
+    mutable std::recursive_mutex member_rw_guard_;
     mutable std::once_flag callflag_;
+    bool called_;
 protected:
     template<class T>
     T get_pretask_result(const key_type& key) const
@@ -63,7 +63,7 @@ protected:
         std::lock_guard<decltype(member_rw_guard_)> l(member_rw_guard_);
         return std::any_cast<T>(pretask_.at(key).second);
     }
-    void tell_result(std::any result)
+    void tell_result(std::any&& result)
     {
         for (auto& i : posttask_) {
             i.get().set_result(key_, result);
@@ -71,7 +71,7 @@ protected:
         }
     }
 
-    void set_result(const key_type& key, std::any result)
+    void set_result(const key_type& key, const std::any &result)
     {
         std::lock_guard<decltype(member_rw_guard_)> l(member_rw_guard_);
         this->pretask_.at(key).first = true;
@@ -85,7 +85,7 @@ protected:
     {
         unsigned processed = 0;
         for (auto& i : posttask_) {
-            if (!i.get().is_ready()) continue;
+            if (!i.get().is_ready() || i.get().does_called()) continue;
             if (threadcount > tlist.size())
                 tlist.push_back(std::make_pair(std::async(std::launch::async,
                                                           [&i]() {i.get()(); }),
@@ -99,10 +99,13 @@ protected:
 public:
     taskinfo(key_type&& key)
         : key_(std::move(key))
+        , called_{ false }
     {}
     taskinfo(const key_type& key)
         : key_(key)
+        , called_{ false }
     {}
+    taskinfo(const taskinfo&) = delete;
     virtual ~taskinfo() = default;
 
     const key_type& key() { return key_; }
@@ -121,10 +124,18 @@ public:
         return true;
     }
 
+    bool does_called() const noexcept
+    {
+        return called_;
+    }
+
     virtual void operator()() final
     {
-        std::lock_guard<decltype(callguard_)> l(callguard_);
-        if (is_ready()) std::call_once(callflag_, [this]() {run(); });
+        std::lock_guard<decltype(member_rw_guard_)> l(member_rw_guard_);
+        if (is_ready() && !called_) { 
+            called_ = true;
+            std::call_once(callflag_, [this]() {run(); });
+        }
     }
 
     struct task_dependency{
@@ -154,7 +165,7 @@ public:
     task_dependency operator--(int) { return *this; }
     friend bool operator==(const taskinfo<Key>& a, const taskinfo<Key>& b)
     {
-        return a.key() == b.key();
+        return &a == &b;
     }
 };
 
@@ -223,7 +234,7 @@ public:
     {}
 
 protected:
-    virtual void run()
+    virtual void run() override
     {
         run(args_);
     }

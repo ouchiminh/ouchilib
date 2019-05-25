@@ -20,7 +20,7 @@ template<class Key>
 class tasksystem {
     std::list<std::reference_wrapper<taskinfo<Key>>> tasks_;
     std::list<std::pair<std::future<void>, std::reference_wrapper<taskinfo<Key>>>>
-        taskthreads_;
+        working_threads_;
     std::future<void> mainthread_;
 
     template<class Head, class ...Task>
@@ -61,31 +61,32 @@ public:
     // launch and wait
     void run(unsigned thread_count = 0)
     {
-        size_t done = 0;
+        size_t launched = 0;
         thread_count = thread_count ? thread_count : (unsigned)tasks_.size();
         for (auto& i : tasks_) {
             if (!i.get().is_ready()) continue;
-            if (taskthreads_.size() < thread_count)
-                taskthreads_.push_back(std::make_pair(std::async(std::launch::async,
-                                                                 [&i]() {i.get()(); }),
-                                                      i));
+            if (working_threads_.size() < thread_count)
+                working_threads_.push_back(std::make_pair(std::async(std::launch::async,
+                                                                     [&i]() {i.get()(); }),
+                                                          i));
             else i.get()();
-            ++done;
+            ++launched;
         }
         // poll thread status
-        while(done < tasks_.size()){
+        while(launched < tasks_.size()){
 
-            for (auto begin = taskthreads_.begin();
-                 begin != taskthreads_.end(); ) {
+            for (auto begin = working_threads_.begin();
+                 begin != working_threads_.end();) {
                 using namespace std::chrono_literals;
                 if (begin->first.wait_for(0ms) == std::future_status::ready) {
-                    done += begin->second.get().run_posttask(taskthreads_, thread_count + 1);
-                    begin = taskthreads_.erase(begin);
+                    launched += begin->second.get().run_posttask(working_threads_, thread_count + 1);
+                    begin = working_threads_.erase(begin);
                 } else ++begin;
             }
         }
-        for (auto& i : taskthreads_)
+        for (auto& i : working_threads_)
             i.first.wait();
+        //working_threads_.clear();
     }
     void wait()
     {
