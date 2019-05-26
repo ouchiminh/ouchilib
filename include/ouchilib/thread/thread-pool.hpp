@@ -40,6 +40,7 @@ public:
                 }
                 f->operator()();
                 --processing_;
+                f.reset();
             }
         };
         auto actual_tc = std::max(thread_count, 1ull);

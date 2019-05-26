@@ -54,6 +54,11 @@ public:
     Duration get() const noexcept {
         return *duration_;
     }
+    template<class D>
+    D get() const noexcept
+    {
+        return std::chrono::duration_cast<D>(*duration_);
+    }
 };
 
 }

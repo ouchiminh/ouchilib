@@ -5,6 +5,7 @@ namespace ouchi::thread {
 
 struct work_base {
     virtual void operator()() = 0;
+    virtual ~work_base() = default;
 };
 
 namespace detail {
@@ -22,6 +23,7 @@ public:
     work(Args&& ...args)
         : func_(std::forward<Args>(args)...)
     {}
+    virtual ~work() = default;
     void operator()() override { func_(); }
 };
 

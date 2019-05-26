@@ -1,10 +1,11 @@
 ﻿#include "../test.hpp"
 #include "ouchilib/thread/thread-pool.hpp"
+#include "ouchilib/utl/time-measure.hpp"
 
 DEFINE_TEST(test_thread_pool)
 {
-    constexpr unsigned c = 36;
-    size_t l = 100;
+    constexpr unsigned c = 32;
+    size_t l = 1;
     while (l-->0) {
         using namespace std::chrono_literals;
         bool flag[c] = {};
