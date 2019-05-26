@@ -65,10 +65,12 @@ public:
         thread_count = thread_count ? thread_count : (unsigned)tasks_.size();
         for (auto& i : tasks_) {
             if (!i.get().is_ready()) continue;
-            if (working_threads_.size() < thread_count)
+            if (working_threads_.size() < thread_count) {
+                i.get().called_ = true;
                 working_threads_.push_back(std::make_pair(std::async(std::launch::async,
                                                                      [&i]() {i.get()(); }),
                                                           i));
+            }
             else i.get()();
             ++launched;
         }

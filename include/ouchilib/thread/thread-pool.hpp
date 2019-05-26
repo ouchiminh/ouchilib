@@ -34,10 +34,10 @@ public:
                         if (finish_) return;
                         cv_.wait(ul);
                     }
+                    ++processing_;
                     f = std::move(works_.front());
                     works_.pop();
                 }
-                ++processing_;
                 f->operator()();
                 --processing_;
             }

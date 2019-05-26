@@ -35,24 +35,27 @@ std::mutex m;
 
 DEFINE_TEST(test_tasksystem)
 {
-    using namespace ouchi::task;
-    using namespace std::string_literals;
-    using namespace std::chrono_literals;
-    bool done = false;
-    task t1{ []() {/*std::unique_lock<std::mutex> l(m); cv.wait(l);*/ return 0; }, "task1"s };
-    task t2{ []() {/*std::unique_lock<std::mutex> l(m); cv.wait(l);*/ return 1; }, "task2"s };
-    auto_arg_task t3(+[](int i, int j) {std::this_thread::sleep_for(70ms); (i == 0 && j == 1); return 12; },
-                     "task3"s, std::make_tuple("task1"s, "task2"s));
-    auto_arg_task<std::string, std::function<void(int)>, int> t4([&done](int b) { (b == 12); done = true; },
-                                                                 "task4"s, std::make_tuple("task3"s));
+    size_t l = 1;
+    while (l-->0) {
+        using namespace ouchi::task;
+        using namespace std::string_literals;
+        using namespace std::chrono_literals;
+        bool done = false;
+        task t1{ []() {/*std::unique_lock<std::mutex> l(m); cv.wait(l);*/ return 0; }, "task1"s };
+        task t2{ []() {/*std::unique_lock<std::mutex> l(m); cv.wait(l);*/ return 1; }, "task2"s };
+        auto_arg_task t3(+[](int i, int j) { (i == 0 && j == 1); return 12; },
+                         "task3"s, std::make_tuple("task1"s, "task2"s));
+        auto_arg_task<std::string, std::function<void(int)>, int> t4([&done](int b) { (b == 12); done = true; },
+                                                                     "task4"s, std::make_tuple("task3"s));
 
-    tasksystem<std::string> ts;
-    ts.register_task(t1, t2, t3, t4);
-    t1 --> t3;
-    t2 --> t3 --> t4;
+        tasksystem<std::string> ts;
+        ts.register_task(t1, t2, t3, t4);
+        t1 --> t3;
+        t2 --> t3 --> t4;
 
-    ts.run();
-    CHECK_EQUAL(done, true);
+        ts.run();
+        CHECK_EQUAL(done, true);
+    }
 }
 
 DEFINE_TEST(test_tasksystem_threadlimit)
