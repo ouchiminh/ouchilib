@@ -135,10 +135,8 @@ public:
     virtual void operator()() final
     {
         std::lock_guard<decltype(member_rw_guard_)> l(member_rw_guard_);
-        if (is_ready()) { 
-            called_ = true;
-            std::call_once(callflag_, [this]() { run(); });
-        }
+        called_ = true;
+        std::call_once(callflag_, [this]() { run(); });
     }
 
     struct task_dependency{
