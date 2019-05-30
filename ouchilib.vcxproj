@@ -137,6 +137,9 @@
     <ClInclude Include="include\ouchilib\log\out.hpp" />
     <ClInclude Include="include\ouchilib\log\rule.hpp" />
     <ClInclude Include="include\ouchilib\parser\csv.hpp" />
+    <ClInclude Include="include\ouchilib\program_options\option_value.hpp" />
+    <ClInclude Include="include\ouchilib\program_options\option_value_restriction.hpp" />
+    <ClInclude Include="include\ouchilib\program_options\program_options.hpp" />
     <ClInclude Include="include\ouchilib\thread\task.hpp" />
     <ClInclude Include="include\ouchilib\thread\tasksystem.hpp" />
     <ClInclude Include="include\ouchilib\thread\thread-pool.hpp" />
@@ -149,9 +152,11 @@
     <ClInclude Include="include\ouchilib\utl\meta-helper.hpp" />
     <ClInclude Include="include\ouchilib\utl\multiitr.hpp" />
     <ClInclude Include="include\ouchilib\utl\property.hpp" />
+    <ClInclude Include="include\ouchilib\utl\step.hpp" />
     <ClInclude Include="include\ouchilib\utl\stream-traits.hpp" />
     <ClInclude Include="include\ouchilib\utl\time-measure.hpp" />
     <ClInclude Include="include\ouchilib\utl\time_keeper.hpp" />
+    <ClInclude Include="include\ouchilib\utl\translator.hpp" />
     <ClInclude Include="test\time\measure-time-test.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

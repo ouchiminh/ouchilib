@@ -2,6 +2,7 @@
 #include <type_traits>
 #include <utility>
 #include <tuple>
+#include <variant>
 
 namespace ouchi {
 
@@ -63,5 +64,30 @@ struct his_iterator<T[Size]> {
 };
 template<class C>
 using his_iterator_t = typename his_iterator<C>::type;
+
+template<class B, class ...D>
+struct find_derived {};
+
+template<class B>
+struct find_derived<B> { using type = void; };
+
+template<class B, class Head, class ...D>
+struct find_derived<B, Head, D...> {
+    using type = std::conditional_t<
+        std::is_base_of_v<B, Head>,
+        Head,
+        typename find_derived<B, D...>::type
+    >;
+};
+
+template<class B, class ...D>
+using find_derived_t = typename find_derived<B, D...>::type;
+
+template<class T>
+struct variant_compatible { using type = T; };
+template<>
+struct variant_compatible<void> { using type = std::monostate; };
+template<class T>
+using variant_compatible_t = typename variant_compatible<T>::type;
 
 }

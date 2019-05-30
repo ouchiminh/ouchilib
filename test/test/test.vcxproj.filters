@@ -56,5 +56,8 @@
     <ClCompile Include="..\threadpool\test-thread_pool.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="..\program_options\test_program_options.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
