@@ -84,7 +84,7 @@ template<class B, class ...D>
 using find_derived_t = typename find_derived<B, D...>::type;
 
 template<class T>
-struct variant_compatible { using type = T; };
+struct variant_compatible { using type = std::remove_reference_t<T>; };
 template<>
 struct variant_compatible<void> { using type = std::monostate; };
 template<class T>

@@ -1,7 +1,7 @@
 ﻿#include <algorithm>
 #include <type_traits>
 
-namespace kadai{
+namespace ouchi {
 
 template<class Int, std::enable_if_t<std::is_integral_v<Int>>* = nullptr>
 class step {

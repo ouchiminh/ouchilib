@@ -21,7 +21,7 @@ struct flag_value : type_restriction {
 
 template<class T>
 struct single_value : type_restriction {
-    using value_type = std::remove_reference_t<std::remove_cv_t<T>>;
+    using value_type = std::remove_cv_t<std::remove_reference_t<T>>;
 };
 
 template<class T>
@@ -44,7 +44,7 @@ namespace detail {
 
 template<class T>
 struct default_value : default_value<void> {
-    using value_type = std::remove_reference_t<std::remove_cv_t<T>>;
+    using value_type = std::remove_cv_t<std::remove_reference_t<T>>;
     value_type value;
     constexpr default_value(value_type&& v)
         : value(std::move(v))
@@ -60,6 +60,9 @@ struct default_value<void> {
     {
         return default_value<U>{std::forward<U>(value)};
     }
+
+    using value_type = std::monostate;
+    value_type value;
 };
 } // namespace detail
 
@@ -69,27 +72,27 @@ constexpr detail::default_value<void> default_value;
 
 namespace detail {
 
-template<class B, class Head, class ...D>
-inline std::variant<variant_compatible_t<Head>, variant_compatible_t<D>...>
-find_derived_value_impl(Head&& h, D&& ...d) 
+template<class R, class B>
+inline R find_derived_value_impl() { return std::monostate{}; }
+
+template<class R, class B, class Head, class ...D>
+inline R find_derived_value_impl(Head&& h, D&& ...d) 
 {
     if constexpr (std::is_base_of_v<B, Head>) return h;
-    return find_default_value_impl(std::forward<D>(d)...);
+    return find_derived_value_impl<R, B>(std::forward<D>(d)...);
 }
-
-template<class B>
-inline std::variant<std::monostate> find_derived_value_impl() { return ::std::monostate{}; }
 
 template<class B, class ...D>
 inline auto find_derived_value(D&& ...derived) -> ::ouchi::variant_compatible_t<::ouchi::find_derived_t<B, D...>>
 {
-    return std::get<::ouchi::variant_compatible_t<::ouchi::find_derived_t<B, D...>>>(find_default_value_impl(std::forward<D>(derived)...));
+    using rty = std::variant<std::monostate, ::ouchi::variant_compatible_t<D>...>;
+    return std::get<::ouchi::variant_compatible_t<::ouchi::find_derived_t<B, D...>>>(find_derived_value_impl<rty, B>(std::forward<D>(derived)...));
 }
 
 template<class ...D>
-inline auto find_default_value(D&& ...values) -> ::ouchi::variant_compatible_t<::ouchi::find_derived_t<default_value<void>, D...>>
+inline auto find_default_value(D&& ...values) -> typename ::ouchi::find_derived_t<default_value<void>, ::ouchi::variant_compatible_t<D>...>::value_type
 {
-    return find_derived_value<default_value<void>>(std::forward<D>(values)...);
+    return find_derived_value<default_value<void>>(std::forward<D>(values)...).value;
 }
 
 template<class ...Args>

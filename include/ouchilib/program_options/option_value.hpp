@@ -14,7 +14,7 @@ namespace ouchi::program_options::detail{
 template<class CharT, class Traits = std::char_traits<CharT>>
 struct option_info_base {
     virtual ~option_info_base() = default;
-    virtual std::any translate(const std::basic_string<CharT, Traits>& value) = 0;
+    virtual std::any& translate(const std::basic_string<CharT, Traits>& value) = 0;
     virtual const std::any& get() const noexcept = 0;
 };
 
@@ -30,7 +30,7 @@ struct option_info : option_info_base<CharT, Traits> {
     option_info(T&&){}
     option_info() = default;
 
-    virtual std::any translate(const std::basic_string<CharT, Traits>& value) override
+    virtual std::any& translate(const std::basic_string<CharT, Traits>& value) override
     { return std::any{}; }
     virtual const std::any& get() const noexcept override
     {
@@ -51,12 +51,15 @@ struct option_info<CharT, single_value<T>, Traits> : option_info_base<CharT, Tra
         : value(std::move(default_value))
     {}
     option_info() = default;
+    option_info(std::nullptr_t)
+        : option_info()
+    {}
 
-    virtual std::any translate(const std::basic_string<CharT, Traits>& origin) override {
+    virtual std::any& translate(const std::basic_string<CharT, Traits>& origin) override {
         typename ouchi::translator_between<std::basic_string<CharT, Traits>, value_type>::type
             t;
         if (auto r = t.get_value(origin); r) {
-            value = r;
+            value = r.value();
         } else throw std::runtime_error("parse error.");
         return value;
     }
@@ -88,8 +91,11 @@ struct option_info<CharT, multi_value<T>, Traits> : option_info_base<CharT, Trai
     option_info()
         : value(value_type{})
     {}
+    option_info(std::nullptr_t)
+        : option_info()
+    {}
 
-    virtual std::any translate(const std::basic_string<CharT, Traits>& origin) override {
+    virtual std::any& translate(const std::basic_string<CharT, Traits>& origin) override {
         typename ouchi::translator_between<std::basic_string<CharT, Traits>, T>::type
             t;
         auto& v = std::any_cast<value_type&>(value);

@@ -47,6 +47,12 @@ public:
         std::sort(separators_.begin(), separators_.end(),
                   [](const auto& a, const auto& b) {return a.size() > b.size(); });
     }
+    separator(std::initializer_list<CharT> separators)
+    {
+        for (auto&& c : separators) {
+            separators_.emplace_back(1, c);
+        }
+    }
     separator(string_view separators, std::initializer_list<string> string_separators)
         : separator{ std::in_place, string_separators }
     {

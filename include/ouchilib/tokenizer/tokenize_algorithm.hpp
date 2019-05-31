@@ -49,6 +49,20 @@ template<class CharT>
     };
 }
 
+// 任意のトークンタイプと一致した字句を削除します。
+template<class CharT>
+[[nodiscard]] inline auto skip(token_type tt) {
+    return
+        [tt](tokenizer<CharT>& t) -> tokenizer<CharT>& {
+        for (auto i = t.begin(); i != t.end();) {
+            i = (i->first == tt)
+                ? t.erase(i)
+                : std::next(i);
+        }
+        return t;
+    };
+}
+
 // 条件を満たした字句を削除します。
 template<class CharT, class Pred,
          std::enable_if_t<std::is_invocable_r_v<bool,

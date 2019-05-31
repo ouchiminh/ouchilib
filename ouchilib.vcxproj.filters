@@ -119,9 +119,6 @@
     <ClInclude Include="include\ouchilib\thread\tasksystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\ouchilib\program_options\program_options.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\ouchilib\program_options\option_value_restriction.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -132,6 +129,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\ouchilib\utl\step.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ouchilib\program_options\program_options_description.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ouchilib\program_options\program_options_parser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
