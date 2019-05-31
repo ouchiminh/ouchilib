@@ -16,9 +16,9 @@ namespace ouchi::program_options {
 // ASCII ONLY
 template<class CharT, class Traits = std::char_traits<CharT>>
 class key_parser {
+    inline static const ouchi::tokenizer::separator<CharT> sep{(CharT)';',(CharT)',',(CharT)' '};
 public:
     using string = std::basic_string<CharT, Traits>;
-    inline static const ouchi::tokenizer::separator<CharT> sep{(CharT)';',(CharT)',',(CharT)' '};
 
     static string external_expression(const string& rawkey)
     {

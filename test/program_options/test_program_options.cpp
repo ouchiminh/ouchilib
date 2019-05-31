@@ -1,6 +1,7 @@
 ﻿#include <sstream>
 #include "../test.hpp"
 #include "ouchilib/program_options/program_options_description.hpp"
+#include "ouchilib/program_options/program_options_parser.hpp"
 
 DEFINE_TEST(test_program_options_description)
 {
