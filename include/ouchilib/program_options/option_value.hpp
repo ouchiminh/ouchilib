@@ -27,11 +27,15 @@ struct option_info : option_info_base<CharT, Traits> {
     std::any value;
 
     template<class T>
-    option_info(T&&){}
-    option_info() = default;
+    option_info(T&&)
+        : option_info()
+    {}
+    option_info()
+        : value(nullptr)
+    {}
 
-    virtual std::any& translate(const std::basic_string<CharT, Traits>& value) override
-    { return std::any{}; }
+    virtual std::any& translate(const std::basic_string<CharT, Traits>&) override
+    { return value; }
     virtual const std::any& get() const noexcept override
     {
         return value;

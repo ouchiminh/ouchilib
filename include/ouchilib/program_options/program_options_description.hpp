@@ -7,58 +7,30 @@
 #include <functional>
 #include <iomanip>
 #include "option_value.hpp"
+#include "key_parser.hpp"
 #include "ouchilib/tokenizer/tokenizer.hpp"
 #include "ouchilib/tokenizer/tokenize_algorithm.hpp"
 #include "ouchilib/utl/step.hpp"
 
 namespace ouchi::program_options {
 
-// ASCII ONLY
-template<class CharT, class Traits = std::char_traits<CharT>>
-class key_parser {
-    inline static const ouchi::tokenizer::separator<CharT> sep{(CharT)';',(CharT)',',(CharT)' '};
-public:
-    using string = std::basic_string<CharT, Traits>;
-
-    static string external_expression(const string& rawkey)
-    {
-        namespace tk = ::ouchi::tokenizer;
-        tk::tokenizer<CharT> tok{ rawkey, sep };
-        tok | tk::skip<CharT>(tk::token_type::primitive_separator);
-        if(tok.size()) return tok.begin()->second;
-        return string{};
-    }
-    static std::pair<string, string> internal_expression(const string& rawkey)
-    {
-        namespace tk = ouchi::tokenizer;
-        tk::tokenizer<CharT> tok{ rawkey, sep };
-        std::pair<string, string> r;
-        tok | tk::skip<CharT>(tk::token_type::primitive_separator);
-        auto tok_it = tok.begin();
-        for (auto&& i : ouchi::step(std::min(tok.size(), 2ull))) {
-            auto hc = tok.size() - i;
-            string formatted_key(hc, static_cast<CharT>('-'));
-            formatted_key += (tok_it++)->second;
-            (r.first.size() ? r.second : r.first) = std::move(formatted_key);
-        }
-        return r;
-    }
-};
-
 // options description
 template<class CharT, class Traits = std::char_traits<CharT>>
 class basic_options_description{
 public:
     using string = std::basic_string<CharT, Traits>;
+    using string_view = std::basic_string_view<CharT, Traits>;
     using value_type = detail::option_info_base<CharT, Traits>;
     // 実際にコンテナに格納される型。firstは説明
     using compound_value_type = std::pair<string, std::unique_ptr<value_type>>;
     using container_type = std::map<string, compound_value_type>;
+    using const_iterator = typename container_type::const_iterator;
+    using iterator = typename container_type::iterator;
 
     template<class ...R>
     basic_options_description& add(const string& key, const string& description, R&& ...restrictions)
     {
-        typedef detail::option_info<char, detail::value_type_policy_t<std::remove_cv_t<std::remove_reference_t<R>>...>, Traits> option_t;
+        typedef detail::option_info<CharT, detail::value_type_policy_t<std::remove_cv_t<std::remove_reference_t<R>>...>, Traits> option_t;
         std::unique_ptr<option_t> p;
         if constexpr (std::is_same_v<option_t, detail::flag_value> ||
                       std::is_same_v<void, find_derived_t<detail::default_value<void>, R...>>) p = std::make_unique<option_t>();
@@ -86,6 +58,22 @@ public:
         os.flags(org_flag);
         return os;
     }
+
+    iterator find_option(const string& internal_expr)
+    {
+        using kp = key_parser<CharT, Traits>;
+        std::pair<string, string> ikey;
+        for (auto it = begin(); it != end(); ++it) {
+            ikey = kp::internal_expression(it->first);
+            if (ikey.first == internal_expr || ikey.second == internal_expr) return it;
+        }
+        return end();
+    }
+
+    const_iterator begin() const noexcept { return options_.cbegin(); }
+    const_iterator end() const noexcept { return options_.cend(); }
+    iterator begin() noexcept { return options_.begin(); }
+    iterator end() noexcept { return options_.end(); }
 
     container_type& get_container() & noexcept { return options_; }
     const container_type& get_container() const& noexcept { return options_; }
