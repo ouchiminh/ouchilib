@@ -17,7 +17,7 @@ public:
 
     arg_parser() = default;
     arg_parser(basic_options_description<CharT, Traits>& desc,
-               const CharT* const* argv,
+               const CharT** argv,
                size_t argc)
     {
         parse(desc, argv, argc);
@@ -36,6 +36,7 @@ public:
             if(kp::is_option(sv)){
                 if(desc.end() == (opt_value_it = desc.find_option(sv.data())))
                     throw std::runtime_error("parse error:unknown option");
+                opt_value_it->second.second->set();
                 continue;
             }
             opt_value_it->second.second->translate(argv[i]);

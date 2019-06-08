@@ -15,6 +15,7 @@ template<class CharT, class Traits = std::char_traits<CharT>>
 struct option_info_base {
     virtual ~option_info_base() = default;
     virtual std::any& translate(const std::basic_string<CharT, Traits>& value) = 0;
+    virtual void set() noexcept {};
     virtual const std::any& get() const noexcept = 0;
 };
 
@@ -28,18 +29,16 @@ struct option_info : option_info_base<CharT, Traits> {
 
     template<class T>
     option_info(T&&)
-        : option_info()
-    {}
-    option_info()
         : value(nullptr)
     {}
+    option_info() = default;
 
     virtual std::any& translate(const std::basic_string<CharT, Traits>&) override
     { return value; }
     virtual const std::any& get() const noexcept override
-    {
-        return value;
-    }
+    { return value; }
+    virtual void set() noexcept override
+    { value = nullptr; }
 };
 
 template<
@@ -54,8 +53,8 @@ struct option_info<CharT, single_value<T>, Traits> : option_info_base<CharT, Tra
     option_info(value_type&& default_value)
         : value(std::move(default_value))
     {}
-    option_info() = default;
-    option_info(std::nullptr_t)
+    constexpr option_info() = default;
+    constexpr option_info(std::nullptr_t)
         : option_info()
     {}
 

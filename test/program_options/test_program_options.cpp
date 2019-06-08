@@ -80,8 +80,11 @@ DEFINE_TEST(test_arg_parse)
         .add("", "", opo::single<int>, opo::default_value = 0)
         .add("key;k", "something", opo::single<int>, opo::default_value = 4)
         .add("second;s", "second", opo::single<int>)
-        .add("multi;m", "v", opo::multi<int>)
-        .add("flag;f", "f", opo::flag);
+        .add("multi;m", "v", opo::multi<int>);
+    d
+        .add("flag;f", "f", opo::flag)
+        .add("nope;n", "f", opo::flag);
+    
 
     ap.parse(d, argv, argc);
     CHECK_EQUAL(ap.get<int>(""), 0);
@@ -89,4 +92,5 @@ DEFINE_TEST(test_arg_parse)
     CHECK_EQUAL(ap.get<int>("second"), 2);
     CHECK_EQUAL(ap.get<std::vector<int>>("multi")[1], 33);
     CHECK_TRUE(ap.exist("flag"));
+    CHECK_TRUE(!ap.exist("nope"));
 }
