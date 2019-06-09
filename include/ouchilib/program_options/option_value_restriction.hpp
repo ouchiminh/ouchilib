@@ -73,20 +73,24 @@ constexpr detail::default_value<void> default_value;
 namespace detail {
 
 template<class R, class B>
-inline R find_derived_value_impl() { return std::monostate{}; }
+inline constexpr R find_derived_value_impl() { return std::monostate{}; }
 
 template<class R, class B, class Head, class ...D>
 inline R find_derived_value_impl(Head&& h, D&& ...d) 
 {
-    if constexpr (std::is_base_of_v<B, Head>) return h;
+    if constexpr (std::is_base_of_v<B, std::remove_reference_t<Head>>) return h;
     return find_derived_value_impl<R, B>(std::forward<D>(d)...);
 }
 
 template<class B, class ...D>
-inline auto find_derived_value(D&& ...derived) -> ::ouchi::variant_compatible_t<::ouchi::find_derived_t<B, D...>>
+inline auto find_derived_value(D&& ...derived) -> ::ouchi::variant_compatible_t<::ouchi::find_derived_t<B, std::remove_reference_t<D>...>>
 {
     using rty = std::variant<std::monostate, ::ouchi::variant_compatible_t<D>...>;
-    return std::get<::ouchi::variant_compatible_t<::ouchi::find_derived_t<B, D...>>>(find_derived_value_impl<rty, B>(std::forward<D>(derived)...));
+    return std::get<
+        ::ouchi::variant_compatible_t<
+            ::ouchi::find_derived_t<B,std::remove_reference_t<D>...>
+        >
+    >(find_derived_value_impl<rty, B>(std::forward<D>(derived)...));
 }
 
 template<class ...D>

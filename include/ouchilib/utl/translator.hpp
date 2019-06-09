@@ -13,8 +13,16 @@ struct static_cast_translator {
 };
 
 template<class From, class To>
+struct construction_translator {
+    using internal_type = From;
+    using external_type = To;
+    std::optional<To> get_value(const From& v) const { return std::optional<To>(To(v)); }
+    std::optional<From> put_value(const To& v) const { return std::optional<From>(From(v)); }
+};
+
+template<class From, class To>
 struct translator_between {
-    using type = static_cast_translator<From, To>;
+    using type = construction_translator<From, To>;
 };
 
 // string => integer

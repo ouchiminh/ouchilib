@@ -64,12 +64,17 @@ DEFINE_TEST(test_wkey_parser)
     CHECK_EQUAL(fk.second, L"-k");
 }
 
+static_assert(std::is_same_v<ouchi::find_derived_t<ouchi::program_options::detail::default_value<void>,
+                                                   ouchi::program_options::detail::flag_value,
+                                                   ouchi::program_options::detail::default_value<void>>,
+                             ouchi::program_options::detail::default_value<void>>);
+
 DEFINE_TEST(test_arg_parse)
 {
     namespace opo = ouchi::program_options;
     opo::arg_parser<char> ap;
     opo::options_description d;
-    constexpr char argv_e[][32] = { "hoge.exe", "-s", "2", "-m", "31", "33", "-f" };
+    constexpr char argv_e[][32] = { "hoge.exe", "-s", "2", "-m", "31", "33", "-f", "-string", "value" };
     constexpr auto argc = sizeof(argv_e)/sizeof(*argv_e);
     const char* argv[argc];
     for (auto i : ouchi::step(argc)) {
@@ -80,17 +85,32 @@ DEFINE_TEST(test_arg_parse)
         .add("", "", opo::single<int>, opo::default_value = 0)
         .add("key;k", "something", opo::single<int>, opo::default_value = 4)
         .add("second;s", "second", opo::single<int>)
-        .add("multi;m", "v", opo::multi<int>);
+        .add("multi;m", "v", opo::multi<int>)
+        .add("string;string", "v", opo::single<std::string>);
+
     d
         .add("flag;f", "f", opo::flag)
+        .add("default_flag;df", "", opo::flag, opo::default_value)
         .add("nope;n", "f", opo::flag);
     
-
     ap.parse(d, argv, argc);
     CHECK_EQUAL(ap.get<int>(""), 0);
     CHECK_EQUAL(ap.get<int>("key"), 4);
     CHECK_EQUAL(ap.get<int>("second"), 2);
     CHECK_EQUAL(ap.get<std::vector<int>>("multi")[1], 33);
+    CHECK_EQUAL(ap.get<std::string>("string"), "value");
     CHECK_TRUE(ap.exist("flag"));
+    CHECK_TRUE(ap.exist("default_flag"));
     CHECK_TRUE(!ap.exist("nope"));
+}
+
+DEFINE_TEST(test_default_value)
+{
+    using namespace ouchi::program_options;
+
+    static_assert(std::is_same_v<detail::default_value<void>,
+                  ouchi::find_derived_t<detail::default_value<void>, detail::default_value<void>>>);
+
+    auto r = detail::find_derived_value<detail::default_value<void>>(default_value);
+    static_assert(std::is_same_v<detail::default_value<void>, decltype(r)>);
 }

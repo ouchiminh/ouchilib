@@ -32,9 +32,12 @@ public:
     {
         typedef detail::option_info<CharT, detail::value_type_policy_t<std::remove_cv_t<std::remove_reference_t<R>>...>, Traits> option_t;
         std::unique_ptr<option_t> p;
-        if constexpr (std::is_same_v<option_t, detail::flag_value> ||
-                      std::is_same_v<void, find_derived_t<detail::default_value<void>, R...>>) p = std::make_unique<option_t>();
-        else p = std::make_unique<option_t>(detail::find_default_value(std::forward<R>(restrictions)...));
+        if constexpr (std::is_same_v<void, find_derived_t<detail::default_value<void>,
+                      std::remove_cv_t<std::remove_reference_t<R>>...>>)
+            p = std::make_unique<option_t>();
+        else
+            p = std::make_unique<option_t>(detail::find_default_value(std::forward<R>(restrictions)...));
+        
         options_.insert_or_assign(
             key,
             std::make_pair<string, std::unique_ptr<value_type>>(description.data(), std::move(p))
