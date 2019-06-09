@@ -23,7 +23,6 @@ public:
         parse(desc, argv, argc);
     }
 
-
     const arg_map& parse(basic_options_description<CharT, Traits>& desc,
                          const CharT** argv,
                          size_t argc)

@@ -104,6 +104,22 @@ DEFINE_TEST(test_arg_parse)
     CHECK_TRUE(!ap.exist("nope"));
 }
 
+DEFINE_TEST(test_parse_error)
+{
+    namespace opo = ouchi::program_options;
+    opo::arg_parser<char> ap;
+    opo::options_description d;
+    constexpr char argv_e[][32] = { "hoge.exe", "-m", "4", "4", "-s", "3", "0" };
+    constexpr auto argc = sizeof(argv_e)/sizeof(*argv_e);
+    const char* argv[argc];
+    for (auto i : ouchi::step(argc)) {
+        argv[i] = argv_e[i];
+    }
+    d.add("m;m", "", opo::multi<int>)
+     .add("s;s", "", opo::single<int>);
+    CHECK_SPECIFIC_EXCEPTION(ap.parse(d, argv, argc), std::runtime_error&);
+}
+
 DEFINE_TEST(test_default_value)
 {
     using namespace ouchi::program_options;

@@ -33,8 +33,9 @@ struct option_info : option_info_base<CharT, Traits> {
     {}
     option_info() = default;
 
+    [[noreturn]]
     virtual std::any& translate(const std::basic_string<CharT, Traits>&) override
-    { return value; }
+    { throw std::runtime_error("parse error:this option do not take any value"); }
     virtual const std::any& get() const noexcept override
     { return value; }
     virtual void set() noexcept override
@@ -48,6 +49,7 @@ template<
 >
 struct option_info<CharT, single_value<T>, Traits> : option_info_base<CharT, Traits> {
     using value_type = typename single_value<T>::value_type;
+    unsigned is_set = 0;
     std::any value;
     
     option_info(value_type&& default_value)
@@ -61,10 +63,16 @@ struct option_info<CharT, single_value<T>, Traits> : option_info_base<CharT, Tra
     virtual std::any& translate(const std::basic_string<CharT, Traits>& origin) override {
         typename ouchi::translator_between<std::basic_string<CharT, Traits>, value_type>::type
             t;
+        if (is_set++ > 1) throw std::runtime_error("parse error:too many arguments");
         if (auto r = t.get_value(origin); r) {
             value = r.value();
-        } else throw std::runtime_error("parse error.");
+        } else throw std::runtime_error("parse error:unable to translate");
         return value;
+    }
+
+    virtual void set() noexcept override
+    {
+        ++is_set;
     }
 
     virtual const std::any& get() const noexcept override
@@ -104,7 +112,7 @@ struct option_info<CharT, multi_value<T>, Traits> : option_info_base<CharT, Trai
         auto& v = std::any_cast<value_type&>(value);
         if (auto r = t.get_value(origin); r) {
             v.push_back(r.value());
-        } else throw std::runtime_error("parse error.");
+        } else throw std::runtime_error("parse error:unable to translate");
 
         return value;
     }
