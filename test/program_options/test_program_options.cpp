@@ -72,7 +72,7 @@ static_assert(std::is_same_v<ouchi::find_derived_t<ouchi::program_options::detai
 DEFINE_TEST(test_arg_parse)
 {
     namespace opo = ouchi::program_options;
-    opo::arg_parser<char> ap;
+    opo::arg_parser ap;
     opo::options_description d;
     constexpr char argv_e[][32] = { "hoge.exe", "-s", "2", "-m", "31", "33", "-f", "-string", "value" };
     constexpr auto argc = sizeof(argv_e)/sizeof(*argv_e);
@@ -107,7 +107,7 @@ DEFINE_TEST(test_arg_parse)
 DEFINE_TEST(test_parse_error)
 {
     namespace opo = ouchi::program_options;
-    opo::arg_parser<char> ap;
+    opo::arg_parser ap;
     opo::options_description d;
     constexpr char argv_e[][32] = { "hoge.exe", "-m", "4", "4", "-s", "3", "0" };
     constexpr auto argc = sizeof(argv_e)/sizeof(*argv_e);

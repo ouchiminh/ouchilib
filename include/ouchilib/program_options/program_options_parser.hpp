@@ -9,14 +9,14 @@
 namespace ouchi::program_options {
 
 template<class CharT, class Traits = std::char_traits<CharT>>
-class arg_parser {
+class basic_arg_parser {
 public:
     using string = std::basic_string<CharT, Traits>;
     using string_view = std::basic_string_view<CharT, Traits>;
     using arg_map = std::map<string, std::any, std::less<>>;
 
-    arg_parser() = default;
-    arg_parser(basic_options_description<CharT, Traits>& desc,
+    basic_arg_parser() = default;
+    basic_arg_parser(basic_options_description<CharT, Traits>& desc,
                const CharT** argv,
                size_t argc)
     {
@@ -57,10 +57,13 @@ public:
     }
     bool exist(string_view key) const
     {
-        return arguments_.end() != arguments_.find(key);
+        return arguments_.count(key) ? true : false;
     }
 private:
     arg_map arguments_;
 };
+
+using arg_parser = basic_arg_parser<char>;
+using warg_parser = basic_arg_parser<wchar_t>;
 
 }

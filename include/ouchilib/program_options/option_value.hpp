@@ -63,7 +63,8 @@ struct option_info<CharT, single_value<T>, Traits> : option_info_base<CharT, Tra
     virtual std::any& translate(const std::basic_string<CharT, Traits>& origin) override {
         typename ouchi::translator_between<std::basic_string<CharT, Traits>, value_type>::type
             t;
-        if (is_set++ > 1) throw std::runtime_error("parse error:too many arguments");
+        if (is_set++ > 1u) throw std::runtime_error("parse error:too many arguments");
+        is_set |= 2;
         if (auto r = t.get_value(origin); r) {
             value = r.value();
         } else throw std::runtime_error("parse error:unable to translate");
