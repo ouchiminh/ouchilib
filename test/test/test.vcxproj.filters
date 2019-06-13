@@ -59,5 +59,8 @@
     <ClCompile Include="..\program_options\test_program_options.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="..\utl\test_indexed_iterator.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

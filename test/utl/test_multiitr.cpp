@@ -18,4 +18,5 @@ DEFINE_TEST(test_multiitr_instantiate)
         for (auto [i1, i2] : ouchi::multiitr{ std::as_const(v1), std::as_const(v3) });
         CHECK_TRUE(false);
     } catch (std::runtime_error&) {}
+    for (auto [i1, i2] : ouchi::multiitr{ v1, v2 });
 }

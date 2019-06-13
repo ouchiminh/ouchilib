@@ -74,7 +74,7 @@ DEFINE_TEST(test_arg_parse)
     namespace opo = ouchi::program_options;
     opo::arg_parser ap;
     opo::options_description d;
-    constexpr char argv_e[][32] = { "hoge.exe", "-s", "2", "-m", "31", "33", "-f", "-string", "value" };
+    constexpr char argv_e[][32] = { "hoge.exe", "3", "-s", "2", "-m", "31", "33", "-f", "-string", "value" };
     constexpr auto argc = sizeof(argv_e)/sizeof(*argv_e);
     const char* argv[argc];
     for (auto i : ouchi::step(argc)) {
@@ -94,7 +94,7 @@ DEFINE_TEST(test_arg_parse)
         .add("nope;n", "f", opo::flag);
     
     ap.parse(d, argv, argc);
-    CHECK_EQUAL(ap.get<int>(""), 0);
+    CHECK_EQUAL(ap.get<int>(""), 3);
     CHECK_EQUAL(ap.get<int>("key"), 4);
     CHECK_EQUAL(ap.get<int>("second"), 2);
     CHECK_EQUAL(ap.get<std::vector<int>>("multi")[1], 33);

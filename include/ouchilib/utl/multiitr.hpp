@@ -106,6 +106,8 @@ public:
         itr_t itrs_;
 
     public:
+        using difference_type = std::common_type_t<typename std::iterator_traits<his_iterator_t<Containers>>::difference_type...>;
+
         iterator(const std::tuple<Containers& ...>& containers)
             : itrs_(detail::get_begin(containers))
         {}

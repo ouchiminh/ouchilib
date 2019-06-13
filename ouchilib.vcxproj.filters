@@ -140,5 +140,8 @@
     <ClInclude Include="include\ouchilib\program_options\key_parser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\ouchilib\utl\indexed_iterator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

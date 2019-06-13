@@ -28,6 +28,7 @@ template<class T>
 struct multi_value : type_restriction {
     using value_type = std::vector<typename single_value<T>::value_type>;
 };
+
 } // namespace detail
 
 inline const detail::flag_value flag;

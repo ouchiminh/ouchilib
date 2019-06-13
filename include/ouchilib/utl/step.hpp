@@ -27,6 +27,10 @@ public:
         Int end_;
         Int width_;
     public:
+        using difference_type = Int;
+        using value_type = Int;
+        using iterator_category = std::input_iterator_tag;
+
         iterator(Int cur, Int end, Int width)
             : cur_{ cur }
             , end_{ end }

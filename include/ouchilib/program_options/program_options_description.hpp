@@ -28,7 +28,7 @@ public:
     using iterator = typename container_type::iterator;
 
     template<class ...R>
-    basic_options_description& add(const string& key, const string& description, R&& ...restrictions)
+    basic_options_description& add(string_view key, string_view description, R&& ...restrictions)
     {
         typedef detail::option_info<CharT, detail::value_type_policy_t<std::remove_cv_t<std::remove_reference_t<R>>...>, Traits> option_t;
         std::unique_ptr<option_t> p;
@@ -39,7 +39,7 @@ public:
             p = std::make_unique<option_t>(detail::find_default_value(std::forward<R>(restrictions)...));
         
         options_.insert_or_assign(
-            key,
+            key.data(),
             std::make_pair<string, std::unique_ptr<value_type>>(description.data(), std::move(p))
         );
         return *this;
@@ -62,7 +62,7 @@ public:
         return os;
     }
 
-    iterator find_option(const string& internal_expr)
+    iterator find_option(string_view internal_expr)
     {
         using kp = key_parser<CharT, Traits>;
         std::pair<string, string> ikey;
