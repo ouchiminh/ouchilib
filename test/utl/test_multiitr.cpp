@@ -21,6 +21,33 @@ DEFINE_TEST(test_multiitr_instantiate)
     } catch (std::runtime_error&) {}
     for (auto [i1, i2] : ouchi::multiitr{ v1, v2 });
     auto m = ouchi::multiitr{ v1, vv };
+    auto b = ++m.begin();
+    --b;
+}
+
+namespace ouchi {
+
+template<class T>
+class oforward_list : public std::forward_list<T> {
+public:
+    auto size() const
+    {
+        return std::distance(this->begin(), this->end());
+    }
+    oforward_list(std::initializer_list<T> il)
+        : std::forward_list<T>(std::move(il))
+    {}
+};
+
+}
+
+DEFINE_TEST(test_multiitr_ce)
+{
+    ouchi::oforward_list<int> l1{ 1, 2, 3 }, l2{ 1,2,3 };
+
+    for (auto [i1, i2] : ouchi::multiitr{ l1, l2 });
+
+    ouchi::multiitr m{ l1, l2 };
     auto b = m.begin();
     --b;
 }

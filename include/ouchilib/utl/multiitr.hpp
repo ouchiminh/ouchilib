@@ -114,9 +114,15 @@ public:
     class iterator {
         using itr_t = std::tuple<his_iterator_t<Containers>...>;
         itr_t itrs_;
-
     public:
         using difference_type = std::common_type_t<typename std::iterator_traits<his_iterator_t<Containers>>::difference_type...>;
+
+        static constexpr bool is_bidirectional = std::conjunction_v<
+            std::is_base_of<
+                std::bidirectional_iterator_tag,
+                typename std::iterator_traits<his_iterator_t<Containers>>::iterator_category
+            >...
+        >;
 
         iterator(const std::tuple<Containers& ...>& containers)
             : itrs_(detail::get_begin(containers))
@@ -151,21 +157,15 @@ public:
             return cp;
         }
         template<class It = iterator,
-                 std::enable_if_t<std::conjunction_v<
-                     std::is_base_of<std::bidirectional_iterator_tag,
-                                     typename std::iterator_traits<his_iterator_t<Containers>>::iterator_category>...
-                 >>* = nullptr>
+                 std::enable_if_t<It::is_bidirectional>* = nullptr>
         iterator& operator--()
         {
             detail::decreament(itrs_);
             return *this;
         }
         template<class It = iterator,
-                 std::enable_if_t<std::conjunction_v<
-                     std::is_base_of<std::bidirectional_iterator_tag,
-                                     typename std::iterator_traits<his_iterator_t<Containers>>::iterator_category>...
-                 >>* = nullptr>
-            iterator& operator--(int)
+                 std::enable_if_t<It::is_bidirectional>* = nullptr>
+        iterator& operator--(int)
         {
             auto cp = *this;
             --(*this);
