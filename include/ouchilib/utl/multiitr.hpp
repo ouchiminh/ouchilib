@@ -37,6 +37,16 @@ auto increament(std::tuple<Args...>& t)
     return std::apply(increament_impl, t);
 }
 
+const auto decreament_impl = [](auto& ...args) {
+    ((--args), ...);
+};
+
+template<class ...Args>
+auto decreament(std::tuple<Args...>& t)
+{
+    return std::apply(decreament_impl, t);
+}
+
 const auto get_begin_impl = [](auto&& ...args) {
     using std::begin;
     return std::make_tuple(begin(args)...);
@@ -138,6 +148,27 @@ public:
         {
             auto cp = *this;
             ++(*this);
+            return cp;
+        }
+        template<class It = iterator,
+                 std::enable_if_t<std::conjunction_v<
+                     std::is_base_of<std::bidirectional_iterator_tag,
+                                     typename std::iterator_traits<his_iterator_t<Containers>>::iterator_category>...
+                 >>* = nullptr>
+        iterator& operator--()
+        {
+            detail::decreament(itrs_);
+            return *this;
+        }
+        template<class It = iterator,
+                 std::enable_if_t<std::conjunction_v<
+                     std::is_base_of<std::bidirectional_iterator_tag,
+                                     typename std::iterator_traits<his_iterator_t<Containers>>::iterator_category>...
+                 >>* = nullptr>
+            iterator& operator--(int)
+        {
+            auto cp = *this;
+            --(*this);
             return cp;
         }
     };

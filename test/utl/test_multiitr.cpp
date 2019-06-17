@@ -1,10 +1,11 @@
 ﻿#include "../test.hpp"
 #include "ouchilib/utl/multiitr.hpp"
 #include <vector>
+#include <forward_list>
 
 DEFINE_TEST(test_multiitr_instantiate)
 {
-    std::vector<int> v1{ 1, 2, 3 };
+    std::vector<int> v1{ 1, 2, 3 }, vv{ 1, 2, 3 };
     int v2[] = { 3, 2, 1 };
     size_t c = 0;
 
@@ -19,4 +20,7 @@ DEFINE_TEST(test_multiitr_instantiate)
         CHECK_TRUE(false);
     } catch (std::runtime_error&) {}
     for (auto [i1, i2] : ouchi::multiitr{ v1, v2 });
+    auto m = ouchi::multiitr{ v1, vv };
+    auto b = m.begin();
+    --b;
 }
