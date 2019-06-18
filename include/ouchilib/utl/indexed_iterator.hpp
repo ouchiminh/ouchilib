@@ -8,6 +8,11 @@ class indexed_iterator {
 public:
     using itr_t = std::remove_reference_t<Iter>;
     using idx_t = typename std::iterator_traits<Iter>::difference_type;
+    using difference_type = idx_t;
+    using iterator_category = typename std::iterator_traits<Iter>::iterator_category;
+    using value_type = std::pair<idx_t, typename std::iterator_traits<Iter>::reference>;
+    static constexpr bool is_bidirectional = std::is_base_of_v<std::bidirectional_iterator_tag, iterator_category>;
+
     template<class Container>
     indexed_iterator(Container& c)
         : indexed_iterator(c.begin(), c.end())
@@ -41,6 +46,21 @@ public:
         {
             auto cp = *this;
             ++(*this);
+            return cp;
+        }
+        template<class It,
+                 std::enable_if_t<It::is_bidirectional>* = nullptr>
+        iterator& operator--() {
+            --idx_;
+            --first_;
+            return *this;
+        }
+        template<class It,
+                 std::enable_if_t<It::is_bidirectional>* = nullptr>
+        iterator operator--(int)
+        {
+            auto cp = *this;
+            --(*this);
             return cp;
         }
         friend bool operator==(const iterator& a, const iterator& b)

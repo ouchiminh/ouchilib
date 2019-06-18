@@ -124,6 +124,9 @@ public:
             >...
         >;
 
+        using iterator_category = std::conditional_t<is_bidirectional, std::bidirectional_iterator_tag, std::input_iterator_tag>;
+        using value_type = std::tuple<typename std::iterator_traits<his_iterator_t<Containers>>::reference ...>;
+
         iterator(const std::tuple<Containers& ...>& containers)
             : itrs_(detail::get_begin(containers))
         {}
