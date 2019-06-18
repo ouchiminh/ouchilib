@@ -48,14 +48,14 @@ public:
             ++(*this);
             return cp;
         }
-        template<class It,
+        template<class It = iterator,
                  std::enable_if_t<It::is_bidirectional>* = nullptr>
         iterator& operator--() {
             --idx_;
             --first_;
             return *this;
         }
-        template<class It,
+        template<class It = iterator,
                  std::enable_if_t<It::is_bidirectional>* = nullptr>
         iterator operator--(int)
         {
