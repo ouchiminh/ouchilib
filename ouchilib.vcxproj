@@ -108,6 +108,7 @@
       <AdditionalIncludeDirectories>$(Boost_Dir)\include\boost-1_69;$(ProjectDir)\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -116,6 +117,7 @@
       <AdditionalIncludeDirectories>$(Boost_Dir)\include\boost-1_69;$(ProjectDir)\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
