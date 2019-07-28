@@ -143,5 +143,8 @@
     <ClInclude Include="include\ouchilib\utl\indexed_iterator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\ouchilib\crypto\common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
