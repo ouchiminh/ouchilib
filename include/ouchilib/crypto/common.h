@@ -36,7 +36,7 @@ class memory_view {
 public:
     const std::uint8_t * data;
     using value_type = std::uint8_t;
-    explicit memory_view(void* ptr) : data{ reinterpret_cast<uint8_t*>(ptr) } {}
+    explicit memory_view(const void* ptr) : data{ reinterpret_cast<uint8_t*>(ptr) } {}
     memory_view() : data{ nullptr } {}
     memory_view(const memory_entity<SizeInByte>& me) : data{ me.data } {} // meの寿命はプログラマーの責任
     const std::uint8_t& operator[](size_t i) const noexcept {
