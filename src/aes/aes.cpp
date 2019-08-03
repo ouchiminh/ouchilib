@@ -64,7 +64,6 @@ void ouchi::aes::invSubBytes(void * data)  const noexcept {
 }
 
 void ouchi::aes::shiftRows(void * data) const noexcept {
-	;
 	auto ptr{ (uint8_t*)data };
 	block_16 cw(data);
 	for (int i = 0; i<NB; i += 4) {

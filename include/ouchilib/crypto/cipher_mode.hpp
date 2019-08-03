@@ -68,7 +68,7 @@ struct cbc {
     void decrypt(block_t src, void* dest)
     {
         encoder.decrypt(src, dest);
-        add_assign(dest, vector)
+        add_assign(dest, vector);
         vector = src;
     }
     void set_decrypt_state(memory_iterator<block_size> first, memory_iterator<block_size> just_before)
