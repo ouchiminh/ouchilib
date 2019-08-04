@@ -20,7 +20,7 @@ struct is_crypto_algorithm<T,
     : std::true_type {};
 
 
-template<class A, std::enable_if_t<is_crypto_algorithm<A>::value>* = nullptr>
+template<class A>
 struct ecb {
     using block_t = typename A::block_t;
     static constexpr size_t block_size = A::block_size;
@@ -46,7 +46,7 @@ struct ecb {
     void set_decrypt_state(memory_iterator<block_size> first, memory_iterator<block_size> just_before) {}
 };
 
-template<class A, std::enable_if_t<is_crypto_algorithm<A>::value>* = nullptr>
+template<class A>
 struct cbc {
     using block_t = typename A::block_t;
     static constexpr size_t block_size = A::block_size;
@@ -62,13 +62,13 @@ struct cbc {
     {}
     void encrypt(block_t src, void* dest)
     {
-        encoder.encrypt(vector ^ src, vector.data);
+        encoder.encrypt(block_t(vector) ^ src, vector.data);
         std::memcpy(dest, vector.data, block_size);
     }
     void decrypt(block_t src, void* dest)
     {
         encoder.decrypt(src, dest);
-        add_assign(dest, vector);
+        add_assign<block_size>(dest, vector);
         vector = src;
     }
     void set_decrypt_state(memory_iterator<block_size> first, memory_iterator<block_size> just_before)
@@ -77,7 +77,7 @@ struct cbc {
     }
 };
 
-template<class A, std::enable_if_t<is_crypto_algorithm<A>::value>* = nullptr>
+template<class A>
 struct ctr {
     using block_t = typename A::block_t;
     static constexpr size_t block_size = A::block_size;
@@ -92,13 +92,13 @@ struct ctr {
     ctr(memory_view<block_size> init_nonce, size_t init_ctr, Args&& ...args)
         : encoder{ std::forward<Args>(args)... }
         , nonce{ init_nonce }
-        , ctr{ init_ctr }
+        , counter{ init_ctr }
     {}
     void encrypt(block_t src, void* dest)
     {
         memory_entity<block_size> buf;
-        encoder.encrypt(nonce ^ counter, buf.data);
-        add(buf, src, dest);
+        encoder.encrypt(memory_view<block_size>(nonce) ^ counter, buf.data);
+        add<block_size>(buf, src, dest);
         update_counter();
     }
     void decrypt(block_t src, void* dest)

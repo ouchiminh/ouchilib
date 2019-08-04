@@ -29,6 +29,7 @@
     <ClCompile Include="..\..\src\archiver\archiver.cpp" />
     <ClCompile Include="..\aes\test-aes_utl.cpp" />
     <ClCompile Include="..\crypto\test_aes.cpp" />
+    <ClCompile Include="..\crypto\test_encoder.cpp" />
     <ClCompile Include="..\program_options\test_program_options.cpp" />
     <ClCompile Include="..\tasksystem\testtask.cpp" />
     <ClCompile Include="..\test-main.cpp" />

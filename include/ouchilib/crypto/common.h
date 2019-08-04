@@ -44,7 +44,7 @@ public:
         return data[i];
     }
 
-    friend memory_entity<SizeInByte> operator^(memory_view l, memory_view r) noexcept
+    friend memory_entity<SizeInByte> operator^(memory_view<SizeInByte> l, memory_view<SizeInByte> r) noexcept
     {
         memory_entity<SizeInByte> me;
         for (auto i : ouchi::step(SizeInByte)) {
@@ -52,19 +52,19 @@ public:
         }
         return me;
     }
-    template<class Int>
-    friend memory_entity<SizeInByte> operator^(memory_view l, Int r) noexcept
+    template<class Int, std::enable_if_t<std::is_integral_v<Int>>* = nullptr>
+    friend memory_entity<SizeInByte> operator^(memory_view<SizeInByte> l, Int r) noexcept
     {
         std::make_unsigned_t<Int> u = r;
         memory_entity<SizeInByte> me;
         for (auto i : ouchi::step(SizeInByte)) {
-            me[i] = l[i] ^ r;
-            r = r >> 8;
+            me[i] = l[i] ^ (std::uint8_t)u;
+            u = u >> 8;
         }
         return me;
     }
-    template<class Int>
-    friend memory_entity<SizeInByte> operator^(Int l, memory_view r) noexcept
+    template<class Int, std::enable_if_t<std::is_integral_v<Int>>* = nullptr>
+    friend memory_entity<SizeInByte> operator^(Int l, memory_view<SizeInByte> r) noexcept
     {
         return r ^ l;
     }
@@ -86,7 +86,7 @@ inline memory_entity<SizeInByte>& memory_entity<SizeInByte>::operator=(memory_vi
 // global function
 
 template<size_t SizeInByte>
-void add(memory_view<SizeInByte> operand1, memory_view<SizeInByte> operand2, void* dest) noexcept
+inline void add(memory_view<SizeInByte> operand1, memory_view<SizeInByte> operand2, void* dest) noexcept
 {
     auto res = reinterpret_cast<std::uint8_t*>(dest);
     for (auto i : ouchi::step(SizeInByte)) {
@@ -94,14 +94,19 @@ void add(memory_view<SizeInByte> operand1, memory_view<SizeInByte> operand2, voi
     }
 }
 
-void add_assign(void* srcdest, void* src2, size_t size) noexcept
+inline void add_assign(void* srcdest, const void* src2, size_t size) noexcept
 {
     auto* dest = reinterpret_cast<std::uint8_t*>(srcdest);
-    auto* src = reinterpret_cast<std::uint8_t*>(src2);
+    auto* src = reinterpret_cast<const std::uint8_t*>(src2);
 
     for (auto&& i : ouchi::step(size)) {
         dest[i] ^= src[i];
     }
+}
+template<size_t SizeInByte>
+inline void add_assign(void* srcdest, memory_view<SizeInByte> src2) noexcept
+{
+    add_assign(srcdest, src2.data, SizeInByte);
 }
 
 template<size_t StepWidth>

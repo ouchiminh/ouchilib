@@ -7,7 +7,7 @@
 
 namespace ouchi::crypto::algorithm {
 
-std::uint32_t rotword(std::uint32_t in) {
+inline std::uint32_t rotword(std::uint32_t in) {
 	uint32_t inw = in, inw2 = 0;
 	unsigned char *cin = reinterpret_cast<unsigned char*>(&inw);
 	unsigned char *cin2 = reinterpret_cast<unsigned char*>(&inw2);
@@ -18,7 +18,7 @@ std::uint32_t rotword(std::uint32_t in) {
 	return(inw2);
 }
 
-std::uint32_t mul(std::uint32_t dt, std::uint32_t n)
+inline std::uint32_t mul(std::uint32_t dt, std::uint32_t n)
 {
 	int x = 0;
 	for (int i = 8; i>0; i >>= 1) {
@@ -31,7 +31,7 @@ std::uint32_t mul(std::uint32_t dt, std::uint32_t n)
 	return(x);
 }
 
-int dataget(void * data, int n) {
+inline int dataget(void * data, int n) {
 	return (reinterpret_cast<unsigned char*>(data)[n]);
 }
 
@@ -162,14 +162,14 @@ private:
     void sub_bytes(void* data) const noexcept
     {
         unsigned char* cb = reinterpret_cast<unsigned char*>(data);
-        for (auto i : ouchi ::step(16)) {//理論的な意味から二重ループにしているが意味は無い
+        for (auto i : ouchi ::step(16)) {
             cb[i] = sbox[cb[i]];
         }
     }
     void inv_sub_bytes(void* data) const noexcept
     {
         unsigned char* cb = reinterpret_cast<unsigned char*>(data);
-        for (auto i : ouchi ::step(16)) {//理論的な意味から二重ループにしているが意味は無い
+        for (auto i : ouchi ::step(16)) {
             cb[i] = inv_sbox[cb[i]];
         }
     }
@@ -256,5 +256,9 @@ private:
     key_t key_;
     std::uint32_t w_[60];    // expanded key
 };
+
+using aes128 = aes<16>;
+using aes192 = aes<24>;
+using aes256 = aes<32>;
 
 }
