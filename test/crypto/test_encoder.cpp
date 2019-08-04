@@ -1,4 +1,5 @@
-﻿#include "../test.hpp"
+﻿#include <sstream>
+#include "../test.hpp"
 #include "ouchilib/crypto/encoder.hpp"
 #include "ouchilib/crypto/algorithm/aes.hpp"
 
@@ -55,4 +56,23 @@ DEFINE_TEST(test_encoder_ctr) {
     for (auto i : ouchi::step(16)) {
         CHECK_EQUAL(plain[i], decrypt[i]);
     }
+}
+
+DEFINE_TEST(test_stream_encoder)
+{
+    using namespace ouchi::crypto;
+    using namespace ouchi::crypto::algorithm;
+    std::stringstream plain("123456789abcdef");
+    char key[16] =      "!!!!!!!!!!!!!!!";
+    char iv[16] =       "hogehogehogehog";
+    encoder<cbc, aes128> cryptographer(iv, key);
+    encoder<cbc, aes128> decoder(iv, key);
+
+    std::stringstream crypto;
+    std::stringstream decrypt;
+
+    cryptographer.encrypt(plain, crypto);
+    decoder.decrypt(crypto, decrypt);
+
+    CHECK_EQUAL(plain.str(), decrypt.str());
 }

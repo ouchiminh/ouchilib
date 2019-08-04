@@ -56,7 +56,7 @@ public:
         }
         // delete pad
         auto padsize = destptr[dest_size - 1];
-        if (check_pad(padsize, destptr + dest_size - padsize))
+        if (!check_pad(padsize, destptr + dest_size - padsize))
             throw std::runtime_error("decryption failed. please check key or initial condition.");
         return dest_size - padsize;
     }
@@ -65,37 +65,39 @@ public:
     {
         constexpr auto cnt = Algorithm::block_size;
         memory_entity<cnt> block;
-        while (in.read(block.data, cnt).gcount() == cnt) {
+        while (in.read(reinterpret_cast<char*>(block.data), cnt).gcount() == cnt) {
             cipher_device.encrypt(block.data, block.data);
-            out.write(block.data, cnt);
+            out.write(reinterpret_cast<char*>(block.data), cnt);
         }
         auto padbegin = in.gcount();
         auto padsize = cnt - padbegin;
         std::fill(block.data + padbegin, std::end(block.data), (std::uint8_t)padsize);
         cipher_device.encrypt(block.data, block.data);
-        out.write(block.data, cnt);
+        out.write(reinterpret_cast<char*>(block.data), cnt);
     }
     void decrypt(std::istream& in, std::ostream& out)
     {
         constexpr auto cnt = Algorithm::block_size;
         memory_entity<Algorithm::block_size> block;
         while (true) {
-            in.read(block.data, cnt);
+            in.read(reinterpret_cast<char*>(block.data), cnt);
             if (in.gcount() != cnt) throw std::runtime_error("decryption failed. invalid length");
             cipher_device.decrypt(block.data, block.data);
+            in.ignore(1);
             if (!in.eof()) {
-                out.write(block.data, cnt);
+                out.write(reinterpret_cast<char*>(block.data), cnt);
             } else {
                 auto padsize = block[cnt - 1];
-                if(check_pad(padsize, block[cnt - padsize]))
+                if(!check_pad(padsize, block.data + cnt - padsize))
                     throw std::runtime_error("decryption failed. please check key or initial condition.");
-                out.write(block.data, cnt - padsize);
+                out.write(reinterpret_cast<char*>(block.data), cnt - padsize);
                 break;
             }
+            in.seekg(-1, std::ios_base::cur);
         }
     }
 private:
-    bool check_pad(size_t padsize, std::uint8_t* padbegin)
+    bool check_pad(size_t padsize, std::uint8_t* padbegin) const noexcept
     {
         return padsize <= Algorithm::block_size &&
             std::count(padbegin, padbegin + padsize, (std::uint8_t)padsize) == padsize;
