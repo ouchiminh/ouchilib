@@ -7,7 +7,7 @@ DEFINE_TEST(test_aes)
 {
     char plain[16] = "123456789abcdef";
     char key[16] = "!!!!!!!!!!!!!!!";
-    ouchi::crypto::algorithm::aes<16> encoder(ouchi::crypto::memory_view<16>((void*)key));
+    ouchi::crypto::aes<16> encoder(ouchi::crypto::memory_view<16>((void*)key));
 
     char crypto[16];
     char decrypt[16];
@@ -22,7 +22,7 @@ DEFINE_TEST(test_aes_memory)
 {
     char buf[16] = "123456789abcdef";
     char key[16] = "!!!!!!!!!!!!!!!";
-    ouchi::crypto::algorithm::aes<16> encoder(ouchi::crypto::memory_view<16>((void*)key));
+    ouchi::crypto::aes<16> encoder(ouchi::crypto::memory_view<16>((void*)key));
 
     encoder.encrypt(buf, buf);
     encoder.decrypt(buf, buf);

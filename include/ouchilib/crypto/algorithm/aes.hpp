@@ -5,7 +5,7 @@
 #include "ouchilib/utl/step.hpp"
 #include "../common.h"
 
-namespace ouchi::crypto::algorithm {
+namespace ouchi::crypto {
 
 inline std::uint32_t rotword(std::uint32_t in) {
 	uint32_t inw = in, inw2 = 0;
@@ -31,8 +31,8 @@ inline std::uint32_t mul(std::uint32_t dt, std::uint32_t n)
 	return(x);
 }
 
-inline int dataget(void * data, int n) {
-	return (reinterpret_cast<unsigned char*>(data)[n]);
+inline std::uint32_t dataget(void * data, std::uint32_t n) {
+	return (reinterpret_cast<std::uint8_t*>(data)[n]);
 }
 
 template<size_t KeyLength>  // size in byte : 16,24,32

@@ -5,10 +5,9 @@
 
 DEFINE_TEST(test_encoder_ecb) {
     using namespace ouchi::crypto;
-    using namespace ouchi::crypto::algorithm;
     char plain[16] = "123456789abcdef";
     char key[16] = "!!!!!!!!!!!!!!!";
-    encoder<ecb, aes128> cryptographer(key);
+    block_encoder<ecb, aes128> cryptographer(key);
     char crypto[32];
     char decrypt[32];
 
@@ -18,61 +17,47 @@ DEFINE_TEST(test_encoder_ecb) {
     for (auto i : ouchi::step(16)) {
         CHECK_EQUAL(plain[i], decrypt[i]);
     }
+    std::stringstream plains(plain);
+    std::stringstream cr;
+    std::stringstream dc;
+
+    cryptographer.encrypt(plains, cr);
+    cryptographer.decrypt(cr, dc);
+
+    CHECK_EQUAL(plains.str(), dc.str());
 }
+
 DEFINE_TEST(test_encoder_cbc) {
     using namespace ouchi::crypto;
-    using namespace ouchi::crypto::algorithm;
-    char plain[16] =    "123456789abcdef";
-    char key[16] =      "!!!!!!!!!!!!!!!";
-    char iv[16] =       "hogehogehogehog";
-    encoder<cbc, aes128> cryptographer(iv, key);
-    encoder<cbc, aes128> decoder(iv, key);
+    const char plain[16] = "123456789abcdef";
+    const char key[16] =   "!!!!!!!!!!!!!!!";
+    const char iv[16] =    "hogehogehogehog";
+
+    block_encoder<cbc, aes128> cg[2] = { {iv, key}, {iv, key} };
 
     char crypto[32];
     char decrypt[32];
 
-    REQUIRE_EQUAL(cryptographer.encrypt(plain, sizeof(plain), crypto, sizeof(crypto)), 32);
-    REQUIRE_EQUAL(decoder.decrypt(crypto, sizeof(crypto), decrypt, sizeof(decrypt)), 16);
-
+    REQUIRE_EQUAL(cg[0].encrypt(plain, sizeof(plain), crypto, sizeof(crypto)), 32);
+    REQUIRE_EQUAL(cg[1].decrypt(crypto, sizeof(crypto), decrypt, sizeof(decrypt)), 16);
     for (auto i : ouchi::step(16)) {
         CHECK_EQUAL(plain[i], decrypt[i]);
     }
 }
 DEFINE_TEST(test_encoder_ctr) {
     using namespace ouchi::crypto;
-    using namespace ouchi::crypto::algorithm;
     char plain[16] = "123456789abcdef";
     char key[16] =   "!!!!!!!!!!!!!!!";
     char nonce[16] = "hogehogehogehog";
     size_t ictr = 0;
-    encoder<ctr, aes128> cryptographer(nonce, ictr, key);
-    encoder<ctr, aes128> decoder(nonce, ictr, key);
+    block_encoder<ctr, aes128> cg[2] = { {nonce, ictr, key}, {nonce, ictr, key} };
     char crypto[32];
     char decrypt[32];
 
-    REQUIRE_EQUAL(cryptographer.encrypt(plain, sizeof(plain), crypto, sizeof(crypto)), 32);
-    REQUIRE_EQUAL(decoder.decrypt(crypto, sizeof(crypto), decrypt, sizeof(decrypt)), 16);
+    REQUIRE_EQUAL(cg[0].encrypt(plain, sizeof(plain), crypto, sizeof(crypto)), 32);
+    REQUIRE_EQUAL(cg[1].decrypt(crypto, sizeof(crypto), decrypt, sizeof(decrypt)), 16);
 
     for (auto i : ouchi::step(16)) {
         CHECK_EQUAL(plain[i], decrypt[i]);
     }
-}
-
-DEFINE_TEST(test_stream_encoder)
-{
-    using namespace ouchi::crypto;
-    using namespace ouchi::crypto::algorithm;
-    std::stringstream plain("123456789abcdef");
-    char key[16] =      "!!!!!!!!!!!!!!!";
-    char iv[16] =       "hogehogehogehog";
-    encoder<cbc, aes128> cryptographer(iv, key);
-    encoder<cbc, aes128> decoder(iv, key);
-
-    std::stringstream crypto;
-    std::stringstream decrypt;
-
-    cryptographer.encrypt(plain, crypto);
-    decoder.decrypt(crypto, decrypt);
-
-    CHECK_EQUAL(plain.str(), decrypt.str());
 }

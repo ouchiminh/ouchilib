@@ -12,10 +12,10 @@ template<
     template<class> class CipherMode,
     class Algorithm,
     std::enable_if_t<is_crypto_algorithm<Algorithm>::value>* = nullptr>
-class encoder {
+class block_encoder {
 public:
     template<class ...Args>
-    encoder(Args&& ...args)
+    block_encoder(Args&& ...args)
         : cipher_device(std::forward<Args>(args)...)
     {}
     ///<returns>crypto size</returns>
@@ -28,12 +28,10 @@ public:
         std::memmove(dest, src, size);
         auto destptr = reinterpret_cast<std::uint8_t*>(dest);
         // padding
-        {
-            for (auto i : ouchi::step(padsize)) {
-                destptr[i + size] = (std::uint8_t)padsize;
-            }
-            dest_size = size + padsize;
+        for (auto i : ouchi::step(padsize)) {
+            destptr[i + size] = (std::uint8_t)padsize;
         }
+        dest_size = size + padsize;
         for (auto i : ouchi::step(0ull, dest_size, Algorithm::block_size)) {
             cipher_device.encrypt(destptr + i, destptr + i);
         }
