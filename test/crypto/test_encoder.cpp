@@ -1,6 +1,6 @@
 ﻿#include <sstream>
 #include "../test.hpp"
-#include "ouchilib/crypto/encoder.hpp"
+#include "ouchilib/crypto/block_encoder.hpp"
 #include "ouchilib/crypto/algorithm/aes.hpp"
 
 DEFINE_TEST(test_encoder_ecb) {
