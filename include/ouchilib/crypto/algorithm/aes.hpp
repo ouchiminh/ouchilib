@@ -87,6 +87,11 @@ public:
         set_key(key);
     }
     aes() = default;
+    ~aes()
+    {
+        using vp = std::decay_t<std::add_volatile_t<decltype(key_.data)>>;
+        std::fill(const_cast<vp>(key_.data), const_cast<vp>(key_.data + KeyLength), 0);
+    }
 
     void set_key(key_view key) noexcept {
         std::memcpy(key_.data, key.data, KeyLength);
