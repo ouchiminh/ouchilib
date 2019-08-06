@@ -22,12 +22,9 @@
     <ClInclude Include="..\test.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\aes\aes-utl.cpp" />
-    <ClCompile Include="..\..\src\aes\aes.cpp" />
     <ClCompile Include="..\..\src\aes\SHA256.cpp" />
     <ClCompile Include="..\..\src\archiver\arcfile.cpp" />
     <ClCompile Include="..\..\src\archiver\archiver.cpp" />
-    <ClCompile Include="..\aes\test-aes_utl.cpp" />
     <ClCompile Include="..\crypto\test_aes.cpp" />
     <ClCompile Include="..\crypto\test_encoder.cpp" />
     <ClCompile Include="..\program_options\test_program_options.cpp" />
@@ -131,6 +128,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)include;$(Boost_Dir)\include\boost-1_69;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

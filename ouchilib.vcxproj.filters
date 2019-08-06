@@ -32,22 +32,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\ouchilib\aes.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\ouchilib\archiver.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\ouchilib\log.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ouchilib\aes\aes-utl.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ouchilib\aes\aes.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ouchilib\aes\key.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\ouchilib\aes\SHA256.hpp">

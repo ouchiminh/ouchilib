@@ -128,10 +128,6 @@
     <ClCompile Include="src\archiver\archiver.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\ouchilib\aes.hpp" />
-    <ClInclude Include="include\ouchilib\aes\aes-utl.hpp" />
-    <ClInclude Include="include\ouchilib\aes\aes.hpp" />
-    <ClInclude Include="include\ouchilib\aes\key.hpp" />
     <ClInclude Include="include\ouchilib\aes\SHA256.hpp" />
     <ClInclude Include="include\ouchilib\archiver.hpp" />
     <ClInclude Include="include\ouchilib\archiver\arcfile.hpp" />
