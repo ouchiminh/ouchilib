@@ -111,7 +111,9 @@ inline void add_assign(void* srcdest, memory_view<SizeInByte> src2) noexcept
 
 template<size_t StepWidth>
 struct memory_iterator {
-    void* current;
+    static_assert(StepWidth);
+
+    std::uint8_t* current;
     size_t size;
 
     memory_iterator()
@@ -120,20 +122,25 @@ struct memory_iterator {
     {}
     template<class T>
     memory_iterator(T* ptr, size_t cnt)
-        : current{ ptr }
+        : current{ reinterpret_cast<std::uint8_t*>(ptr) }
         , size{ cnt * sizeof(T) }
+    {}
+    memory_iterator(void* ptr, size_t cnt)
+        : current{ reinterpret_cast<std::uint8_t*>(ptr) }
+        , size{ cnt }
     {}
     template<class T, size_t Size>
     memory_iterator(T(&arr)[Size])
-        : current(arr)
+        : current(reinterpret_cast<std::uint8_t*>(arr))
         , size{ Size * sizeof(T) }
     {}
 
     memory_iterator& operator++() noexcept
     {
-        assert(size > StepWidth);
+        assert(size >= StepWidth);
         current += StepWidth;
         size -= StepWidth;
+        return *this;
     }
     memory_iterator operator++(int) noexcept
     {
@@ -145,6 +152,7 @@ struct memory_iterator {
     {
         current -= StepWidth;
         size += StepWidth;
+        return *this;
     }
     memory_iterator operator--(int) noexcept
     {
@@ -156,7 +164,42 @@ struct memory_iterator {
     {
         return memory_view<StepWidth>{current};
     }
+    friend memory_iterator operator+(memory_iterator i, long long d)
+    {
+        assert((d > 0 && i.count() >= (unsigned long long)d) || d < 0);
+        return memory_iterator<StepWidth>(i.current + (d * StepWidth),
+                                          i.size - d * StepWidth);
+    }
+    friend memory_iterator operator+(long long d, memory_iterator i)
+    {
+        return i + d;
+    }
+    friend memory_iterator operator-(memory_iterator i, long long d)
+    {
+        return memory_iterator<StepWidth>(i.current - (d * StepWidth),
+                                          i.size + d * StepWidth);
+    }
+    friend memory_iterator operator-(long long d, memory_iterator i)
+    {
+        return i - d;
+    }
+    friend size_t operator-(memory_iterator lhs, memory_iterator rhs)
+    {
+        return lhs.current - rhs.current;
+    }
+    friend bool operator==(memory_iterator lhs, memory_iterator rhs)
+    {
+        return lhs.current == rhs.current;
+    }
+    friend bool operator!=(memory_iterator lhs, memory_iterator rhs)
+    {
+        return !(lhs == rhs);
+    }
     void* raw() noexcept { return current; }
+    size_t count() const noexcept
+    {
+        return size / StepWidth;
+    }
 };
 
 }

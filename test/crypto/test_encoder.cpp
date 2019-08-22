@@ -56,7 +56,6 @@ DEFINE_TEST(test_encoder_ctr) {
 
     REQUIRE_EQUAL(cg[0].encrypt(plain, sizeof(plain), crypto, sizeof(crypto)), 32);
     REQUIRE_EQUAL(cg[1].decrypt(crypto, sizeof(crypto), decrypt, sizeof(decrypt)), 16);
-
     for (auto i : ouchi::step(16)) {
         CHECK_EQUAL(plain[i], decrypt[i]);
     }
