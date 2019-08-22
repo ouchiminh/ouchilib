@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <cstddef>
+#include <utility>
 #include <istream>
 #include <ostream>
 #include <stdexcept>
@@ -16,8 +17,8 @@ template<
 class block_encoder {
 public:
     template<class ...Args>
-    block_encoder(Args&& ...args)
-        : cipher_device_(std::forward<Args>(args)...)
+    block_encoder(std::in_place_t, Args&& ...args)
+        : cipher_device_(std::in_place, std::forward<Args>(args)...)
     {}
     ///<returns>crypto size</returns>
     size_t encrypt(const void* src, size_t size, void* dest, size_t dest_size)
@@ -121,7 +122,6 @@ public:
             }
             tp.push([device, first, it, last, dest]() mutable {
                 if (it != first) device.set_decrypt_state(first, it - 1);
-                device.set_decrypt_state(first, it - 1);
                 for (; it != last; ++it) {
                     device.decrypt(*it, it.raw());
                 }
