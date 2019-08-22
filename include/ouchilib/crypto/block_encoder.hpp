@@ -79,7 +79,7 @@ public:
                 });
                 it = it + width;
             }
-            tp.push([device, first, it, last, dest]() mutable {
+            tp.push([device, first, it, last]() mutable {
                 if (it != first) device.set_encrypt_state(first, it - 1);
                 device.set_encrypt_state(first, it - 1);
                 for (; it != last; ++it) {
@@ -102,7 +102,7 @@ public:
         auto device = cipher_device_;
         auto destptr = reinterpret_cast<std::uint8_t*>(dest);
         auto srcptr = reinterpret_cast<const std::uint8_t*>(src);
-
+        std::memmove(destptr, srcptr, size);
         // decryption
         {
             const memory_iterator<Algorithm::block_size> first(dest, dest_size);
@@ -127,6 +127,7 @@ public:
                 }
             });
         }
+        tp.wait();
 
         // delete pad
         auto padsize = destptr[dest_size - 1];

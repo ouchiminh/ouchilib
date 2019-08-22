@@ -63,7 +63,7 @@ DEFINE_TEST(test_encoder_ctr) {
 DEFINE_TEST(test_parallel_encode) {
     using namespace ouchi::crypto;
     const char plain[16] = "123456789abcdef";
-    const char key[32] =   "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+    const char key[32] =   "!!!!!!!!!?!!!!!!!!!!!!!!!!!!!!!";
     char nonce[16] = "hogehogehogehog";
     size_t ictr = 0;
     block_encoder<ctr, aes256> cg[2] = { {nonce, ictr, key}, {nonce, ictr, key} };

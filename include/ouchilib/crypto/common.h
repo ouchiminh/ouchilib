@@ -166,7 +166,7 @@ struct memory_iterator {
     }
     friend memory_iterator operator+(memory_iterator i, long long d)
     {
-        assert((d > 0 && i.count() >= (unsigned long long)d) || d < 0);
+        assert((d > 0 && i.count() >= (unsigned long long)d) || d <= 0);
         return memory_iterator<StepWidth>(i.current + (d * StepWidth),
                                           i.size - d * StepWidth);
     }
