@@ -60,3 +60,19 @@ DEFINE_TEST(test_encoder_ctr) {
         CHECK_EQUAL(plain[i], decrypt[i]);
     }
 }
+DEFINE_TEST(test_parallel_encode) {
+    using namespace ouchi::crypto;
+    const char plain[16] = "123456789abcdef";
+    const char key[32] =   "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+    char nonce[16] = "hogehogehogehog";
+    size_t ictr = 0;
+    block_encoder<ctr, aes256> cg[2] = { {nonce, ictr, key}, {nonce, ictr, key} };
+    char crypto[32];
+    char decrypt[32];
+    REQUIRE_EQUAL(cg[0].encrypt_parallel(plain, sizeof(plain), crypto, sizeof(crypto), 4), 32);
+    REQUIRE_EQUAL(cg[1].decrypt_parallel(crypto, sizeof(crypto), decrypt, sizeof(decrypt), 3), 16);
+
+    for (auto i : ouchi::step(16)) {
+        CHECK_EQUAL(plain[i], decrypt[i]);
+    }
+}
