@@ -9,6 +9,17 @@
 #include "ouchilib/utl/multiitr.hpp"
 
 namespace ouchi::crypto {
+
+template<class T>
+void secure_memset(T* ptr, std::uint8_t ch)
+{
+    using vp = volatile std::uint8_t*;
+    auto* dest = reinterpret_cast<vp>(ptr);
+    for (auto i : ouchi::step(sizeof(T))) {
+        dest[i] = ch;
+    }
+}
+
 template<size_t>
 class memory_view;
 
@@ -36,7 +47,7 @@ class memory_view {
 public:
     const std::uint8_t * data;
     using value_type = std::uint8_t;
-    memory_view(const void* ptr) : data{ reinterpret_cast<const uint8_t*>(ptr) } {}
+    memory_view(const void* ptr) : data{ static_cast<const uint8_t*>(ptr) } {}
     memory_view() : data{ nullptr } {}
     memory_view(const memory_entity<SizeInByte>& me) : data{ me.data } {} // meの寿命はプログラマーの責任
     const std::uint8_t& operator[](size_t i) const noexcept {
@@ -88,7 +99,7 @@ inline memory_entity<SizeInByte>& memory_entity<SizeInByte>::operator=(memory_vi
 template<size_t SizeInByte>
 inline void add(memory_view<SizeInByte> operand1, memory_view<SizeInByte> operand2, void* dest) noexcept
 {
-    auto res = reinterpret_cast<std::uint8_t*>(dest);
+    auto res = static_cast<std::uint8_t*>(dest);
     for (auto i : ouchi::step(SizeInByte)) {
         res[i] = operand1[i] ^ operand2[i];
     }
@@ -96,8 +107,8 @@ inline void add(memory_view<SizeInByte> operand1, memory_view<SizeInByte> operan
 
 inline void add_assign(void* srcdest, const void* src2, size_t size) noexcept
 {
-    auto* dest = reinterpret_cast<std::uint8_t*>(srcdest);
-    auto* src = reinterpret_cast<const std::uint8_t*>(src2);
+    auto* dest = static_cast<std::uint8_t*>(srcdest);
+    auto* src = static_cast<const std::uint8_t*>(src2);
 
     for (auto&& i : ouchi::step(size)) {
         dest[i] ^= src[i];
@@ -122,11 +133,11 @@ struct memory_iterator {
     {}
     template<class T>
     memory_iterator(T* ptr, size_t cnt)
-        : current{ reinterpret_cast<std::uint8_t*>(ptr) }
+        : current{ static_cast<std::uint8_t*>(ptr) }
         , size{ cnt * sizeof(T) }
     {}
     memory_iterator(void* ptr, size_t cnt)
-        : current{ reinterpret_cast<std::uint8_t*>(ptr) }
+        : current{ static_cast<std::uint8_t*>(ptr) }
         , size{ cnt }
     {}
     template<class T, size_t Size>
