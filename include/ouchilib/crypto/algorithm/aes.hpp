@@ -1,9 +1,10 @@
 ﻿#pragma once
 #include <cstdlib>
 #include <cstdint>
+#include <cstring>
 #include <utility>
 #include "ouchilib/utl/step.hpp"
-#include "../common.h"
+#include "../common.hpp"
 
 namespace ouchi::crypto {
 
@@ -38,13 +39,12 @@ inline std::uint32_t dataget(void * data, std::uint32_t n) {
 template<size_t KeyLength>  // size in byte : 16,24,32
 struct aes {
     static_assert(KeyLength == 16 || KeyLength == 24 || KeyLength == 32);
-    static constexpr size_t block_size = 16;
     static constexpr size_t nb = 4;
+    static constexpr size_t nr = KeyLength / 4 + 6;
+    static constexpr size_t block_size = 4 * nb;
     using block_t = memory_view<block_size>;
     using key_t = memory_entity<KeyLength>;
     using key_view = memory_view<KeyLength>;
-private:
-    static constexpr size_t nr = KeyLength / 4 + 6;
     static constexpr std::uint8_t sbox[256] = {
         0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
         0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,
@@ -82,7 +82,6 @@ private:
         0x17,0x2b,0x04,0x7e,0xba,0x77,0xd6,0x26,0xe1,0x69,0x14,0x63,0x55,0x21,0x0c,0x7d
     };
 
-public:
     aes(key_view key) {
         set_key(key);
     }
@@ -132,8 +131,7 @@ public:
 		add_roundkey(dest, 0);
     }
 
-private:
-    std::uint32_t subword(std::uint32_t in) const noexcept
+    static std::uint32_t subword(std::uint32_t in) noexcept
     {
         uint32_t inw = in;
         unsigned char* cin = (unsigned char*)&inw;
@@ -167,24 +165,24 @@ private:
         }
     }
 
-    void sub_bytes(void* data) const noexcept
+    static void sub_bytes(void* data) noexcept
     {
-        unsigned char* cb = reinterpret_cast<unsigned char*>(data);
+        unsigned char* cb = static_cast<std::uint8_t*>(data);
         for (auto i : ouchi ::step(16)) {
             cb[i] = sbox[cb[i]];
         }
     }
-    void inv_sub_bytes(void* data) const noexcept
+    static void inv_sub_bytes(void* data) noexcept
     {
-        unsigned char* cb = reinterpret_cast<unsigned char*>(data);
+        unsigned char* cb = static_cast<std::uint8_t*>(data);
         for (auto i : ouchi ::step(16)) {
             cb[i] = inv_sbox[cb[i]];
         }
     }
 
-    void shift_rows(void* data) const noexcept
+    static void shift_rows(void* data) noexcept
     {
-        auto ptr{ (uint8_t*)data };
+        auto ptr{ static_cast<uint8_t*>(data) };
         memory_entity<block_size> cw(data);
         for (int i = 0; i<nb; i += 4) {
             int i4 = i * 4;
@@ -197,9 +195,9 @@ private:
         }
         std::memcpy(data, cw.data, block_size);
     }
-    void inv_shift_rows(void* data) const noexcept
+    static void inv_shift_rows(void* data) noexcept
     {
-        auto ptr{ (uint8_t*)data };
+        auto ptr{ static_cast<uint8_t*>(data) };
         memory_entity<block_size> cw(data);
         for (int i = 0; i<nb; i += 4) {
             int i4 = i * 4;
@@ -213,7 +211,7 @@ private:
         std::memcpy(data, cw.data, block_size);
     }
 
-    void mix_columns(void* data) const noexcept
+    static void mix_columns(void* data) noexcept
     {
         std::uint32_t i4, x;
         auto adata = static_cast<std::uint8_t*>(data);
@@ -238,7 +236,7 @@ private:
             std::memcpy(adata + i * 4, &x, sizeof(x));
         }
     }
-    void inv_mix_columns(void* data) const noexcept
+    static void inv_mix_columns(void* data) noexcept
     {
         std::uint32_t i4, x;
         auto adata = static_cast<std::uint8_t*>(data);
@@ -263,6 +261,7 @@ private:
             std::memcpy(adata + i * 4, &x, sizeof(x));
         }
     }
+private:
     key_t key_;
     std::uint32_t w_[60];    // expanded key
 };

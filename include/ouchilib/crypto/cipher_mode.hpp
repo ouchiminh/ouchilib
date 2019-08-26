@@ -2,7 +2,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "common.h"
+#include "common.hpp"
 
 namespace ouchi::crypto {
 template<class T, class = void>

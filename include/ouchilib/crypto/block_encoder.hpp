@@ -28,7 +28,7 @@ public:
         std::memmove(dest, src, size);
         dest_size = size + padsize;
 
-        auto destptr = reinterpret_cast<std::uint8_t*>(dest);
+        auto destptr = static_cast<std::uint8_t*>(dest);
         pad(destptr, size, padsize);
         for (auto i : ouchi::step(0ull, dest_size, Algorithm::block_size)) {
             cipher_device_.encrypt(destptr + i, destptr + i);
@@ -41,8 +41,8 @@ public:
         check_ddestsize(size, dest_size);
         dest_size = size;
 
-        auto destptr = reinterpret_cast<std::uint8_t*>(dest);
-        auto srcptr = reinterpret_cast<const std::uint8_t*>(src);
+        auto destptr = static_cast<std::uint8_t*>(dest);
+        auto srcptr = static_cast<const std::uint8_t*>(src);
         for (auto i : ouchi::step(0ull, dest_size, Algorithm::block_size)) {
             cipher_device_.decrypt(srcptr + i, destptr + i);
         }
@@ -59,7 +59,7 @@ public:
         assert(thread_cnt);
         auto device = cipher_device_;
         auto padsize = check_edestsize(size, dest_size);
-        auto destptr = reinterpret_cast<std::uint8_t*>(dest);
+        auto destptr = static_cast<std::uint8_t*>(dest);
         ouchi::thread::thread_pool tp(thread_cnt);
 
         std::memmove(dest, src, size);
@@ -101,8 +101,8 @@ public:
         dest_size = size;
         ouchi::thread::thread_pool tp(thread_cnt);
         auto device = cipher_device_;
-        auto destptr = reinterpret_cast<std::uint8_t*>(dest);
-        auto srcptr = reinterpret_cast<const std::uint8_t*>(src);
+        auto destptr = static_cast<std::uint8_t*>(dest);
+        auto srcptr = static_cast<const std::uint8_t*>(src);
         std::memmove(destptr, srcptr, size);
         // decryption
         {
@@ -171,7 +171,7 @@ public:
 private:
     static void pad(void* dest, size_t srcsize, size_t padsize)
     {
-        auto destptr = reinterpret_cast<std::uint8_t*>(dest);
+        auto destptr = static_cast<std::uint8_t*>(dest);
         for (auto i : ouchi::step(padsize)) {
             destptr[i + srcsize] = (std::uint8_t)padsize;
         }
