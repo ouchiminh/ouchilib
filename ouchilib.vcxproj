@@ -133,9 +133,10 @@
     <ClInclude Include="include\ouchilib\archiver\arcfile.hpp" />
     <ClInclude Include="include\ouchilib\archiver\archiver.hpp" />
     <ClInclude Include="include\ouchilib\crypto\algorithm\aes.hpp" />
+    <ClInclude Include="include\ouchilib\crypto\algorithm\aes_ni.hpp" />
     <ClInclude Include="include\ouchilib\crypto\algorithm\oca.hpp" />
     <ClInclude Include="include\ouchilib\crypto\cipher_mode.hpp" />
-    <ClInclude Include="include\ouchilib\crypto\common.h" />
+    <ClInclude Include="include\ouchilib\crypto\common.hpp" />
     <ClInclude Include="include\ouchilib\crypto\block_encoder.hpp" />
     <ClInclude Include="include\ouchilib\log.hpp" />
     <ClInclude Include="include\ouchilib\log\format.hpp" />
