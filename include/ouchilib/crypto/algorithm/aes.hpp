@@ -91,9 +91,12 @@ public:
     {
         using vp = std::decay_t<std::add_volatile_t<decltype(key_.data)>>;
         std::fill(const_cast<vp>(key_.data), const_cast<vp>(key_.data + KeyLength), 0);
+        using wvp = std::decay_t<std::add_volatile_t<decltype(w_)>>;
+        std::fill(const_cast<wvp>(w_), const_cast<wvp>(w_ + 60), 0);
     }
 
-    void set_key(key_view key) noexcept {
+    void set_key(key_view key) noexcept
+    {
         std::memcpy(key_.data, key.data, KeyLength);
         expand_key();
     }
@@ -105,7 +108,7 @@ public:
         for (auto i : ouchi::step(1u, (std::uint32_t)nr)) {
             sub_bytes(dest);
             shift_rows(dest);
-            mix_columns(reinterpret_cast<std::uint32_t*>(dest));
+            mix_columns(dest);
             add_roundkey(dest, i);
         }
         sub_bytes(dest);
@@ -121,7 +124,7 @@ public:
 			inv_shift_rows(dest);
 			inv_sub_bytes(dest);
 			add_roundkey(dest, (int)i);
-			inv_mix_columns(reinterpret_cast<uint32_t*>(dest));
+			inv_mix_columns(dest);
 		}
 
 		inv_shift_rows(dest);
@@ -143,7 +146,7 @@ private:
     void expand_key() noexcept
     {
     /* FIPS 197  P.27 Appendix A.1 Rcon[i/Nk] */ //又は mulを使用する
-        int Rcon[10] = { 0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36 };
+        constexpr int Rcon[10] = { 0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36 };
         std::uint32_t temp;
 
         std::memcpy(w_, key_.data, KeyLength);
@@ -210,52 +213,54 @@ private:
         std::memcpy(data, cw.data, block_size);
     }
 
-    void mix_columns(uint32_t* data) const noexcept
+    void mix_columns(void* data) const noexcept
     {
         std::uint32_t i4, x;
+        auto adata = static_cast<std::uint8_t*>(data);
         for (auto i : ouchi::step((std::uint32_t)nb)) {
             i4 = i * 4;
-            x = mul(dataget(data, i4 + 0), 2) ^
-                mul(dataget(data, i4 + 1), 3) ^
-                mul(dataget(data, i4 + 2), 1) ^
-                mul(dataget(data, i4 + 3), 1);
-            x |= (mul(dataget(data, i4 + 1), 2) ^
-                  mul(dataget(data, i4 + 2), 3) ^
-                  mul(dataget(data, i4 + 3), 1) ^
-                  mul(dataget(data, i4 + 0), 1)) << 8;
-            x |= (mul(dataget(data, i4 + 2), 2) ^
-                  mul(dataget(data, i4 + 3), 3) ^
-                  mul(dataget(data, i4 + 0), 1) ^
-                  mul(dataget(data, i4 + 1), 1)) << 16;
-            x |= (mul(dataget(data, i4 + 3), 2) ^
-                  mul(dataget(data, i4 + 0), 3) ^
-                  mul(dataget(data, i4 + 1), 1) ^
-                  mul(dataget(data, i4 + 2), 1)) << 24;
-            data[i] = x;
+            x = mul(dataget(adata, i4 + 0), 2) ^
+                mul(dataget(adata, i4 + 1), 3) ^
+                mul(dataget(adata, i4 + 2), 1) ^
+                mul(dataget(adata, i4 + 3), 1);
+            x |= (mul(dataget(adata, i4 + 1), 2) ^
+                  mul(dataget(adata, i4 + 2), 3) ^
+                  mul(dataget(adata, i4 + 3), 1) ^
+                  mul(dataget(adata, i4 + 0), 1)) << 8;
+            x |= (mul(dataget(adata, i4 + 2), 2) ^
+                  mul(dataget(adata, i4 + 3), 3) ^
+                  mul(dataget(adata, i4 + 0), 1) ^
+                  mul(dataget(adata, i4 + 1), 1)) << 16;
+            x |= (mul(dataget(adata, i4 + 3), 2) ^
+                  mul(dataget(adata, i4 + 0), 3) ^
+                  mul(dataget(adata, i4 + 1), 1) ^
+                  mul(dataget(adata, i4 + 2), 1)) << 24;
+            std::memcpy(adata + i * 4, &x, sizeof(x));
         }
     }
-    void inv_mix_columns(std::uint32_t* data) const noexcept
+    void inv_mix_columns(void* data) const noexcept
     {
         std::uint32_t i4, x;
+        auto adata = static_cast<std::uint8_t*>(data);
         for (auto i : ouchi::step((std::uint32_t)nb)) {
             i4 = i * 4;
-            x = mul(dataget(data, i4 + 0), 14) ^
-                mul(dataget(data, i4 + 1), 11) ^
-                mul(dataget(data, i4 + 2), 13) ^
-                mul(dataget(data, i4 + 3), 9);
-            x |= (mul(dataget(data, i4 + 1), 14) ^
-                  mul(dataget(data, i4 + 2), 11) ^
-                  mul(dataget(data, i4 + 3), 13) ^
-                  mul(dataget(data, i4 + 0), 9)) << 8;
-            x |= (mul(dataget(data, i4 + 2), 14) ^
-                  mul(dataget(data, i4 + 3), 11) ^
-                  mul(dataget(data, i4 + 0), 13) ^
-                  mul(dataget(data, i4 + 1), 9)) << 16;
-            x |= (mul(dataget(data, i4 + 3), 14) ^
-                  mul(dataget(data, i4 + 0), 11) ^
-                  mul(dataget(data, i4 + 1), 13) ^
-                  mul(dataget(data, i4 + 2), 9)) << 24;
-            data[i] = x;
+            x = mul(dataget(adata, i4 + 0), 14) ^
+                mul(dataget(adata, i4 + 1), 11) ^
+                mul(dataget(adata, i4 + 2), 13) ^
+                mul(dataget(adata, i4 + 3), 9);
+            x |= (mul(dataget(adata, i4 + 1), 14) ^
+                  mul(dataget(adata, i4 + 2), 11) ^
+                  mul(dataget(adata, i4 + 3), 13) ^
+                  mul(dataget(adata, i4 + 0), 9)) << 8;
+            x |= (mul(dataget(adata, i4 + 2), 14) ^
+                  mul(dataget(adata, i4 + 3), 11) ^
+                  mul(dataget(adata, i4 + 0), 13) ^
+                  mul(dataget(adata, i4 + 1), 9)) << 16;
+            x |= (mul(dataget(adata, i4 + 3), 14) ^
+                  mul(dataget(adata, i4 + 0), 11) ^
+                  mul(dataget(adata, i4 + 1), 13) ^
+                  mul(dataget(adata, i4 + 2), 9)) << 24;
+            std::memcpy(adata + i * 4, &x, sizeof(x));
         }
     }
     key_t key_;
