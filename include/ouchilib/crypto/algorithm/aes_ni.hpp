@@ -82,6 +82,7 @@ private:
                 temp = aes::subword(temp);
             w[i] = w[i - (KeyLength / 4)] ^ temp;
         }
+        // copy software-expanded key
         for (auto r : ouchi::step(nr + 1)) {
             w128[r] = _mm_loadu_si128(reinterpret_cast<__m128i*>(w + r * 4));
         }

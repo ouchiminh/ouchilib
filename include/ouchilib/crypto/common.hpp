@@ -19,6 +19,8 @@ void secure_memset(T* ptr, std::uint8_t ch)
         dest[i] = ch;
     }
 }
+template<class T, size_t N>
+void secure_memset(T(&array)[N], std::uint8_t ch);
 
 template<size_t>
 class memory_view;

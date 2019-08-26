@@ -2,6 +2,8 @@
 #include "../test.hpp"
 #include "ouchilib/crypto/block_encoder.hpp"
 #include "ouchilib/crypto/algorithm/aes.hpp"
+#include "ouchilib/crypto/algorithm/aes_ni.hpp"
+#include "ouchilib/utl/time-measure.hpp"
 
 DEFINE_TEST(test_encoder_ecb) {
     using namespace ouchi::crypto;
@@ -76,4 +78,20 @@ DEFINE_TEST(test_parallel_encode) {
     for (auto i : ouchi::step(sizeof(plain))) {
         CHECK_EQUAL(plain[i], decrypt[i]);
     }
+}
+
+DEFINE_TEST(test_aes_ni_speed)
+{
+    using namespace ouchi::crypto;
+    constexpr char plain[4096] = { 1, 2, 3 };
+    constexpr char key[32] =   "!!!!!!!!!?!!!!!!!!!!!!!!!!!!!!!";
+    char dest[4200];
+    block_encoder<ecb, aes256> soft{ std::in_place, key };
+    block_encoder<ecb, aes256_ni> ni{ std::in_place, key };
+    auto t1 = ouchi::measure([&soft](auto a, auto b, auto c, auto d) {soft.encrypt(a, b, c, d); },
+                             plain, sizeof plain, dest, sizeof dest);
+    auto t2 = ouchi::measure([&ni](auto a, auto b, auto c, auto d) {ni.encrypt(a, b, c, d); },
+                             plain, sizeof plain, dest, sizeof dest);
+    CHECK_TRUE(t1 > t2);
+    //std::cout << t1.count() / (double)t2.count() << std::endl;
 }
