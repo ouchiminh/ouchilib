@@ -45,7 +45,7 @@ DEFINE_TEST(test_aes_ni)
     encoder.decrypt(code[0], p);
 
     using namespace std::string_literals;
-    CHECK_EQUAL("123456789abcdef"s, buf);
+    CHECK_EQUAL("123456789abcdef"s, p);
     for (auto [a, b] : ouchi::multiitr{ code[0], code[1] })
         CHECK_EQUAL(a, b);
 }
