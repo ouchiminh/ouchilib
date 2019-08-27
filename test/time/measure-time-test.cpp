@@ -14,7 +14,7 @@ DEFINE_TEST(test_measure_time) {
         std::this_thread::sleep_for(chrono::milliseconds(500));
     }
     REQUIRE_TRUE(d - 450ms <= 100ms);
-    LOG(std::to_string(chrono::duration_cast<chrono::milliseconds>(d).count()));
+    //LOG(std::to_string(chrono::duration_cast<chrono::milliseconds>(d).count()));
 
     d = 0s;
     {
@@ -28,7 +28,7 @@ DEFINE_TEST(test_measure_time) {
         std::this_thread::sleep_for(chrono::milliseconds(100));
     }
     REQUIRE_TRUE(d - 550ms <= 100ms);
-    LOG(std::to_string(chrono::duration_cast<chrono::milliseconds>(d).count()));
+    //LOG(std::to_string(chrono::duration_cast<chrono::milliseconds>(d).count()));
 }
 
 }

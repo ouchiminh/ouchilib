@@ -98,13 +98,23 @@ inline memory_entity<SizeInByte>& memory_entity<SizeInByte>::operator=(memory_vi
 
 // global function
 
+namespace detail {
+
+template<size_t ...S>
+inline void add_impl(const std::uint8_t* lhs, const std::uint8_t* rhs, std::uint8_t* dest,
+                     std::index_sequence<S...>)
+{
+    ((dest[S] = lhs[S] ^ rhs[S]), ...);
+}
+
+}
+
 template<size_t SizeInByte>
 inline void add(memory_view<SizeInByte> operand1, memory_view<SizeInByte> operand2, void* dest) noexcept
 {
     auto res = static_cast<std::uint8_t*>(dest);
-    for (auto i : ouchi::step(SizeInByte)) {
-        res[i] = operand1[i] ^ operand2[i];
-    }
+    detail::add_impl(operand1.data, operand2.data, reinterpret_cast<std::uint8_t*>(dest),
+                     std::make_index_sequence<SizeInByte>{});
 }
 
 inline void add_assign(void* srcdest, const void* src2, size_t size) noexcept
@@ -112,14 +122,17 @@ inline void add_assign(void* srcdest, const void* src2, size_t size) noexcept
     auto* dest = static_cast<std::uint8_t*>(srcdest);
     auto* src = static_cast<const std::uint8_t*>(src2);
 
-    for (auto&& i : ouchi::step(size)) {
+    for (auto i = 0u; i < size; ++i) {
         dest[i] ^= src[i];
     }
 }
 template<size_t SizeInByte>
 inline void add_assign(void* srcdest, memory_view<SizeInByte> src2) noexcept
 {
-    add_assign(srcdest, src2.data, SizeInByte);
+    //add_assign(srcdest, src2.data, SizeInByte);
+    detail::add_impl(reinterpret_cast<const std::uint8_t*>(srcdest), src2.data,
+                     reinterpret_cast<std::uint8_t*>(srcdest),
+                     std::make_index_sequence<SizeInByte>{});
 }
 
 template<size_t StepWidth>

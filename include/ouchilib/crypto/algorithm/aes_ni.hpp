@@ -2,6 +2,7 @@
 #include <wmmintrin.h>
 #include <cstdint>
 #include <cstdlib>
+#include <utility>
 #include "ouchilib/utl/step.hpp"
 #include "aes.hpp"
 #include "../common.hpp"
@@ -46,9 +47,10 @@ public:
     {
         __m128i state = _mm_loadu_si128(reinterpret_cast<const __m128i*>(src.data));
         state = _mm_xor_si128(state, w128[0]);
-        for (auto r = 1u; r < nr; ++r) {
-            state = _mm_aesenc_si128(state, w128[r]);
-        }
+        //for (auto r = 1u; r < nr; ++r) {
+        //    state = _mm_aesenc_si128(state, w128[r]);
+        //}
+        state = enc_round(state, std::make_index_sequence<nr-1>{});
         state = _mm_aesenclast_si128(state, w128[nr]);
         _mm_storeu_si128(reinterpret_cast<__m128i*>(dest), state);
     }
@@ -56,9 +58,10 @@ public:
     {
         __m128i state = _mm_loadu_si128(reinterpret_cast<const __m128i*>(src.data));
         state = _mm_xor_si128(state, dw128[nr]);
-        for (auto r = nr - 1; r > 0; --r) {
-            state = _mm_aesdec_si128(state, dw128[r]);
-        }
+        //for (auto r = nr - 1; r > 0; --r) {
+        //    state = _mm_aesdec_si128(state, dw128[r]);
+        //}
+        state = dec_round(state, std::make_index_sequence<nr-1>{});
         state = _mm_aesdeclast_si128(state, dw128[0]);
         _mm_storeu_si128(reinterpret_cast<__m128i*>(dest), state);
     }
@@ -66,6 +69,19 @@ private:
     __m128i w128[nr + 1];
     __m128i dw128[nr + 1];
     key_t key_;
+    template<size_t ...S>
+    inline [[nodiscard]] __m128i enc_round(__m128i state, std::index_sequence<S...>) const noexcept
+    {
+        ((state = _mm_aesenc_si128(state, w128[S + 1])), ...);
+        return state;
+    }
+    template<size_t ...S>
+    inline [[nodiscard]] __m128i dec_round(__m128i state, std::index_sequence<S...>) const noexcept
+    {
+        ((state = _mm_aesdec_si128(state, dw128[nr - S - 1])), ...);
+        return state;
+    }
+
     void expand_key()
     {
         using aes = aes<KeyLength>;
