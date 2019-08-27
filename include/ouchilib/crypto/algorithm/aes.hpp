@@ -104,7 +104,7 @@ struct aes {
     {
         std::memmove(dest, src.data, block_size);
         add_roundkey(dest, 0);
-        for (auto i : ouchi::step(1u, (std::uint32_t)nr)) {
+        for (auto i = 1u; i < nr; ++i) {
             sub_bytes(dest);
             shift_rows(dest);
             mix_columns(dest);
@@ -141,6 +141,7 @@ struct aes {
         cin[3] = sbox[cin[3]];
         return (inw);
     }
+private:
     void expand_key() noexcept
     {
     /* FIPS 197  P.27 Appendix A.1 Rcon[i/Nk] */ //又は mulを使用する
@@ -261,7 +262,6 @@ struct aes {
             std::memcpy(adata + i * 4, &x, sizeof(x));
         }
     }
-private:
     key_t key_;
     std::uint32_t w_[60];    // expanded key
 };

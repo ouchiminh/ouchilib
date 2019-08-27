@@ -93,5 +93,7 @@ DEFINE_TEST(test_aes_ni_speed)
     auto t2 = ouchi::measure([&ni](auto a, auto b, auto c, auto d) {ni.encrypt(a, b, c, d); },
                              plain, sizeof plain, dest, sizeof dest);
     CHECK_TRUE(t1 > t2);
-    //std::cout << t1.count() / (double)t2.count() << std::endl;
+    double kbps[] = { 4 * 8 / (t1.count() / (double)std::nano::den),
+        4 * 8 / (t2.count() / (double)std::nano::den) };
+    std::printf("%f %f\n", kbps[0], kbps[1]);
 }

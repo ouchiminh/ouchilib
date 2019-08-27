@@ -46,7 +46,7 @@ public:
     {
         __m128i state = _mm_loadu_si128(reinterpret_cast<const __m128i*>(src.data));
         state = _mm_xor_si128(state, w128[0]);
-        for (auto r : ouchi::step(1u, nr)) {
+        for (auto r = 1u; r < nr; ++r) {
             state = _mm_aesenc_si128(state, w128[r]);
         }
         state = _mm_aesenclast_si128(state, w128[nr]);
@@ -63,8 +63,8 @@ public:
         _mm_storeu_si128(reinterpret_cast<__m128i*>(dest), state);
     }
 private:
-    alignas(16) __m128i w128[nr + 1];
-    alignas(16) __m128i dw128[nr + 1];
+    __m128i w128[nr + 1];
+    __m128i dw128[nr + 1];
     key_t key_;
     void expand_key()
     {
