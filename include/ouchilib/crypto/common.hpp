@@ -11,16 +11,23 @@
 namespace ouchi::crypto {
 
 template<class T>
-void secure_memset(T* ptr, std::uint8_t ch)
+inline void secure_memset(volatile T& ptr, std::uint8_t ch)
 {
     using vp = volatile std::uint8_t*;
-    auto* dest = reinterpret_cast<vp>(ptr);
-    for (auto i : ouchi::step(sizeof(T))) {
+    auto* dest = reinterpret_cast<vp>(&ptr);
+    for (auto i : ouchi::step(sizeof T)) {
         dest[i] = ch;
     }
 }
 template<class T, size_t N>
-void secure_memset(T(&array)[N], std::uint8_t ch);
+inline void secure_memset(volatile T(&array)[N], std::uint8_t ch)
+{
+    using vp = volatile std::uint8_t*;
+    auto* dest = reinterpret_cast<vp>(array);
+    for (auto i : ouchi::step(sizeof array)) {
+        dest[i] = ch;
+    }
+}
 
 template<size_t>
 class memory_view;

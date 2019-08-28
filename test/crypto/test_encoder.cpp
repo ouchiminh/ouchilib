@@ -64,7 +64,7 @@ DEFINE_TEST(test_encoder_ctr) {
 }
 DEFINE_TEST(test_parallel_encode) {
     using namespace ouchi::crypto;
-    const char plain[2008] = {1, 2, 3};
+    static constexpr char plain[2008] = {1, 2, 3};
     const char key[32] =   "!!!!!!!!!?!!!!!!!!!!!!!!!!!!!!!";
     char nonce[16] = "hogehogehogehog";
     size_t ictr = 0;
@@ -80,21 +80,24 @@ DEFINE_TEST(test_parallel_encode) {
     }
 }
 
-DEFINE_TEST(test_aes_ni_speed)
+DEFINE_TEST(test_aes_encode_speed)
 {
     using namespace ouchi::crypto;
-    constexpr char plain[4096*2] = { 1, 2, 3 };
+    static constexpr char plain[4096*2] = { 1, 2, 3 };
     constexpr char key[32] =   "!!!!!!!!!?!!!!!!!!!!!!!!!!!!!!!";
     char dest[8300];
-    block_encoder<cbc, aes256> soft{ std::in_place, key };
-    block_encoder<cbc, aes256_ni> ni{ std::in_place, key };
+    block_encoder<cbc, aes256> soft{ std::in_place, key, key };
+    block_encoder<cbc, aes256_ni> ni{ std::in_place, key, key };
+    //block_encoder<ecb, aes256> soft{ std::in_place, key };
+    //block_encoder<ecb, aes256_ni> ni{ std::in_place, key };
     auto t1 = ouchi::measure([&soft](auto a, auto b, auto c, auto d) {soft.encrypt(a, b, c, d); },
                              plain, sizeof plain, dest, sizeof dest);
     auto t2 = ouchi::measure([&ni](auto a, auto b, auto c, auto d) {ni.encrypt(a, b, c, d); },
                              plain, sizeof plain, dest, sizeof dest);
     CHECK_TRUE(t1 > t2);
-    double kbps[] = { (sizeof plain / 1000) / (t1.count() / (double)std::nano::den),
-        (sizeof plain / 1000) / (t2.count() / (double)std::nano::den) };
-    //std::printf("%fkbps %fkbps\n", kbps[0], kbps[1]);
-    std::printf("%fKB/s %fKB/s\n", kbps[0] / 8, kbps[1] / 8);
+    double kBps[] = {
+        (sizeof plain / 1024.0) / (t1.count() / (double)std::nano::den),
+        (sizeof plain / 1024.0) / (t2.count() / (double)std::nano::den)
+    };
+    //std::printf("%fKB/s %fKB/s\n", kBps[0], kBps[1]);
 }

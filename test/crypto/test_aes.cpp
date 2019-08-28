@@ -3,6 +3,7 @@
 #include "ouchilib/crypto/algorithm/aes.hpp"
 #include "ouchilib/crypto/algorithm/aes_ni.hpp"
 #include "ouchilib/utl/multiitr.hpp"
+#include "ouchilib/utl/time-measure.hpp"
 
 DEFINE_TEST(test_aes)
 {
@@ -48,4 +49,17 @@ DEFINE_TEST(test_aes_ni)
     CHECK_EQUAL("123456789abcdef"s, p);
     for (auto [a, b] : ouchi::multiitr{ code[0], code[1] })
         CHECK_EQUAL(a, b);
+}
+
+DEFINE_TEST(test_aes_ni_speed)
+{
+    static char buffer[8192] = { 1, 2, 3 };
+    constexpr char key[32] = "!!!!!!!!!!!!!!!";
+    ouchi::crypto::aes256_ni c(key);
+    auto t = ouchi::measure([c]() {
+        for (auto i = 0u; i < sizeof buffer; i += 16) {
+            c.encrypt(buffer + i, buffer + i);
+        }
+    });
+    //std::printf("%f kbps\n", (sizeof(buffer) / 1024) / (t.count() / (double)decltype(t)::period::den));
 }

@@ -30,7 +30,7 @@ public:
 
         auto destptr = static_cast<std::uint8_t*>(dest);
         pad(destptr, size, padsize);
-        for (auto i : ouchi::step(0ull, dest_size, Algorithm::block_size)) {
+        for (auto i = 0ull; i < dest_size; i +=Algorithm::block_size) {
             cipher_device_.encrypt(destptr + i, destptr + i);
         }
         return dest_size;
@@ -43,7 +43,7 @@ public:
 
         auto destptr = static_cast<std::uint8_t*>(dest);
         auto srcptr = static_cast<const std::uint8_t*>(src);
-        for (auto i : ouchi::step(0ull, dest_size, Algorithm::block_size)) {
+        for (auto i = 0ull; i < dest_size; i += Algorithm::block_size) {
             cipher_device_.decrypt(srcptr + i, destptr + i);
         }
         // delete pad

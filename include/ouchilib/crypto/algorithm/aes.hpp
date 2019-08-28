@@ -21,8 +21,8 @@ inline std::uint32_t rotword(std::uint32_t in) {
 
 inline std::uint32_t mul(std::uint32_t dt, std::uint32_t n)
 {
-	int x = 0;
-	for (int i = 8; i>0; i >>= 1) {
+	std::uint32_t x = 0;
+	for (auto i = 8u; i>0; i >>= 1) {
 		x <<= 1;
 		if (x & 0x100)
 			x = (x ^ 0x1b) & 0xff;
@@ -88,10 +88,8 @@ struct aes {
     aes() = default;
     ~aes()
     {
-        using vp = std::decay_t<std::add_volatile_t<decltype(key_.data)>>;
-        std::fill(const_cast<vp>(key_.data), const_cast<vp>(key_.data + KeyLength), 0);
-        using wvp = std::decay_t<std::add_volatile_t<decltype(w_)>>;
-        std::fill(const_cast<wvp>(w_), const_cast<wvp>(w_ + 60), 0);
+        secure_memset(key_.data, 0);
+        secure_memset(w_, 0);
     }
 
     void set_key(key_view key) noexcept
@@ -145,7 +143,7 @@ private:
     void expand_key() noexcept
     {
     /* FIPS 197  P.27 Appendix A.1 Rcon[i/Nk] */ //又は mulを使用する
-        constexpr int Rcon[10] = { 0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36 };
+        constexpr std::uint32_t Rcon[10] = { 0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36 };
         std::uint32_t temp;
 
         std::memcpy(w_, key_.data, KeyLength);
