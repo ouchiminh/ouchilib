@@ -8,15 +8,8 @@
 
 namespace ouchi::crypto {
 
-inline std::uint32_t rotword(std::uint32_t in) {
-	uint32_t inw = in, inw2 = 0;
-	unsigned char *cin = reinterpret_cast<unsigned char*>(&inw);
-	unsigned char *cin2 = reinterpret_cast<unsigned char*>(&inw2);
-	cin2[0] = cin[1];
-	cin2[1] = cin[2];
-	cin2[2] = cin[3];
-	cin2[3] = cin[0];
-	return(inw2);
+inline constexpr std::uint32_t rotword(std::uint32_t in) {
+    return rotl(in, 8);
 }
 
 inline std::uint32_t mul(std::uint32_t dt, std::uint32_t n)

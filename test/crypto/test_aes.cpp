@@ -56,10 +56,10 @@ DEFINE_TEST(test_aes_ni_speed)
     static char buffer[8192] = { 1, 2, 3 };
     constexpr char key[32] = "!!!!!!!!!!!!!!!";
     ouchi::crypto::aes256_ni c(key);
-    auto t = ouchi::measure([c]() {
+    auto t = ouchi::measure([&c]() {
         for (auto i = 0u; i < sizeof buffer; i += 16) {
             c.encrypt(buffer + i, buffer + i);
         }
     });
-    //std::printf("%f kbps\n", (sizeof(buffer) / 1024) / (t.count() / (double)decltype(t)::period::den));
+    std::printf("%f kbps\n", (sizeof(buffer) / 1024) / (t.count() / (double)decltype(t)::period::den));
 }

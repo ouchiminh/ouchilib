@@ -28,6 +28,26 @@ inline void secure_memset(volatile T(&array)[N], std::uint8_t ch)
         dest[i] = ch;
     }
 }
+inline void secure_memset(volatile void* ptr, std::uint8_t ch, size_t size)
+{
+    auto* dest = static_cast<volatile std::uint8_t*>(ptr);
+    for (auto i : ouchi::step(size)) {
+        dest[i] = ch;
+    }
+}
+
+template<class Int, std::enable_if_t<std::is_integral_v<Int> && std::is_unsigned_v<Int>>* = nullptr>
+inline constexpr Int rotr(Int x, unsigned nbit)
+{
+    static constexpr unsigned w = sizeof(Int) * CHAR_BIT;
+    return (x >> nbit) | (x << (w - nbit));
+}
+template<class Int, std::enable_if_t<std::is_integral_v<Int> && std::is_unsigned_v<Int>>* = nullptr>
+inline constexpr Int rotl(Int x, unsigned nbit)
+{
+    static constexpr unsigned w = sizeof(Int) * CHAR_BIT;
+    return (x << nbit) | (x >> (w - nbit));
+}
 
 template<size_t>
 class memory_view;
@@ -35,6 +55,7 @@ class memory_view;
 template<size_t SizeInByte>
 struct memory_entity {
     using value_type = std::uint8_t;
+    static_assert(SizeInByte >= 8);
 
     memory_entity() = default;
     memory_entity(const memory_entity&) = default;
@@ -48,9 +69,26 @@ struct memory_entity {
     memory_entity& operator=(const memory_entity&) = default;
     
     std::uint8_t data[SizeInByte];
+
+    /// <summary>
+    /// load size byte of data from src to data[to..to+size].
+    /// </summary>
+    /// <summary>
+    /// <returns>loaded size</returns>
+    size_t load(const void* src, size_t size, size_t to = 0)
+    {
+        auto* ptr = reinterpret_cast<const std::uint8_t*>(src);
+        size = std::min(size, SizeInByte - to);
+        for (auto i = 0u; i < size; ++i) {
+            data[to + i] = ptr[i];
+        }
+        return size;
+    }
+    constexpr size_t size() const noexcept { return SizeInByte; }
     std::uint8_t& operator[](size_t i) noexcept { return data[i]; }
     const std::uint8_t& operator[](size_t i) const noexcept { return data[i]; }
 };
+
 template<size_t SizeInByte>
 class memory_view {
 public:
@@ -58,11 +96,12 @@ public:
     using value_type = std::uint8_t;
     memory_view(const void* ptr) : data{ static_cast<const uint8_t*>(ptr) } {}
     memory_view() : data{ nullptr } {}
-    memory_view(const memory_entity<SizeInByte>& me) : data{ me.data } {} // meの寿命はプログラマーの責任
+    memory_view(const memory_entity<SizeInByte>& me) : data{ me.data } {}
     const std::uint8_t& operator[](size_t i) const noexcept {
         assert(data != nullptr);
         return data[i];
     }
+    constexpr size_t size() const noexcept { return SizeInByte; }
 
     friend memory_entity<SizeInByte> operator^(memory_view<SizeInByte> l, memory_view<SizeInByte> r) noexcept
     {

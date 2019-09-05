@@ -60,6 +60,10 @@ struct cbc {
         : encoder{std::forward<Args>(args)...}
         , vector(iv)
     {}
+    ~cbc()
+    {
+        secure_memset(vector, 0);
+    }
     void encrypt(block_t src, void* dest)
     {
         encoder.encrypt(block_t(vector) ^ src, vector.data);
@@ -94,6 +98,10 @@ struct ctr {
         , nonce{ init_nonce }
         , counter{ init_ctr }
     {}
+    ~ctr()
+    {
+        secure_memset(nonce, 0);
+    }
     void encrypt(block_t src, void* dest)
     {
         memory_entity<block_size> buf;

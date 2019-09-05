@@ -96,8 +96,8 @@ DEFINE_TEST(test_aes_encode_speed)
                              plain, sizeof plain, dest, sizeof dest);
     CHECK_TRUE(t1 > t2);
     double kBps[] = {
-        (sizeof plain / 1024.0) / (t1.count() / (double)std::nano::den),
-        (sizeof plain / 1024.0) / (t2.count() / (double)std::nano::den)
+        (sizeof plain / 1024) / (t1.count() / (double)std::nano::den),
+        (sizeof plain / 1024) / (t2.count() / (double)std::nano::den)
     };
-    //std::printf("%fKB/s %fKB/s\n", kBps[0], kBps[1]);
+    std::printf("%fKB/s %fKB/s\n", kBps[0], kBps[1]);
 }

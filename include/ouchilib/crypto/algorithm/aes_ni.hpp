@@ -29,16 +29,9 @@ public:
     aes_ni() = default;
     ~aes_ni()
     {
-        using vp = std::decay_t<std::add_volatile_t<decltype(key_.data)>>;
-        using vpm = volatile __m128i&;
-        std::fill(const_cast<vp>(key_.data), const_cast<vp>(key_.data + KeyLength), 0);
-
         ouchi::crypto::secure_memset(w128, 0);
         ouchi::crypto::secure_memset(dw128, 0);
-        for (auto [w,d] : ouchi::multiitr(w128, dw128)) {
-            ouchi::crypto::secure_memset((vpm)w, 0);
-            ouchi::crypto::secure_memset((vpm)d, 0);
-        }
+        ouchi::crypto::secure_memset(key_.data, 0);
     }
     void set_key(key_view key) noexcept
     {
@@ -96,7 +89,7 @@ private:
         }
         // copy expanded key
         for (auto r : ouchi::step(nr + 1)) {
-            w128[r] = _mm_loadu_si128(reinterpret_cast<__m128i*>(w + r * 4));
+            w128[r] = _mm_setr_epi32(w[r * 4], w[r * 4 + 1], w[r * 4 + 2], w[r * 4 + 3]);
         }
         dw128[0] = w128[0];
         for (auto i : ouchi::step(1u, nr)) {
