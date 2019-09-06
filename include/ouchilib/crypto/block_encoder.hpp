@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <cstddef>
+#include <utility>
 #include <istream>
 #include <ostream>
 #include <stdexcept>
@@ -16,8 +17,8 @@ template<
 class block_encoder {
 public:
     template<class ...Args>
-    block_encoder(Args&& ...args)
-        : cipher_device_(std::forward<Args>(args)...)
+    block_encoder(std::in_place_t, Args&& ...args)
+        : cipher_device_(std::in_place, std::forward<Args>(args)...)
     {}
     ///<returns>crypto size</returns>
     size_t encrypt(const void* src, size_t size, void* dest, size_t dest_size)
@@ -27,9 +28,9 @@ public:
         std::memmove(dest, src, size);
         dest_size = size + padsize;
 
-        auto destptr = reinterpret_cast<std::uint8_t*>(dest);
+        auto destptr = static_cast<std::uint8_t*>(dest);
         pad(destptr, size, padsize);
-        for (auto i : ouchi::step(0ull, dest_size, Algorithm::block_size)) {
+        for (auto i = 0ull; i < dest_size; i +=Algorithm::block_size) {
             cipher_device_.encrypt(destptr + i, destptr + i);
         }
         return dest_size;
@@ -40,9 +41,9 @@ public:
         check_ddestsize(size, dest_size);
         dest_size = size;
 
-        auto destptr = reinterpret_cast<std::uint8_t*>(dest);
-        auto srcptr = reinterpret_cast<const std::uint8_t*>(src);
-        for (auto i : ouchi::step(0ull, dest_size, Algorithm::block_size)) {
+        auto destptr = static_cast<std::uint8_t*>(dest);
+        auto srcptr = static_cast<const std::uint8_t*>(src);
+        for (auto i = 0ull; i < dest_size; i += Algorithm::block_size) {
             cipher_device_.decrypt(srcptr + i, destptr + i);
         }
         // delete pad
@@ -58,7 +59,7 @@ public:
         assert(thread_cnt);
         auto device = cipher_device_;
         auto padsize = check_edestsize(size, dest_size);
-        auto destptr = reinterpret_cast<std::uint8_t*>(dest);
+        auto destptr = static_cast<std::uint8_t*>(dest);
         ouchi::thread::thread_pool tp(thread_cnt);
 
         std::memmove(dest, src, size);
@@ -100,8 +101,8 @@ public:
         dest_size = size;
         ouchi::thread::thread_pool tp(thread_cnt);
         auto device = cipher_device_;
-        auto destptr = reinterpret_cast<std::uint8_t*>(dest);
-        auto srcptr = reinterpret_cast<const std::uint8_t*>(src);
+        auto destptr = static_cast<std::uint8_t*>(dest);
+        auto srcptr = static_cast<const std::uint8_t*>(src);
         std::memmove(destptr, srcptr, size);
         // decryption
         {
@@ -121,7 +122,6 @@ public:
             }
             tp.push([device, first, it, last, dest]() mutable {
                 if (it != first) device.set_decrypt_state(first, it - 1);
-                device.set_decrypt_state(first, it - 1);
                 for (; it != last; ++it) {
                     device.decrypt(*it, it.raw());
                 }
@@ -171,7 +171,7 @@ public:
 private:
     static void pad(void* dest, size_t srcsize, size_t padsize)
     {
-        auto destptr = reinterpret_cast<std::uint8_t*>(dest);
+        auto destptr = static_cast<std::uint8_t*>(dest);
         for (auto i : ouchi::step(padsize)) {
             destptr[i + srcsize] = (std::uint8_t)padsize;
         }

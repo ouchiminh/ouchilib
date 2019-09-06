@@ -1,27 +1,21 @@
 ﻿#pragma once
 #include <cstdlib>
 #include <cstdint>
+#include <cstring>
 #include <utility>
 #include "ouchilib/utl/step.hpp"
-#include "../common.h"
+#include "../common.hpp"
 
 namespace ouchi::crypto {
 
-inline std::uint32_t rotword(std::uint32_t in) {
-	uint32_t inw = in, inw2 = 0;
-	unsigned char *cin = reinterpret_cast<unsigned char*>(&inw);
-	unsigned char *cin2 = reinterpret_cast<unsigned char*>(&inw2);
-	cin2[0] = cin[1];
-	cin2[1] = cin[2];
-	cin2[2] = cin[3];
-	cin2[3] = cin[0];
-	return(inw2);
+inline constexpr std::uint32_t rotword(std::uint32_t in) {
+    return rotl(in, 8);
 }
 
 inline std::uint32_t mul(std::uint32_t dt, std::uint32_t n)
 {
-	int x = 0;
-	for (int i = 8; i>0; i >>= 1) {
+	std::uint32_t x = 0;
+	for (auto i = 8u; i>0; i >>= 1) {
 		x <<= 1;
 		if (x & 0x100)
 			x = (x ^ 0x1b) & 0xff;
@@ -38,13 +32,12 @@ inline std::uint32_t dataget(void * data, std::uint32_t n) {
 template<size_t KeyLength>  // size in byte : 16,24,32
 struct aes {
     static_assert(KeyLength == 16 || KeyLength == 24 || KeyLength == 32);
-    static constexpr size_t block_size = 16;
     static constexpr size_t nb = 4;
+    static constexpr size_t nr = KeyLength / 4 + 6;
+    static constexpr size_t block_size = 4 * nb;
     using block_t = memory_view<block_size>;
     using key_t = memory_entity<KeyLength>;
     using key_view = memory_view<KeyLength>;
-private:
-    static constexpr size_t nr = KeyLength / 4 + 6;
     static constexpr std::uint8_t sbox[256] = {
         0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
         0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,
@@ -82,18 +75,18 @@ private:
         0x17,0x2b,0x04,0x7e,0xba,0x77,0xd6,0x26,0xe1,0x69,0x14,0x63,0x55,0x21,0x0c,0x7d
     };
 
-public:
     aes(key_view key) {
         set_key(key);
     }
     aes() = default;
     ~aes()
     {
-        using vp = std::decay_t<std::add_volatile_t<decltype(key_.data)>>;
-        std::fill(const_cast<vp>(key_.data), const_cast<vp>(key_.data + KeyLength), 0);
+        secure_memset(key_.data, 0);
+        secure_memset(w_, 0);
     }
 
-    void set_key(key_view key) noexcept {
+    void set_key(key_view key) noexcept
+    {
         std::memcpy(key_.data, key.data, KeyLength);
         expand_key();
     }
@@ -102,10 +95,10 @@ public:
     {
         std::memmove(dest, src.data, block_size);
         add_roundkey(dest, 0);
-        for (auto i : ouchi::step(1u, (std::uint32_t)nr)) {
+        for (auto i = 1u; i < nr; ++i) {
             sub_bytes(dest);
             shift_rows(dest);
-            mix_columns(reinterpret_cast<std::uint32_t*>(dest));
+            mix_columns(dest);
             add_roundkey(dest, i);
         }
         sub_bytes(dest);
@@ -121,7 +114,7 @@ public:
 			inv_shift_rows(dest);
 			inv_sub_bytes(dest);
 			add_roundkey(dest, (int)i);
-			inv_mix_columns(reinterpret_cast<uint32_t*>(dest));
+			inv_mix_columns(dest);
 		}
 
 		inv_shift_rows(dest);
@@ -129,8 +122,7 @@ public:
 		add_roundkey(dest, 0);
     }
 
-private:
-    std::uint32_t subword(std::uint32_t in) const noexcept
+    static std::uint32_t subword(std::uint32_t in) noexcept
     {
         uint32_t inw = in;
         unsigned char* cin = (unsigned char*)&inw;
@@ -140,10 +132,11 @@ private:
         cin[3] = sbox[cin[3]];
         return (inw);
     }
+private:
     void expand_key() noexcept
     {
     /* FIPS 197  P.27 Appendix A.1 Rcon[i/Nk] */ //又は mulを使用する
-        int Rcon[10] = { 0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36 };
+        constexpr std::uint32_t Rcon[10] = { 0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36 };
         std::uint32_t temp;
 
         std::memcpy(w_, key_.data, KeyLength);
@@ -164,24 +157,24 @@ private:
         }
     }
 
-    void sub_bytes(void* data) const noexcept
+    static void sub_bytes(void* data) noexcept
     {
-        unsigned char* cb = reinterpret_cast<unsigned char*>(data);
+        unsigned char* cb = static_cast<std::uint8_t*>(data);
         for (auto i : ouchi ::step(16)) {
             cb[i] = sbox[cb[i]];
         }
     }
-    void inv_sub_bytes(void* data) const noexcept
+    static void inv_sub_bytes(void* data) noexcept
     {
-        unsigned char* cb = reinterpret_cast<unsigned char*>(data);
+        unsigned char* cb = static_cast<std::uint8_t*>(data);
         for (auto i : ouchi ::step(16)) {
             cb[i] = inv_sbox[cb[i]];
         }
     }
 
-    void shift_rows(void* data) const noexcept
+    static void shift_rows(void* data) noexcept
     {
-        auto ptr{ (uint8_t*)data };
+        auto ptr{ static_cast<uint8_t*>(data) };
         memory_entity<block_size> cw(data);
         for (int i = 0; i<nb; i += 4) {
             int i4 = i * 4;
@@ -194,9 +187,9 @@ private:
         }
         std::memcpy(data, cw.data, block_size);
     }
-    void inv_shift_rows(void* data) const noexcept
+    static void inv_shift_rows(void* data) noexcept
     {
-        auto ptr{ (uint8_t*)data };
+        auto ptr{ static_cast<uint8_t*>(data) };
         memory_entity<block_size> cw(data);
         for (int i = 0; i<nb; i += 4) {
             int i4 = i * 4;
@@ -210,52 +203,54 @@ private:
         std::memcpy(data, cw.data, block_size);
     }
 
-    void mix_columns(uint32_t* data) const noexcept
+    static void mix_columns(void* data) noexcept
     {
         std::uint32_t i4, x;
+        auto adata = static_cast<std::uint8_t*>(data);
         for (auto i : ouchi::step((std::uint32_t)nb)) {
             i4 = i * 4;
-            x = mul(dataget(data, i4 + 0), 2) ^
-                mul(dataget(data, i4 + 1), 3) ^
-                mul(dataget(data, i4 + 2), 1) ^
-                mul(dataget(data, i4 + 3), 1);
-            x |= (mul(dataget(data, i4 + 1), 2) ^
-                  mul(dataget(data, i4 + 2), 3) ^
-                  mul(dataget(data, i4 + 3), 1) ^
-                  mul(dataget(data, i4 + 0), 1)) << 8;
-            x |= (mul(dataget(data, i4 + 2), 2) ^
-                  mul(dataget(data, i4 + 3), 3) ^
-                  mul(dataget(data, i4 + 0), 1) ^
-                  mul(dataget(data, i4 + 1), 1)) << 16;
-            x |= (mul(dataget(data, i4 + 3), 2) ^
-                  mul(dataget(data, i4 + 0), 3) ^
-                  mul(dataget(data, i4 + 1), 1) ^
-                  mul(dataget(data, i4 + 2), 1)) << 24;
-            data[i] = x;
+            x = mul(dataget(adata, i4 + 0), 2) ^
+                mul(dataget(adata, i4 + 1), 3) ^
+                mul(dataget(adata, i4 + 2), 1) ^
+                mul(dataget(adata, i4 + 3), 1);
+            x |= (mul(dataget(adata, i4 + 1), 2) ^
+                  mul(dataget(adata, i4 + 2), 3) ^
+                  mul(dataget(adata, i4 + 3), 1) ^
+                  mul(dataget(adata, i4 + 0), 1)) << 8;
+            x |= (mul(dataget(adata, i4 + 2), 2) ^
+                  mul(dataget(adata, i4 + 3), 3) ^
+                  mul(dataget(adata, i4 + 0), 1) ^
+                  mul(dataget(adata, i4 + 1), 1)) << 16;
+            x |= (mul(dataget(adata, i4 + 3), 2) ^
+                  mul(dataget(adata, i4 + 0), 3) ^
+                  mul(dataget(adata, i4 + 1), 1) ^
+                  mul(dataget(adata, i4 + 2), 1)) << 24;
+            std::memcpy(adata + i * 4, &x, sizeof(x));
         }
     }
-    void inv_mix_columns(std::uint32_t* data) const noexcept
+    static void inv_mix_columns(void* data) noexcept
     {
         std::uint32_t i4, x;
+        auto adata = static_cast<std::uint8_t*>(data);
         for (auto i : ouchi::step((std::uint32_t)nb)) {
             i4 = i * 4;
-            x = mul(dataget(data, i4 + 0), 14) ^
-                mul(dataget(data, i4 + 1), 11) ^
-                mul(dataget(data, i4 + 2), 13) ^
-                mul(dataget(data, i4 + 3), 9);
-            x |= (mul(dataget(data, i4 + 1), 14) ^
-                  mul(dataget(data, i4 + 2), 11) ^
-                  mul(dataget(data, i4 + 3), 13) ^
-                  mul(dataget(data, i4 + 0), 9)) << 8;
-            x |= (mul(dataget(data, i4 + 2), 14) ^
-                  mul(dataget(data, i4 + 3), 11) ^
-                  mul(dataget(data, i4 + 0), 13) ^
-                  mul(dataget(data, i4 + 1), 9)) << 16;
-            x |= (mul(dataget(data, i4 + 3), 14) ^
-                  mul(dataget(data, i4 + 0), 11) ^
-                  mul(dataget(data, i4 + 1), 13) ^
-                  mul(dataget(data, i4 + 2), 9)) << 24;
-            data[i] = x;
+            x = mul(dataget(adata, i4 + 0), 14) ^
+                mul(dataget(adata, i4 + 1), 11) ^
+                mul(dataget(adata, i4 + 2), 13) ^
+                mul(dataget(adata, i4 + 3), 9);
+            x |= (mul(dataget(adata, i4 + 1), 14) ^
+                  mul(dataget(adata, i4 + 2), 11) ^
+                  mul(dataget(adata, i4 + 3), 13) ^
+                  mul(dataget(adata, i4 + 0), 9)) << 8;
+            x |= (mul(dataget(adata, i4 + 2), 14) ^
+                  mul(dataget(adata, i4 + 3), 11) ^
+                  mul(dataget(adata, i4 + 0), 13) ^
+                  mul(dataget(adata, i4 + 1), 9)) << 16;
+            x |= (mul(dataget(adata, i4 + 3), 14) ^
+                  mul(dataget(adata, i4 + 0), 11) ^
+                  mul(dataget(adata, i4 + 1), 13) ^
+                  mul(dataget(adata, i4 + 2), 9)) << 24;
+            std::memcpy(adata + i * 4, &x, sizeof(x));
         }
     }
     key_t key_;

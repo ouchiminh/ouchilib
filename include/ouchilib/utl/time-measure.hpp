@@ -59,6 +59,19 @@ public:
     {
         return std::chrono::duration_cast<D>(*duration_);
     }
+
+
 };
 
+template<class Clock = std::chrono::high_resolution_clock,
+         class Duration = typename Clock::duration,
+         class F,
+         class ...Args>
+[[nodiscard]]
+Duration measure(F&& func, Args&& ...args)
+{
+    auto begin = Clock::now();
+    func(std::forward<Args>(args)...);
+    return std::chrono::duration_cast<Duration>(Clock::now() - begin);
+}
 }

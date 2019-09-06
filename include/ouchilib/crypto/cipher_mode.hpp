@@ -2,7 +2,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "common.h"
+#include "common.hpp"
 
 namespace ouchi::crypto {
 template<class T, class = void>
@@ -30,7 +30,7 @@ struct ecb {
     A encoder;
 
     template<class ...Args>
-    ecb(Args&& ...args)
+    ecb(std::in_place_t, Args&& ...args)
         : encoder{std::forward<Args>(args)...}
     {}
 
@@ -56,10 +56,14 @@ struct cbc {
     A encoder;
     memory_entity<block_size> vector;
     template<class ...Args>
-    cbc(memory_view<block_size> iv, Args&& ...args)
+    cbc(std::in_place_t, memory_view<block_size> iv, Args&& ...args)
         : encoder{std::forward<Args>(args)...}
         , vector(iv)
     {}
+    ~cbc()
+    {
+        secure_memset(vector, 0);
+    }
     void encrypt(block_t src, void* dest)
     {
         encoder.encrypt(block_t(vector) ^ src, vector.data);
@@ -89,11 +93,15 @@ struct ctr {
     size_t counter;
 
     template<class ...Args>
-    ctr(memory_view<block_size> init_nonce, size_t init_ctr, Args&& ...args)
+    ctr(std::in_place_t, memory_view<block_size> init_nonce, size_t init_ctr, Args&& ...args)
         : encoder{ std::forward<Args>(args)... }
         , nonce{ init_nonce }
         , counter{ init_ctr }
     {}
+    ~ctr()
+    {
+        secure_memset(nonce, 0);
+    }
     void encrypt(block_t src, void* dest)
     {
         memory_entity<block_size> buf;
@@ -115,7 +123,8 @@ struct ctr {
     }
     void set_decrypt_state(memory_iterator<block_size> first, memory_iterator<block_size> just_before)
     {
-        update_counter(first.size - just_before.size);
+        update_counter(first.count() - just_before.count());
+        update_counter();
     }
     void set_encrypt_state(memory_iterator<block_size> first, memory_iterator<block_size> just_before)
     {

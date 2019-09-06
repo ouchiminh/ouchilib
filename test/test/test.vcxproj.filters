@@ -23,15 +23,6 @@
     <ClCompile Include="..\test-main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\aes\SHA256.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\archiver\arcfile.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\archiver\archiver.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="..\tokenizer\test-tokenizer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -57,6 +48,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\crypto\test_encoder.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\crypto\test_sha512.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

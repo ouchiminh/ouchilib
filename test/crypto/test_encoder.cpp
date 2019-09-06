@@ -2,12 +2,14 @@
 #include "../test.hpp"
 #include "ouchilib/crypto/block_encoder.hpp"
 #include "ouchilib/crypto/algorithm/aes.hpp"
+#include "ouchilib/crypto/algorithm/aes_ni.hpp"
+#include "ouchilib/utl/time-measure.hpp"
 
 DEFINE_TEST(test_encoder_ecb) {
     using namespace ouchi::crypto;
     char plain[16] = "123456789abcdef";
     char key[16] = "!!!!!!!!!!!!!!!";
-    block_encoder<ecb, aes128> cryptographer(key);
+    block_encoder<ecb, aes128> cryptographer(std::in_place, key);
     char crypto[32];
     char decrypt[32];
 
@@ -33,7 +35,7 @@ DEFINE_TEST(test_encoder_cbc) {
     const char key[16] =   "!!!!!!!!!!!!!!!";
     const char iv[16] =    "hogehogehogehog";
 
-    block_encoder<cbc, aes128> cg[2] = { {iv, key}, {iv, key} };
+    block_encoder<cbc, aes128> cg[2] = { {std::in_place, iv, key}, {std::in_place, iv, key} };
 
     char crypto[32];
     char decrypt[32];
@@ -50,7 +52,7 @@ DEFINE_TEST(test_encoder_ctr) {
     char key[16] =   "!!!!!!!!!!!!!!!";
     char nonce[16] = "hogehogehogehog";
     size_t ictr = 0;
-    block_encoder<ctr, aes128> cg[2] = { {nonce, ictr, key}, {nonce, ictr, key} };
+    block_encoder<ctr, aes128> cg[2] = { {std::in_place, nonce, ictr, key}, {std::in_place, nonce, ictr, key} };
     char crypto[32];
     char decrypt[32];
 
@@ -62,17 +64,40 @@ DEFINE_TEST(test_encoder_ctr) {
 }
 DEFINE_TEST(test_parallel_encode) {
     using namespace ouchi::crypto;
-    const char plain[16] = "123456789abcdef";
+    static constexpr char plain[2008] = {1, 2, 3};
     const char key[32] =   "!!!!!!!!!?!!!!!!!!!!!!!!!!!!!!!";
     char nonce[16] = "hogehogehogehog";
     size_t ictr = 0;
-    block_encoder<ctr, aes256> cg[2] = { {nonce, ictr, key}, {nonce, ictr, key} };
-    char crypto[32];
-    char decrypt[32];
-    REQUIRE_EQUAL(cg[0].encrypt_parallel(plain, sizeof(plain), crypto, sizeof(crypto), 4), 32);
-    REQUIRE_EQUAL(cg[1].decrypt_parallel(crypto, sizeof(crypto), decrypt, sizeof(decrypt), 3), 16);
+    block_encoder<ctr, aes256> cg[2] = { {std::in_place, nonce, ictr, key}, {std::in_place, nonce, ictr, key} };
+    //block_encoder<ecb, aes256> cg[2] = { {std::in_place, key}, {std::in_place, key} };
+    char crypto[2016];
+    char decrypt[2016];
+    REQUIRE_EQUAL(cg[0].encrypt_parallel(plain, sizeof(plain), crypto, sizeof(crypto), 4), 2016);
+    REQUIRE_EQUAL(cg[1].decrypt_parallel(crypto, sizeof(crypto), decrypt, sizeof(decrypt), 3), 2008);
 
-    for (auto i : ouchi::step(16)) {
+    for (auto i : ouchi::step(sizeof(plain))) {
         CHECK_EQUAL(plain[i], decrypt[i]);
     }
+}
+
+DEFINE_TEST(test_aes_encode_speed)
+{
+    using namespace ouchi::crypto;
+    static constexpr char plain[4096*2] = { 1, 2, 3 };
+    constexpr char key[32] =   "!!!!!!!!!?!!!!!!!!!!!!!!!!!!!!!";
+    char dest[8300];
+    block_encoder<cbc, aes256> soft{ std::in_place, key, key };
+    block_encoder<cbc, aes256_ni> ni{ std::in_place, key, key };
+    //block_encoder<ecb, aes256> soft{ std::in_place, key };
+    //block_encoder<ecb, aes256_ni> ni{ std::in_place, key };
+    auto t1 = ouchi::measure([&soft](auto a, auto b, auto c, auto d) {soft.encrypt(a, b, c, d); },
+                             plain, sizeof plain, dest, sizeof dest);
+    auto t2 = ouchi::measure([&ni](auto a, auto b, auto c, auto d) {ni.encrypt(a, b, c, d); },
+                             plain, sizeof plain, dest, sizeof dest);
+    CHECK_TRUE(t1 > t2);
+    double kBps[] = {
+        (sizeof plain / 1024) / (t1.count() / (double)std::nano::den),
+        (sizeof plain / 1024) / (t2.count() / (double)std::nano::den)
+    };
+    std::printf("%fKB/s %fKB/s\n", kBps[0], kBps[1]);
 }

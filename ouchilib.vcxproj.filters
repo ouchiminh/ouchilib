@@ -15,36 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\aes\aes-utl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\aes\aes.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\aes\SHA256.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\archiver\arcfile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\archiver\archiver.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="include\ouchilib\archiver.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\ouchilib\log.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ouchilib\aes\SHA256.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ouchilib\archiver\arcfile.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ouchilib\archiver\archiver.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\ouchilib\log\format.hpp">
@@ -131,9 +102,6 @@
     <ClInclude Include="include\ouchilib\utl\indexed_iterator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\ouchilib\crypto\common.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\ouchilib\crypto\cipher_mode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -144,6 +112,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\ouchilib\crypto\block_encoder.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ouchilib\crypto\algorithm\aes_ni.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ouchilib\crypto\common.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ouchilib\crypto\algorithm\sha.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ouchilib\data_structure\ring_buffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
