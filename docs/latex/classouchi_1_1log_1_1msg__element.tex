@@ -1,0 +1,40 @@
+\hypertarget{classouchi_1_1log_1_1msg__element}{}\section{ouchi\+::log\+::msg\+\_\+element$<$ CharT $>$ Class Template Reference}
+\label{classouchi_1_1log_1_1msg__element}\index{ouchi::log::msg\_element$<$ CharT $>$@{ouchi::log::msg\_element$<$ CharT $>$}}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1msg__element_aec66cab48368d938bfec2f6d64be0bb1}\label{classouchi_1_1log_1_1msg__element_aec66cab48368d938bfec2f6d64be0bb1}} 
+typedef std\+::variant$<$ std\+::basic\+\_\+string$<$ CharT $>$, CharT, Msg, Category, Time $>$ {\bfseries var\+\_\+t}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1msg__element_aa854cd826a721e12d819cded9999a096}\label{classouchi_1_1log_1_1msg__element_aa854cd826a721e12d819cded9999a096}} 
+{\footnotesize template$<$std\+::uintptr\+\_\+t Size$>$ }\\{\bfseries msg\+\_\+element} (const CharT(\&str)\mbox{[}Size\mbox{]})
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1msg__element_aa2a25ef6ac68d69ee33d745bdb89249b}\label{classouchi_1_1log_1_1msg__element_aa2a25ef6ac68d69ee33d745bdb89249b}} 
+{\bfseries msg\+\_\+element} (std\+::basic\+\_\+string$<$ CharT $>$ const \&str)
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1msg__element_a053fe4a0e9515480862e4f3b1f4c69b7}\label{classouchi_1_1log_1_1msg__element_a053fe4a0e9515480862e4f3b1f4c69b7}} 
+{\bfseries msg\+\_\+element} (std\+::basic\+\_\+string$<$ CharT $>$ \&\&str)
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1msg__element_a0ba29107c1668b999d4dd732fba7fdb1}\label{classouchi_1_1log_1_1msg__element_a0ba29107c1668b999d4dd732fba7fdb1}} 
+constexpr {\bfseries msg\+\_\+element} (CharT c)
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1msg__element_a5e76df2a25d1a8268f97b0756c4fa525}\label{classouchi_1_1log_1_1msg__element_a5e76df2a25d1a8268f97b0756c4fa525}} 
+constexpr {\bfseries msg\+\_\+element} (Msg m)
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1msg__element_ae9713a741beb0968ef42d383b0643100}\label{classouchi_1_1log_1_1msg__element_ae9713a741beb0968ef42d383b0643100}} 
+constexpr {\bfseries msg\+\_\+element} (Category c)
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1msg__element_a17827feb6d222ad29ee02ef05f448aff}\label{classouchi_1_1log_1_1msg__element_a17827feb6d222ad29ee02ef05f448aff}} 
+constexpr {\bfseries msg\+\_\+element} (Time t)
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1msg__element_a6442eebafb4bd9b202f7f7fe775d7a5d}\label{classouchi_1_1log_1_1msg__element_a6442eebafb4bd9b202f7f7fe775d7a5d}} 
+constexpr var\+\_\+t {\bfseries get\+\_\+content} () const noexcept
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/log/format.\+hpp\end{DoxyCompactItemize}

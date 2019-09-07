@@ -1,0 +1,77 @@
+\hypertarget{classouchi_1_1multiitr_1_1iterator}{}\section{ouchi\+::multiitr$<$ Containers $>$\+::iterator Class Reference}
+\label{classouchi_1_1multiitr_1_1iterator}\index{ouchi::multiitr$<$ Containers $>$::iterator@{ouchi::multiitr$<$ Containers $>$::iterator}}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1multiitr_1_1iterator_a07ffc53180065a917e8199e6067e0db4}\label{classouchi_1_1multiitr_1_1iterator_a07ffc53180065a917e8199e6067e0db4}} 
+using {\bfseries difference\+\_\+type} = std\+::common\+\_\+type\+\_\+t$<$ typename std\+::iterator\+\_\+traits$<$ his\+\_\+iterator\+\_\+t$<$ Containers $>$ $>$\+::difference\+\_\+type... $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1multiitr_1_1iterator_a5898942be0c37238a581365ddd5b5be4}\label{classouchi_1_1multiitr_1_1iterator_a5898942be0c37238a581365ddd5b5be4}} 
+using {\bfseries iterator\+\_\+category} = std\+::conditional\+\_\+t$<$ is\+\_\+bidirectional, std\+::bidirectional\+\_\+iterator\+\_\+tag, std\+::input\+\_\+iterator\+\_\+tag $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1multiitr_1_1iterator_adb194b15035ffcaac077865606f8742c}\label{classouchi_1_1multiitr_1_1iterator_adb194b15035ffcaac077865606f8742c}} 
+using {\bfseries value\+\_\+type} = std\+::tuple$<$ typename std\+::iterator\+\_\+traits$<$ his\+\_\+iterator\+\_\+t$<$ Containers $>$ $>$\+::reference ... $>$
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1multiitr_1_1iterator_ac0cc81a8587fc979718df61cf5afdda6}\label{classouchi_1_1multiitr_1_1iterator_ac0cc81a8587fc979718df61cf5afdda6}} 
+{\bfseries iterator} (const std\+::tuple$<$ Containers \&... $>$ \&containers)
+\item 
+\mbox{\Hypertarget{classouchi_1_1multiitr_1_1iterator_a04dc32a7cd136e51a87ad44c057afb61}\label{classouchi_1_1multiitr_1_1iterator_a04dc32a7cd136e51a87ad44c057afb61}} 
+{\bfseries iterator} (itr\+\_\+t \&\&iterators)
+\item 
+\mbox{\Hypertarget{classouchi_1_1multiitr_1_1iterator_a79607802463ae1b6565a64d075e281f5}\label{classouchi_1_1multiitr_1_1iterator_a79607802463ae1b6565a64d075e281f5}} 
+decltype(auto) {\bfseries operator $\ast$} ()
+\item 
+\mbox{\Hypertarget{classouchi_1_1multiitr_1_1iterator_a1249687919342e15485f91c6f1a70daa}\label{classouchi_1_1multiitr_1_1iterator_a1249687919342e15485f91c6f1a70daa}} 
+\mbox{\hyperlink{classouchi_1_1multiitr_1_1iterator}{iterator}} \& {\bfseries operator++} ()
+\item 
+\mbox{\Hypertarget{classouchi_1_1multiitr_1_1iterator_a14cbe43c5467d1eff4b08d1c1a1533f0}\label{classouchi_1_1multiitr_1_1iterator_a14cbe43c5467d1eff4b08d1c1a1533f0}} 
+\mbox{\hyperlink{classouchi_1_1multiitr_1_1iterator}{iterator}} {\bfseries operator++} (int)
+\item 
+\mbox{\Hypertarget{classouchi_1_1multiitr_1_1iterator_a24578f64ef535c276d1ca66866898609}\label{classouchi_1_1multiitr_1_1iterator_a24578f64ef535c276d1ca66866898609}} 
+{\footnotesize template$<$class It  = iterator, std\+::enable\+\_\+if\+\_\+t$<$ It\+::is\+\_\+bidirectional $>$ $\ast$  = nullptr$>$ }\\\mbox{\hyperlink{classouchi_1_1multiitr_1_1iterator}{iterator}} \& {\bfseries operator-\/-\/} ()
+\item 
+\mbox{\Hypertarget{classouchi_1_1multiitr_1_1iterator_adb4f6b9a120fde6a868eb5ba6ede574b}\label{classouchi_1_1multiitr_1_1iterator_adb4f6b9a120fde6a868eb5ba6ede574b}} 
+{\footnotesize template$<$class It  = iterator, std\+::enable\+\_\+if\+\_\+t$<$ It\+::is\+\_\+bidirectional $>$ $\ast$  = nullptr$>$ }\\\mbox{\hyperlink{classouchi_1_1multiitr_1_1iterator}{iterator}} \& {\bfseries operator-\/-\/} (int)
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static constexpr bool {\bfseries is\+\_\+bidirectional}
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1multiitr_1_1iterator_a81d10d7799462c7ca5e7cf19119ca356}\label{classouchi_1_1multiitr_1_1iterator_a81d10d7799462c7ca5e7cf19119ca356}} 
+bool {\bfseries operator==} (const \mbox{\hyperlink{classouchi_1_1multiitr_1_1iterator}{iterator}} \&a, const \mbox{\hyperlink{classouchi_1_1multiitr_1_1iterator}{iterator}} \&b)
+\item 
+\mbox{\Hypertarget{classouchi_1_1multiitr_1_1iterator_a55a8ee0e80dad1a7da9d751c25bc0386}\label{classouchi_1_1multiitr_1_1iterator_a55a8ee0e80dad1a7da9d751c25bc0386}} 
+bool {\bfseries operator!=} (const \mbox{\hyperlink{classouchi_1_1multiitr_1_1iterator}{iterator}} \&a, const \mbox{\hyperlink{classouchi_1_1multiitr_1_1iterator}{iterator}} \&b)
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Data Documentation}
+\mbox{\Hypertarget{classouchi_1_1multiitr_1_1iterator_a1c7848783e4beccbede85f051ba50932}\label{classouchi_1_1multiitr_1_1iterator_a1c7848783e4beccbede85f051ba50932}} 
+\index{ouchi::multiitr$<$ Containers $>$::iterator@{ouchi::multiitr$<$ Containers $>$::iterator}!is\_bidirectional@{is\_bidirectional}}
+\index{is\_bidirectional@{is\_bidirectional}!ouchi::multiitr$<$ Containers $>$::iterator@{ouchi::multiitr$<$ Containers $>$::iterator}}
+\subsubsection{\texorpdfstring{is\_bidirectional}{is\_bidirectional}}
+{\footnotesize\ttfamily template$<$class ... Containers$>$ \\
+constexpr bool \mbox{\hyperlink{classouchi_1_1multiitr}{ouchi\+::multiitr}}$<$ Containers $>$\+::iterator\+::is\+\_\+bidirectional\hspace{0.3cm}{\ttfamily [static]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{= std::conjunction\_v<}
+\DoxyCodeLine{            std::is\_base\_of<}
+\DoxyCodeLine{                std::bidirectional\_iterator\_tag,}
+\DoxyCodeLine{                \textcolor{keyword}{typename} std::iterator\_traits<his\_iterator\_t<Containers>>::iterator\_category}
+\DoxyCodeLine{            >...}
+\DoxyCodeLine{        >}
+
+\end{DoxyCode}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/utl/multiitr.\+hpp\end{DoxyCompactItemize}

@@ -1,0 +1,49 @@
+\hypertarget{structouchi_1_1crypto_1_1cbc}{}\section{ouchi\+::crypto\+::cbc$<$ A $>$ Struct Template Reference}
+\label{structouchi_1_1crypto_1_1cbc}\index{ouchi::crypto::cbc$<$ A $>$@{ouchi::crypto::cbc$<$ A $>$}}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1cbc_a9501f9e8c036bd71508a31b0b0c24bd7}\label{structouchi_1_1crypto_1_1cbc_a9501f9e8c036bd71508a31b0b0c24bd7}} 
+using {\bfseries block\+\_\+t} = typename A\+::block\+\_\+t
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1cbc_a8df641110dbf4ca38b0fa580383a132a}\label{structouchi_1_1crypto_1_1cbc_a8df641110dbf4ca38b0fa580383a132a}} 
+{\footnotesize template$<$class ... Args$>$ }\\{\bfseries cbc} (std\+::in\+\_\+place\+\_\+t, \mbox{\hyperlink{classouchi_1_1crypto_1_1memory__view}{memory\+\_\+view}}$<$ block\+\_\+size $>$ iv, Args \&\&...args)
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1cbc_a213b342339c47d47a33e767ee9fa0c29}\label{structouchi_1_1crypto_1_1cbc_a213b342339c47d47a33e767ee9fa0c29}} 
+void {\bfseries encrypt} (block\+\_\+t src, void $\ast$dest)
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1cbc_aab0ce198e591aea881e6904ed69fbcaf}\label{structouchi_1_1crypto_1_1cbc_aab0ce198e591aea881e6904ed69fbcaf}} 
+void {\bfseries decrypt} (block\+\_\+t src, void $\ast$dest)
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1cbc_a8a2ebf875317b90bf4d6a993f8d5659a}\label{structouchi_1_1crypto_1_1cbc_a8a2ebf875317b90bf4d6a993f8d5659a}} 
+void {\bfseries set\+\_\+decrypt\+\_\+state} (\mbox{\hyperlink{structouchi_1_1crypto_1_1memory__iterator}{memory\+\_\+iterator}}$<$ block\+\_\+size $>$ first, \mbox{\hyperlink{structouchi_1_1crypto_1_1memory__iterator}{memory\+\_\+iterator}}$<$ block\+\_\+size $>$ just\+\_\+before)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1cbc_a06249c383efe4ee7bcd095f455761cf7}\label{structouchi_1_1crypto_1_1cbc_a06249c383efe4ee7bcd095f455761cf7}} 
+A {\bfseries encoder}
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1cbc_a5908ae990a035f18675fd828b9f1127b}\label{structouchi_1_1crypto_1_1cbc_a5908ae990a035f18675fd828b9f1127b}} 
+\mbox{\hyperlink{structouchi_1_1crypto_1_1memory__entity}{memory\+\_\+entity}}$<$ block\+\_\+size $>$ {\bfseries vector}
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1cbc_a2d4a95e5db28717fb3ddc5c6c2b90a9b}\label{structouchi_1_1crypto_1_1cbc_a2d4a95e5db28717fb3ddc5c6c2b90a9b}} 
+static constexpr size\+\_\+t {\bfseries block\+\_\+size} = A\+::block\+\_\+size
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1cbc_a7a1b8d8ef5d4ec9fad3ff801b80e549d}\label{structouchi_1_1crypto_1_1cbc_a7a1b8d8ef5d4ec9fad3ff801b80e549d}} 
+static constexpr bool {\bfseries is\+\_\+encrypt\+\_\+parallelizable} = false
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1cbc_a526f506e77ef1ec8683263233e99063d}\label{structouchi_1_1crypto_1_1cbc_a526f506e77ef1ec8683263233e99063d}} 
+static constexpr bool {\bfseries is\+\_\+decrypt\+\_\+parallelizable} = true
+\end{DoxyCompactItemize}
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/crypto/cipher\+\_\+mode.\+hpp\end{DoxyCompactItemize}

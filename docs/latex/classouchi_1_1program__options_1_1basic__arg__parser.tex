@@ -1,0 +1,37 @@
+\hypertarget{classouchi_1_1program__options_1_1basic__arg__parser}{}\section{ouchi\+::program\+\_\+options\+::basic\+\_\+arg\+\_\+parser$<$ CharT, Traits $>$ Class Template Reference}
+\label{classouchi_1_1program__options_1_1basic__arg__parser}\index{ouchi::program\_options::basic\_arg\_parser$<$ CharT, Traits $>$@{ouchi::program\_options::basic\_arg\_parser$<$ CharT, Traits $>$}}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__arg__parser_ad284fad7cf296e71c8041d6530dee968}\label{classouchi_1_1program__options_1_1basic__arg__parser_ad284fad7cf296e71c8041d6530dee968}} 
+using {\bfseries string} = std\+::basic\+\_\+string$<$ CharT, Traits $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__arg__parser_ab3fb06c2be9cee76098da5cfdfb99ca4}\label{classouchi_1_1program__options_1_1basic__arg__parser_ab3fb06c2be9cee76098da5cfdfb99ca4}} 
+using {\bfseries string\+\_\+view} = std\+::basic\+\_\+string\+\_\+view$<$ CharT, Traits $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__arg__parser_a78e3fc8e862012e973a00560099e6f09}\label{classouchi_1_1program__options_1_1basic__arg__parser_a78e3fc8e862012e973a00560099e6f09}} 
+using {\bfseries arg\+\_\+map} = std\+::map$<$ string, std\+::any, std\+::less$<$$>$ $>$
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__arg__parser_aa7e38c56b3c9674eb603b6ef7fc74eee}\label{classouchi_1_1program__options_1_1basic__arg__parser_aa7e38c56b3c9674eb603b6ef7fc74eee}} 
+{\bfseries basic\+\_\+arg\+\_\+parser} (\mbox{\hyperlink{classouchi_1_1program__options_1_1basic__options__description}{basic\+\_\+options\+\_\+description}}$<$ CharT, Traits $>$ \&desc, const CharT $\ast$$\ast$argv, size\+\_\+t argc)
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__arg__parser_a57900bbd85e8e594192583b4a598680f}\label{classouchi_1_1program__options_1_1basic__arg__parser_a57900bbd85e8e594192583b4a598680f}} 
+const arg\+\_\+map \& {\bfseries parse} (\mbox{\hyperlink{classouchi_1_1program__options_1_1basic__options__description}{basic\+\_\+options\+\_\+description}}$<$ CharT, Traits $>$ \&desc, const CharT $\ast$$\ast$argv, size\+\_\+t argc)
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__arg__parser_ac1cf166db6818047273331180f81b89e}\label{classouchi_1_1program__options_1_1basic__arg__parser_ac1cf166db6818047273331180f81b89e}} 
+const arg\+\_\+map \& {\bfseries get} () const
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__arg__parser_aa0114175f642520cc08c2f9b184e0b02}\label{classouchi_1_1program__options_1_1basic__arg__parser_aa0114175f642520cc08c2f9b184e0b02}} 
+{\footnotesize template$<$class T $>$ }\\auto {\bfseries get} (string\+\_\+view key) const -\/$>$ std\+::remove\+\_\+cv\+\_\+t$<$ std\+::remove\+\_\+reference\+\_\+t$<$ T $>$$>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__arg__parser_a4d17dc70948b00e7230dd7ec28f94b5a}\label{classouchi_1_1program__options_1_1basic__arg__parser_a4d17dc70948b00e7230dd7ec28f94b5a}} 
+bool {\bfseries exist} (string\+\_\+view key) const
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/program\+\_\+options/program\+\_\+options\+\_\+parser.\+hpp\end{DoxyCompactItemize}

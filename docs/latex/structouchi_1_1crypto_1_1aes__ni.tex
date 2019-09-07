@@ -1,0 +1,40 @@
+\hypertarget{structouchi_1_1crypto_1_1aes__ni}{}\section{ouchi\+::crypto\+::aes\+\_\+ni$<$ Key\+Length $>$ Struct Template Reference}
+\label{structouchi_1_1crypto_1_1aes__ni}\index{ouchi::crypto::aes\_ni$<$ KeyLength $>$@{ouchi::crypto::aes\_ni$<$ KeyLength $>$}}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1aes__ni_a844bba4098279f9a2f6733fa13c49b53}\label{structouchi_1_1crypto_1_1aes__ni_a844bba4098279f9a2f6733fa13c49b53}} 
+using {\bfseries block\+\_\+t} = \mbox{\hyperlink{classouchi_1_1crypto_1_1memory__view}{memory\+\_\+view}}$<$ block\+\_\+size $>$
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1aes__ni_ae5a6eeeb0453c0db907a584558c2d022}\label{structouchi_1_1crypto_1_1aes__ni_ae5a6eeeb0453c0db907a584558c2d022}} 
+using {\bfseries key\+\_\+t} = \mbox{\hyperlink{structouchi_1_1crypto_1_1memory__entity}{memory\+\_\+entity}}$<$ Key\+Length $>$
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1aes__ni_aff964da96986400b64b6e1438b7199d3}\label{structouchi_1_1crypto_1_1aes__ni_aff964da96986400b64b6e1438b7199d3}} 
+using {\bfseries key\+\_\+view} = \mbox{\hyperlink{classouchi_1_1crypto_1_1memory__view}{memory\+\_\+view}}$<$ Key\+Length $>$
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1aes__ni_acb5af116a711b0edb24176ad95d24f2e}\label{structouchi_1_1crypto_1_1aes__ni_acb5af116a711b0edb24176ad95d24f2e}} 
+{\bfseries aes\+\_\+ni} (\mbox{\hyperlink{classouchi_1_1crypto_1_1memory__view}{key\+\_\+view}} key)
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1aes__ni_abbd05e01784e705b973e76de562f010a}\label{structouchi_1_1crypto_1_1aes__ni_abbd05e01784e705b973e76de562f010a}} 
+void {\bfseries set\+\_\+key} (\mbox{\hyperlink{classouchi_1_1crypto_1_1memory__view}{key\+\_\+view}} key) noexcept
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1aes__ni_a064761766865db0ff8ed362fba347a6c}\label{structouchi_1_1crypto_1_1aes__ni_a064761766865db0ff8ed362fba347a6c}} 
+void {\bfseries encrypt} (\mbox{\hyperlink{classouchi_1_1crypto_1_1memory__view}{block\+\_\+t}} src, void $\ast$dest) const noexcept
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1aes__ni_afad0cf6eabf0706f98faf8913fcbb809}\label{structouchi_1_1crypto_1_1aes__ni_afad0cf6eabf0706f98faf8913fcbb809}} 
+void {\bfseries decrypt} (\mbox{\hyperlink{classouchi_1_1crypto_1_1memory__view}{block\+\_\+t}} src, void $\ast$dest) const noexcept
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1aes__ni_ab969cfd1594842c81a1a5d6b44402ffb}\label{structouchi_1_1crypto_1_1aes__ni_ab969cfd1594842c81a1a5d6b44402ffb}} 
+static constexpr size\+\_\+t {\bfseries block\+\_\+size} = nb $\ast$ 4
+\end{DoxyCompactItemize}
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/crypto/algorithm/aes\+\_\+ni.\+hpp\end{DoxyCompactItemize}

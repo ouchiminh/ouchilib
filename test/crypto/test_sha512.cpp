@@ -6,17 +6,11 @@ DEFINE_TEST(test_sha512_single_block)
 {
     using namespace ouchi::literals;
     auto code = "abc"_sha512;
-    for (auto i : code.data) {
-        std::cout << std::hex << (int)i << ' ';
-    }
-    std::cout << std::endl;
+    CHECK_EQUAL(code[0], 0xDD);
 }
 DEFINE_TEST(test_sha512_2_block)
 {
     using namespace ouchi::literals;
     auto code = "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu"_sha512;
-    for (auto i : code.data) {
-        std::cout << std::hex << (int)i << ' ';
-    }
-    std::cout << std::endl;
+    CHECK_EQUAL(code[0], 0x8e);
 }

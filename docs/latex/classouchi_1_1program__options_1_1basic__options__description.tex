@@ -1,0 +1,64 @@
+\hypertarget{classouchi_1_1program__options_1_1basic__options__description}{}\section{ouchi\+::program\+\_\+options\+::basic\+\_\+options\+\_\+description$<$ CharT, Traits $>$ Class Template Reference}
+\label{classouchi_1_1program__options_1_1basic__options__description}\index{ouchi::program\_options::basic\_options\_description$<$ CharT, Traits $>$@{ouchi::program\_options::basic\_options\_description$<$ CharT, Traits $>$}}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__options__description_a4edec3cd5aefd32600a00999101da486}\label{classouchi_1_1program__options_1_1basic__options__description_a4edec3cd5aefd32600a00999101da486}} 
+using {\bfseries string} = std\+::basic\+\_\+string$<$ CharT, Traits $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__options__description_ad47db1dd4100cb8eee5986e331c55bcd}\label{classouchi_1_1program__options_1_1basic__options__description_ad47db1dd4100cb8eee5986e331c55bcd}} 
+using {\bfseries string\+\_\+view} = std\+::basic\+\_\+string\+\_\+view$<$ CharT, Traits $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__options__description_ad54826c35d2b06dbeee3584fc6d1507b}\label{classouchi_1_1program__options_1_1basic__options__description_ad54826c35d2b06dbeee3584fc6d1507b}} 
+using {\bfseries value\+\_\+type} = \mbox{\hyperlink{structouchi_1_1program__options_1_1detail_1_1option__info__base}{detail\+::option\+\_\+info\+\_\+base}}$<$ CharT, Traits $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__options__description_a0376518fd195050ced2a171aa19e7213}\label{classouchi_1_1program__options_1_1basic__options__description_a0376518fd195050ced2a171aa19e7213}} 
+using {\bfseries compound\+\_\+value\+\_\+type} = std\+::pair$<$ string, std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{structouchi_1_1program__options_1_1detail_1_1option__info__base}{value\+\_\+type}} $>$ $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__options__description_a8f904797a53e7ad86c21118cebf7d533}\label{classouchi_1_1program__options_1_1basic__options__description_a8f904797a53e7ad86c21118cebf7d533}} 
+using {\bfseries container\+\_\+type} = std\+::map$<$ string, compound\+\_\+value\+\_\+type $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__options__description_a8939009ecb6ae06cf19286fbeef61363}\label{classouchi_1_1program__options_1_1basic__options__description_a8939009ecb6ae06cf19286fbeef61363}} 
+using {\bfseries const\+\_\+iterator} = typename container\+\_\+type\+::const\+\_\+iterator
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__options__description_af57391ea514901b6540a1256b9edffe8}\label{classouchi_1_1program__options_1_1basic__options__description_af57391ea514901b6540a1256b9edffe8}} 
+using {\bfseries iterator} = typename container\+\_\+type\+::iterator
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__options__description_a1f97fb20c529e04046629e0dc3781cd0}\label{classouchi_1_1program__options_1_1basic__options__description_a1f97fb20c529e04046629e0dc3781cd0}} 
+{\footnotesize template$<$class ... R$>$ }\\\mbox{\hyperlink{classouchi_1_1program__options_1_1basic__options__description}{basic\+\_\+options\+\_\+description}} \& {\bfseries add} (string\+\_\+view key, string\+\_\+view description, R \&\&...restrictions)
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__options__description_acd65462bf2a5596d04d2c6ef0221df83}\label{classouchi_1_1program__options_1_1basic__options__description_acd65462bf2a5596d04d2c6ef0221df83}} 
+iterator {\bfseries find\+\_\+option} (string\+\_\+view internal\+\_\+expr)
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__options__description_ad7ce93c0b80b70adbbed6b493031d049}\label{classouchi_1_1program__options_1_1basic__options__description_ad7ce93c0b80b70adbbed6b493031d049}} 
+const\+\_\+iterator {\bfseries begin} () const noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__options__description_a79397a4065b3d8b96af4c8a844884dfe}\label{classouchi_1_1program__options_1_1basic__options__description_a79397a4065b3d8b96af4c8a844884dfe}} 
+const\+\_\+iterator {\bfseries end} () const noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__options__description_add8af51ffe45301c117386e4579a9d0a}\label{classouchi_1_1program__options_1_1basic__options__description_add8af51ffe45301c117386e4579a9d0a}} 
+iterator {\bfseries begin} () noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__options__description_a19c1549e6bc6a77f004b7d5d2d8a2a7a}\label{classouchi_1_1program__options_1_1basic__options__description_a19c1549e6bc6a77f004b7d5d2d8a2a7a}} 
+iterator {\bfseries end} () noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__options__description_a774ade9607c30131183a8818be9c00e5}\label{classouchi_1_1program__options_1_1basic__options__description_a774ade9607c30131183a8818be9c00e5}} 
+container\+\_\+type \& {\bfseries get\+\_\+container} () \&noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__options__description_a29184b4ad00f893e086ead23f7f591e8}\label{classouchi_1_1program__options_1_1basic__options__description_a29184b4ad00f893e086ead23f7f591e8}} 
+const container\+\_\+type \& {\bfseries get\+\_\+container} () const \&noexcept
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1program__options_1_1basic__options__description_a1c02b5775fffa8d123db3d8716a4bf31}\label{classouchi_1_1program__options_1_1basic__options__description_a1c02b5775fffa8d123db3d8716a4bf31}} 
+std\+::basic\+\_\+ostream$<$ CharT, Traits $>$ \& {\bfseries operator$<$$<$} (std\+::basic\+\_\+ostream$<$ CharT, Traits $>$ \&os, const \mbox{\hyperlink{classouchi_1_1program__options_1_1basic__options__description}{basic\+\_\+options\+\_\+description}} \&bod)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/program\+\_\+options/program\+\_\+options\+\_\+description.\+hpp\end{DoxyCompactItemize}

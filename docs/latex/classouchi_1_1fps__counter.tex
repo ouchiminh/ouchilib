@@ -1,0 +1,89 @@
+\hypertarget{classouchi_1_1fps__counter}{}\section{ouchi\+::fps\+\_\+counter$<$ Clock, Time\+Point $>$ Class Template Reference}
+\label{classouchi_1_1fps__counter}\index{ouchi::fps\_counter$<$ Clock, TimePoint $>$@{ouchi::fps\_counter$<$ Clock, TimePoint $>$}}
+
+
+Clock must have static {\ttfamily now} method that returns current time point.  
+
+
+
+
+{\ttfamily \#include $<$fps-\/counter.\+hpp$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classouchi_1_1fps__counter_a0a7766cd31f0ed5d07bfcb316244673f}{on\+\_\+frame}} () noexcept
+\begin{DoxyCompactList}\small\item\em call more than 2 times. calculate avg framerate \end{DoxyCompactList}\item 
+auto \mbox{\hyperlink{classouchi_1_1fps__counter_a79b6ffdb6f8d8ef73f019f704e4ed901}{get\+\_\+framerate}} () const noexcept -\/$>$ double
+\begin{DoxyCompactList}\small\item\em calc avg framerate. if frame count is less than 2, returns 0. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classouchi_1_1fps__counter_ac5af84f34a6d37614c38b037bfa7b531}\label{classouchi_1_1fps__counter_ac5af84f34a6d37614c38b037bfa7b531}} 
+auto {\bfseries get\+\_\+avg\+\_\+duration} () const noexcept -\/$>$ decltype(std\+::declval$<$ Time\+Point $>$() -\/ std\+::declval$<$ Time\+Point $>$())
+\item 
+\mbox{\Hypertarget{classouchi_1_1fps__counter_aa999db83b4f5601918202ab6326864e1}\label{classouchi_1_1fps__counter_aa999db83b4f5601918202ab6326864e1}} 
+void {\bfseries reset} () noexcept
+\item 
+{\footnotesize template$<$class Draw\+Func , class ... Args$>$ }\\double \mbox{\hyperlink{classouchi_1_1fps__counter_adf100b1873b9aebb2da2b0240f9d743a}{draw\+\_\+and\+\_\+measure}} (Draw\+Func \&\&f, Args \&\&...args) const noexcept(noexcept(std\+::declval$<$ Draw\+Func $>$()(std\+::declval$<$ Args $>$()...)))
+\begin{DoxyCompactList}\small\item\em measure time while drawing and returns framerate. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\subsubsection*{template$<$class Clock = std\+::chrono\+::high\+\_\+resolution\+\_\+clock, class Time\+Point = decltype(\+Clock\+::now())$>$\newline
+class ouchi\+::fps\+\_\+counter$<$ Clock, Time\+Point $>$}
+
+Clock must have static {\ttfamily now} method that returns current time point. 
+
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classouchi_1_1fps__counter_adf100b1873b9aebb2da2b0240f9d743a}\label{classouchi_1_1fps__counter_adf100b1873b9aebb2da2b0240f9d743a}} 
+\index{ouchi::fps\_counter$<$ Clock, TimePoint $>$@{ouchi::fps\_counter$<$ Clock, TimePoint $>$}!draw\_and\_measure@{draw\_and\_measure}}
+\index{draw\_and\_measure@{draw\_and\_measure}!ouchi::fps\_counter$<$ Clock, TimePoint $>$@{ouchi::fps\_counter$<$ Clock, TimePoint $>$}}
+\subsubsection{\texorpdfstring{draw\_and\_measure()}{draw\_and\_measure()}}
+{\footnotesize\ttfamily template$<$class Clock = std\+::chrono\+::high\+\_\+resolution\+\_\+clock, class Time\+Point = decltype(\+Clock\+::now())$>$ \\
+template$<$class Draw\+Func , class ... Args$>$ \\
+double \mbox{\hyperlink{classouchi_1_1fps__counter}{ouchi\+::fps\+\_\+counter}}$<$ Clock, Time\+Point $>$\+::draw\+\_\+and\+\_\+measure (\begin{DoxyParamCaption}\item[{Draw\+Func \&\&}]{f,  }\item[{Args \&\&...}]{args }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [noexcept]}}
+
+
+
+measure time while drawing and returns framerate. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em f} & drow function\\
+\hline
+{\em ...\+args} & draw func\textquotesingle{}s argument\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+framerate
+\end{DoxyReturn}
+\mbox{\Hypertarget{classouchi_1_1fps__counter_a79b6ffdb6f8d8ef73f019f704e4ed901}\label{classouchi_1_1fps__counter_a79b6ffdb6f8d8ef73f019f704e4ed901}} 
+\index{ouchi::fps\_counter$<$ Clock, TimePoint $>$@{ouchi::fps\_counter$<$ Clock, TimePoint $>$}!get\_framerate@{get\_framerate}}
+\index{get\_framerate@{get\_framerate}!ouchi::fps\_counter$<$ Clock, TimePoint $>$@{ouchi::fps\_counter$<$ Clock, TimePoint $>$}}
+\subsubsection{\texorpdfstring{get\_framerate()}{get\_framerate()}}
+{\footnotesize\ttfamily template$<$class Clock = std\+::chrono\+::high\+\_\+resolution\+\_\+clock, class Time\+Point = decltype(\+Clock\+::now())$>$ \\
+auto \mbox{\hyperlink{classouchi_1_1fps__counter}{ouchi\+::fps\+\_\+counter}}$<$ Clock, Time\+Point $>$\+::get\+\_\+framerate (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const -\/$>$ double \hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [noexcept]}}
+
+
+
+calc avg framerate. if frame count is less than 2, returns 0. 
+
+\begin{DoxyReturn}{Returns}
+framerate
+\end{DoxyReturn}
+\mbox{\Hypertarget{classouchi_1_1fps__counter_a0a7766cd31f0ed5d07bfcb316244673f}\label{classouchi_1_1fps__counter_a0a7766cd31f0ed5d07bfcb316244673f}} 
+\index{ouchi::fps\_counter$<$ Clock, TimePoint $>$@{ouchi::fps\_counter$<$ Clock, TimePoint $>$}!on\_frame@{on\_frame}}
+\index{on\_frame@{on\_frame}!ouchi::fps\_counter$<$ Clock, TimePoint $>$@{ouchi::fps\_counter$<$ Clock, TimePoint $>$}}
+\subsubsection{\texorpdfstring{on\_frame()}{on\_frame()}}
+{\footnotesize\ttfamily template$<$class Clock = std\+::chrono\+::high\+\_\+resolution\+\_\+clock, class Time\+Point = decltype(\+Clock\+::now())$>$ \\
+void \mbox{\hyperlink{classouchi_1_1fps__counter}{ouchi\+::fps\+\_\+counter}}$<$ Clock, Time\+Point $>$\+::on\+\_\+frame (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [noexcept]}}
+
+
+
+call more than 2 times. calculate avg framerate 
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/utl/fps-\/counter.\+hpp\end{DoxyCompactItemize}

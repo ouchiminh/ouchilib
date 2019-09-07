@@ -1,0 +1,31 @@
+\hypertarget{classouchi_1_1crypto_1_1block__encoder}{}\section{ouchi\+::crypto\+::block\+\_\+encoder$<$ Cipher\+Mode, Algorithm, $>$ Class Template Reference}
+\label{classouchi_1_1crypto_1_1block__encoder}\index{ouchi::crypto::block\_encoder$<$ CipherMode, Algorithm, $>$@{ouchi::crypto::block\_encoder$<$ CipherMode, Algorithm, $>$}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1block__encoder_a76296319b460fe188134fa707302b530}\label{classouchi_1_1crypto_1_1block__encoder_a76296319b460fe188134fa707302b530}} 
+{\footnotesize template$<$class ... Args$>$ }\\\mbox{\hyperlink{classouchi_1_1crypto_1_1block__encoder_a76296319b460fe188134fa707302b530}{block\+\_\+encoder}} (std\+::in\+\_\+place\+\_\+t, Args \&\&...args)
+\begin{DoxyCompactList}\small\item\em returns$>$crypto size\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1block__encoder_ad42b8354e56006a17ea40963dd53dc44}\label{classouchi_1_1crypto_1_1block__encoder_ad42b8354e56006a17ea40963dd53dc44}} 
+size\+\_\+t \mbox{\hyperlink{classouchi_1_1crypto_1_1block__encoder_ad42b8354e56006a17ea40963dd53dc44}{encrypt}} (const void $\ast$src, size\+\_\+t size, void $\ast$dest, size\+\_\+t dest\+\_\+size)
+\begin{DoxyCompactList}\small\item\em returns$>$plain txt size\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1block__encoder_a83c4655202996f1a2cdbf1a4f8d964ed}\label{classouchi_1_1crypto_1_1block__encoder_a83c4655202996f1a2cdbf1a4f8d964ed}} 
+size\+\_\+t {\bfseries decrypt} (const void $\ast$src, size\+\_\+t size, void $\ast$dest, size\+\_\+t dest\+\_\+size)
+\item 
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1block__encoder_a6db3aa2fb1fd0936a66cdb0eeb19387b}\label{classouchi_1_1crypto_1_1block__encoder_a6db3aa2fb1fd0936a66cdb0eeb19387b}} 
+{\footnotesize template$<$class Cm  = Cipher\+Mode$<$\+Algorithm$>$, std\+::enable\+\_\+if\+\_\+t$<$ Cm\+::is\+\_\+encrypt\+\_\+parallelizable $>$ $\ast$  = nullptr$>$ }\\size\+\_\+t {\bfseries encrypt\+\_\+parallel} (const void $\ast$src, size\+\_\+t size, void $\ast$dest, size\+\_\+t dest\+\_\+size, unsigned thread\+\_\+cnt)
+\item 
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1block__encoder_aa89183c9c430b437d066667e9bb22807}\label{classouchi_1_1crypto_1_1block__encoder_aa89183c9c430b437d066667e9bb22807}} 
+{\footnotesize template$<$class Cm  = Cipher\+Mode$<$\+Algorithm$>$, std\+::enable\+\_\+if\+\_\+t$<$ Cm\+::is\+\_\+decrypt\+\_\+parallelizable $>$ $\ast$  = nullptr$>$ }\\size\+\_\+t {\bfseries decrypt\+\_\+parallel} (const void $\ast$src, size\+\_\+t size, void $\ast$dest, size\+\_\+t dest\+\_\+size, unsigned thread\+\_\+cnt)
+\item 
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1block__encoder_a12847cbf8836b8476d72201c64ed0d81}\label{classouchi_1_1crypto_1_1block__encoder_a12847cbf8836b8476d72201c64ed0d81}} 
+void {\bfseries encrypt} (std\+::istream \&in, std\+::ostream \&out)
+\item 
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1block__encoder_a6c15c5b38a194ad5bd232b0f19a03c6d}\label{classouchi_1_1crypto_1_1block__encoder_a6c15c5b38a194ad5bd232b0f19a03c6d}} 
+void {\bfseries decrypt} (std\+::istream \&in, std\+::ostream \&out)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/crypto/block\+\_\+encoder.\+hpp\end{DoxyCompactItemize}

@@ -1,0 +1,51 @@
+\hypertarget{classouchi_1_1indexed__iterator}{}\section{ouchi\+::indexed\+\_\+iterator$<$ Iter $>$ Class Template Reference}
+\label{classouchi_1_1indexed__iterator}\index{ouchi::indexed\_iterator$<$ Iter $>$@{ouchi::indexed\_iterator$<$ Iter $>$}}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classouchi_1_1indexed__iterator_1_1iterator}{iterator}}
+\end{DoxyCompactItemize}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1indexed__iterator_a6ee292167179fa48dadca307543c3365}\label{classouchi_1_1indexed__iterator_a6ee292167179fa48dadca307543c3365}} 
+using {\bfseries itr\+\_\+t} = std\+::remove\+\_\+reference\+\_\+t$<$ Iter $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1indexed__iterator_a8ad7bc8ab15c26c84ab5a2d3a71c7be3}\label{classouchi_1_1indexed__iterator_a8ad7bc8ab15c26c84ab5a2d3a71c7be3}} 
+using {\bfseries idx\+\_\+t} = typename std\+::iterator\+\_\+traits$<$ Iter $>$\+::difference\+\_\+type
+\item 
+\mbox{\Hypertarget{classouchi_1_1indexed__iterator_ae018c538187efbe96abfbb61cb78aa88}\label{classouchi_1_1indexed__iterator_ae018c538187efbe96abfbb61cb78aa88}} 
+using {\bfseries difference\+\_\+type} = idx\+\_\+t
+\item 
+\mbox{\Hypertarget{classouchi_1_1indexed__iterator_a9a3f4ad6435c25ecd6009321b7f03272}\label{classouchi_1_1indexed__iterator_a9a3f4ad6435c25ecd6009321b7f03272}} 
+using {\bfseries iterator\+\_\+category} = typename std\+::iterator\+\_\+traits$<$ Iter $>$\+::iterator\+\_\+category
+\item 
+\mbox{\Hypertarget{classouchi_1_1indexed__iterator_ab967b2b7726e26bb5459a086cc3ffd3c}\label{classouchi_1_1indexed__iterator_ab967b2b7726e26bb5459a086cc3ffd3c}} 
+using {\bfseries value\+\_\+type} = std\+::pair$<$ idx\+\_\+t, typename std\+::iterator\+\_\+traits$<$ Iter $>$\+::reference $>$
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1indexed__iterator_a222192e8cdb78a9b91747c47541e9389}\label{classouchi_1_1indexed__iterator_a222192e8cdb78a9b91747c47541e9389}} 
+{\footnotesize template$<$class Container $>$ }\\{\bfseries indexed\+\_\+iterator} (Container \&c)
+\item 
+\mbox{\Hypertarget{classouchi_1_1indexed__iterator_a9b4c731dea81846ea678e80fe7ab6943}\label{classouchi_1_1indexed__iterator_a9b4c731dea81846ea678e80fe7ab6943}} 
+{\bfseries indexed\+\_\+iterator} (Iter first, Iter last, idx\+\_\+t first\+\_\+pos=0)
+\item 
+\mbox{\Hypertarget{classouchi_1_1indexed__iterator_a66c264ff8432242532cd59262bbe1f9e}\label{classouchi_1_1indexed__iterator_a66c264ff8432242532cd59262bbe1f9e}} 
+auto {\bfseries begin} ()
+\item 
+\mbox{\Hypertarget{classouchi_1_1indexed__iterator_abd3e5b9d26b66fff4d674db0fd573e18}\label{classouchi_1_1indexed__iterator_abd3e5b9d26b66fff4d674db0fd573e18}} 
+auto {\bfseries end} ()
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1indexed__iterator_adcfd7ce2a8c1c9d6fe325330f605284e}\label{classouchi_1_1indexed__iterator_adcfd7ce2a8c1c9d6fe325330f605284e}} 
+static constexpr bool {\bfseries is\+\_\+bidirectional} = std\+::is\+\_\+base\+\_\+of\+\_\+v$<$std\+::bidirectional\+\_\+iterator\+\_\+tag, iterator\+\_\+category$>$
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/utl/indexed\+\_\+iterator.\+hpp\end{DoxyCompactItemize}

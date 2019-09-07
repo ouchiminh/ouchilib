@@ -1,0 +1,111 @@
+\hypertarget{classouchi_1_1tokenizer_1_1tokenizer}{}\section{ouchi\+::tokenizer\+::tokenizer$<$ CharT $>$ Class Template Reference}
+\label{classouchi_1_1tokenizer_1_1tokenizer}\index{ouchi::tokenizer::tokenizer$<$ CharT $>$@{ouchi::tokenizer::tokenizer$<$ CharT $>$}}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_abcceadec26bc3125deb0be954a5eb2ee}\label{classouchi_1_1tokenizer_1_1tokenizer_abcceadec26bc3125deb0be954a5eb2ee}} 
+using {\bfseries string} = std\+::basic\+\_\+string$<$ CharT $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_ac687849f11339408d727169c632a7efa}\label{classouchi_1_1tokenizer_1_1tokenizer_ac687849f11339408d727169c632a7efa}} 
+using {\bfseries string\+\_\+view} = std\+::basic\+\_\+string\+\_\+view$<$ CharT $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_af57266a577d94642fb1fd9fbb69ff8ae}\label{classouchi_1_1tokenizer_1_1tokenizer_af57266a577d94642fb1fd9fbb69ff8ae}} 
+using {\bfseries container\+\_\+type} = std\+::list$<$ std\+::pair$<$ token\+\_\+type, string $>$ $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_ad8461063399cd55cb66498bcefc1136f}\label{classouchi_1_1tokenizer_1_1tokenizer_ad8461063399cd55cb66498bcefc1136f}} 
+using {\bfseries iterator} = typename container\+\_\+type\+::iterator
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_ac778be06c68c3b2ef9e68cb0eca0443f}\label{classouchi_1_1tokenizer_1_1tokenizer_ac778be06c68c3b2ef9e68cb0eca0443f}} 
+using {\bfseries const\+\_\+iterator} = typename container\+\_\+type\+::const\+\_\+iterator
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_a8711b381bb3604a280b3a3405e56e8c8}\label{classouchi_1_1tokenizer_1_1tokenizer_a8711b381bb3604a280b3a3405e56e8c8}} 
+using {\bfseries value\+\_\+type} = typename std\+::iterator\+\_\+traits$<$ iterator $>$\+::value\+\_\+type
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_ae0dc2880a9a1fb8c7252baaa4019ea72}\label{classouchi_1_1tokenizer_1_1tokenizer_ae0dc2880a9a1fb8c7252baaa4019ea72}} 
+{\bfseries tokenizer} (string\+\_\+view str, const \mbox{\hyperlink{classouchi_1_1tokenizer_1_1separator}{separator}}$<$ CharT $>$ \&sep)
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_a0e00772ef3ff5cda5531c63f5d5cc6d1}\label{classouchi_1_1tokenizer_1_1tokenizer_a0e00772ef3ff5cda5531c63f5d5cc6d1}} 
+{\bfseries tokenizer} (string\+\_\+view str, \mbox{\hyperlink{classouchi_1_1tokenizer_1_1separator}{separator}}$<$ CharT $>$ \&\&sep)
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_a1bff064e84cb28a72aa4e9559252b77d}\label{classouchi_1_1tokenizer_1_1tokenizer_a1bff064e84cb28a72aa4e9559252b77d}} 
+{\bfseries tokenizer} (const \mbox{\hyperlink{classouchi_1_1tokenizer_1_1separator}{separator}}$<$ CharT $>$ \&sep)
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_a00c3be2b09bbe8c9acbb6db49bcc66fb}\label{classouchi_1_1tokenizer_1_1tokenizer_a00c3be2b09bbe8c9acbb6db49bcc66fb}} 
+{\bfseries tokenizer} (\mbox{\hyperlink{classouchi_1_1tokenizer_1_1separator}{separator}}$<$ CharT $>$ \&\&sep)
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_a513160763d44dd0811cbe855e736637c}\label{classouchi_1_1tokenizer_1_1tokenizer_a513160763d44dd0811cbe855e736637c}} 
+const\+\_\+iterator {\bfseries cbegin} () const
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_a7e0734d2c5f5565e02135e0427658f06}\label{classouchi_1_1tokenizer_1_1tokenizer_a7e0734d2c5f5565e02135e0427658f06}} 
+const\+\_\+iterator {\bfseries cend} () const
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_a1d9d466cb1ff68081cbe0c18105a7c4f}\label{classouchi_1_1tokenizer_1_1tokenizer_a1d9d466cb1ff68081cbe0c18105a7c4f}} 
+const\+\_\+iterator {\bfseries begin} () const
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_ac12a90068205831e8a70f648b3a1818c}\label{classouchi_1_1tokenizer_1_1tokenizer_ac12a90068205831e8a70f648b3a1818c}} 
+const\+\_\+iterator {\bfseries end} () const
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_aa016ca0913cb008a3aefbc5c572d9fb8}\label{classouchi_1_1tokenizer_1_1tokenizer_aa016ca0913cb008a3aefbc5c572d9fb8}} 
+iterator {\bfseries begin} ()
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_a98cb58904c4d117f9ae0534165d7929e}\label{classouchi_1_1tokenizer_1_1tokenizer_a98cb58904c4d117f9ae0534165d7929e}} 
+iterator {\bfseries end} ()
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_a370f088f2374f1cfebc8ead7d9396c6e}\label{classouchi_1_1tokenizer_1_1tokenizer_a370f088f2374f1cfebc8ead7d9396c6e}} 
+container\+\_\+type\+::size\+\_\+type {\bfseries size} () const noexcept
+\item 
+iterator \mbox{\hyperlink{classouchi_1_1tokenizer_1_1tokenizer_ac816558091f26b8b10535f05cea6a5ed}{erase}} (const\+\_\+iterator pos) noexcept
+\begin{DoxyCompactList}\small\item\em posの位置にある要素を削除する \end{DoxyCompactList}\item 
+iterator \mbox{\hyperlink{classouchi_1_1tokenizer_1_1tokenizer_a7ea0961e45bc0c083dd9b0c19c9232f0}{merge}} (iterator from, iterator to) noexcept
+\begin{DoxyCompactList}\small\item\em \mbox{[}from, to\mbox{]}の範囲を一つのトークンにまとめる。 \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_ac816558091f26b8b10535f05cea6a5ed}\label{classouchi_1_1tokenizer_1_1tokenizer_ac816558091f26b8b10535f05cea6a5ed}} 
+\index{ouchi::tokenizer::tokenizer$<$ CharT $>$@{ouchi::tokenizer::tokenizer$<$ CharT $>$}!erase@{erase}}
+\index{erase@{erase}!ouchi::tokenizer::tokenizer$<$ CharT $>$@{ouchi::tokenizer::tokenizer$<$ CharT $>$}}
+\subsubsection{\texorpdfstring{erase()}{erase()}}
+{\footnotesize\ttfamily template$<$class CharT $>$ \\
+iterator \mbox{\hyperlink{classouchi_1_1tokenizer_1_1tokenizer}{ouchi\+::tokenizer\+::tokenizer}}$<$ CharT $>$\+::erase (\begin{DoxyParamCaption}\item[{const\+\_\+iterator}]{pos }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [noexcept]}}
+
+
+
+posの位置にある要素を削除する 
+
+
+\begin{DoxyParams}{Parameters}
+{\em pos} & 削除対象\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+削除した次の位置の要素
+\end{DoxyReturn}
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1tokenizer_a7ea0961e45bc0c083dd9b0c19c9232f0}\label{classouchi_1_1tokenizer_1_1tokenizer_a7ea0961e45bc0c083dd9b0c19c9232f0}} 
+\index{ouchi::tokenizer::tokenizer$<$ CharT $>$@{ouchi::tokenizer::tokenizer$<$ CharT $>$}!merge@{merge}}
+\index{merge@{merge}!ouchi::tokenizer::tokenizer$<$ CharT $>$@{ouchi::tokenizer::tokenizer$<$ CharT $>$}}
+\subsubsection{\texorpdfstring{merge()}{merge()}}
+{\footnotesize\ttfamily template$<$class CharT $>$ \\
+iterator \mbox{\hyperlink{classouchi_1_1tokenizer_1_1tokenizer}{ouchi\+::tokenizer\+::tokenizer}}$<$ CharT $>$\+::merge (\begin{DoxyParamCaption}\item[{iterator}]{from,  }\item[{iterator}]{to }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [noexcept]}}
+
+
+
+\mbox{[}from, to\mbox{]}の範囲を一つのトークンにまとめる。 
+
+
+\begin{DoxyParams}{Parameters}
+{\em from} & 始点\\
+\hline
+{\em to} & 終点(まとめられない)\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+まとめられたトークンの位置
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/tokenizer/tokenizer.\+hpp\end{DoxyCompactItemize}
