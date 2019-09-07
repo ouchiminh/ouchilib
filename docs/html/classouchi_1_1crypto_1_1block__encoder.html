@@ -87,9 +87,9 @@ size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cl
 <tr class="memitem:a83c4655202996f1a2cdbf1a4f8d964ed"><td class="memItemLeft" align="right" valign="top"><a id="a83c4655202996f1a2cdbf1a4f8d964ed"></a>
 size_t&#160;</td><td class="memItemRight" valign="bottom"><b>decrypt</b> (const void *src, size_t size, void *dest, size_t dest_size)</td></tr>
 <tr class="separator:a83c4655202996f1a2cdbf1a4f8d964ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6db3aa2fb1fd0936a66cdb0eeb19387b"><td class="memTemplParams" colspan="2"><a id="a6db3aa2fb1fd0936a66cdb0eeb19387b"></a>
-template&lt;class Cm  = CipherMode&lt;Algorithm&gt;, std::enable_if_t&lt; Cm::is_encrypt_parallelizable &gt; *  = nullptr&gt; </td></tr>
-<tr class="memitem:a6db3aa2fb1fd0936a66cdb0eeb19387b"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><b>encrypt_parallel</b> (const void *src, size_t size, void *dest, size_t dest_size, unsigned thread_cnt)</td></tr>
+<tr class="memitem:a6db3aa2fb1fd0936a66cdb0eeb19387b"><td class="memTemplParams" colspan="2">template&lt;class Cm  = CipherMode&lt;Algorithm&gt;, std::enable_if_t&lt; Cm::is_encrypt_parallelizable &gt; *  = nullptr&gt; </td></tr>
+<tr class="memitem:a6db3aa2fb1fd0936a66cdb0eeb19387b"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classouchi_1_1crypto_1_1block__encoder.html#a6db3aa2fb1fd0936a66cdb0eeb19387b">encrypt_parallel</a> (const void *src, size_t size, void *dest, size_t dest_size, unsigned thread_cnt)</td></tr>
+<tr class="memdesc:a6db3aa2fb1fd0936a66cdb0eeb19387b"><td class="mdescLeft">&#160;</td><td class="mdescRight">並列に暗号化する。このメソッドは暗号利用モードが並列暗号化に対応している場合のみwell-formed  <a href="#a6db3aa2fb1fd0936a66cdb0eeb19387b">More...</a><br /></td></tr>
 <tr class="separator:a6db3aa2fb1fd0936a66cdb0eeb19387b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa89183c9c430b437d066667e9bb22807"><td class="memTemplParams" colspan="2"><a id="aa89183c9c430b437d066667e9bb22807"></a>
 template&lt;class Cm  = CipherMode&lt;Algorithm&gt;, std::enable_if_t&lt; Cm::is_decrypt_parallelizable &gt; *  = nullptr&gt; </td></tr>
@@ -102,6 +102,78 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>encrypt</b> (std::ist
 void&#160;</td><td class="memItemRight" valign="bottom"><b>decrypt</b> (std::istream &amp;in, std::ostream &amp;out)</td></tr>
 <tr class="separator:a6c15c5b38a194ad5bd232b0f19a03c6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a6db3aa2fb1fd0936a66cdb0eeb19387b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6db3aa2fb1fd0936a66cdb0eeb19387b">&#9670;&nbsp;</a></span>encrypt_parallel()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;template&lt; class &gt; class CipherMode, class Algorithm , std::enable_if_t&lt; is_crypto_algorithm&lt; Algorithm &gt;::value &gt; *  = nullptr&gt; </div>
+<div class="memtemplate">
+template&lt;class Cm  = CipherMode&lt;Algorithm&gt;, std::enable_if_t&lt; Cm::is_encrypt_parallelizable &gt; *  = nullptr&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t <a class="el" href="classouchi_1_1crypto_1_1block__encoder.html">ouchi::crypto::block_encoder</a>&lt; CipherMode, Algorithm, &gt;::encrypt_parallel </td>
+          <td>(</td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>dest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>dest_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned&#160;</td>
+          <td class="paramname"><em>thread_cnt</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>並列に暗号化する。このメソッドは暗号利用モードが並列暗号化に対応している場合のみwell-formed </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">src</td><td>平文</td></tr>
+    <tr><td class="paramname">size</td><td>平文のサイズ</td></tr>
+    <tr><td class="paramname">dest</td><td>暗号文のためのバッファ</td></tr>
+    <tr><td class="paramname">dest_size</td><td>バッファのサイズ</td></tr>
+    <tr><td class="paramname">thread_cnt</td><td>スレッド数</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>暗号文のサイズ</dd></dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/ouchilib/crypto/<a class="el" href="block__encoder_8hpp_source.html">block_encoder.hpp</a></li>
 </ul>

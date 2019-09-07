@@ -51,6 +51,15 @@ public:
         check_pad(padsize, destptr + dest_size - padsize);
         return dest_size - padsize;
     }
+    /// <summary>
+    /// 並列に暗号化する。このメソッドは暗号利用モードが並列暗号化に対応している場合のみwell-formed
+    /// </summary>
+    /// <param name="src">平文</param>
+    /// <param name="size">平文のサイズ</param>
+    /// <param name="dest">暗号文のためのバッファ</param>
+    /// <param name="dest_size">バッファのサイズ</param>
+    /// <param name="thread_cnt">スレッド数</param>
+    /// <returns>暗号文のサイズ</returns>
     template<class Cm = CipherMode<Algorithm>, std::enable_if_t<Cm::is_encrypt_parallelizable>* = nullptr>
     size_t encrypt_parallel(const void* src, size_t size,
                             void* dest, size_t dest_size,

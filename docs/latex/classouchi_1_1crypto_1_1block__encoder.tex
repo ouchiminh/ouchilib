@@ -12,9 +12,8 @@ size\+\_\+t \mbox{\hyperlink{classouchi_1_1crypto_1_1block__encoder_ad42b8354e56
 \mbox{\Hypertarget{classouchi_1_1crypto_1_1block__encoder_a83c4655202996f1a2cdbf1a4f8d964ed}\label{classouchi_1_1crypto_1_1block__encoder_a83c4655202996f1a2cdbf1a4f8d964ed}} 
 size\+\_\+t {\bfseries decrypt} (const void $\ast$src, size\+\_\+t size, void $\ast$dest, size\+\_\+t dest\+\_\+size)
 \item 
-\mbox{\Hypertarget{classouchi_1_1crypto_1_1block__encoder_a6db3aa2fb1fd0936a66cdb0eeb19387b}\label{classouchi_1_1crypto_1_1block__encoder_a6db3aa2fb1fd0936a66cdb0eeb19387b}} 
-{\footnotesize template$<$class Cm  = Cipher\+Mode$<$\+Algorithm$>$, std\+::enable\+\_\+if\+\_\+t$<$ Cm\+::is\+\_\+encrypt\+\_\+parallelizable $>$ $\ast$  = nullptr$>$ }\\size\+\_\+t {\bfseries encrypt\+\_\+parallel} (const void $\ast$src, size\+\_\+t size, void $\ast$dest, size\+\_\+t dest\+\_\+size, unsigned thread\+\_\+cnt)
-\item 
+{\footnotesize template$<$class Cm  = Cipher\+Mode$<$\+Algorithm$>$, std\+::enable\+\_\+if\+\_\+t$<$ Cm\+::is\+\_\+encrypt\+\_\+parallelizable $>$ $\ast$  = nullptr$>$ }\\size\+\_\+t \mbox{\hyperlink{classouchi_1_1crypto_1_1block__encoder_a6db3aa2fb1fd0936a66cdb0eeb19387b}{encrypt\+\_\+parallel}} (const void $\ast$src, size\+\_\+t size, void $\ast$dest, size\+\_\+t dest\+\_\+size, unsigned thread\+\_\+cnt)
+\begin{DoxyCompactList}\small\item\em 並列に暗号化する。このメソッドは暗号利用モードが並列暗号化に対応している場合のみwell-\/formed \end{DoxyCompactList}\item 
 \mbox{\Hypertarget{classouchi_1_1crypto_1_1block__encoder_aa89183c9c430b437d066667e9bb22807}\label{classouchi_1_1crypto_1_1block__encoder_aa89183c9c430b437d066667e9bb22807}} 
 {\footnotesize template$<$class Cm  = Cipher\+Mode$<$\+Algorithm$>$, std\+::enable\+\_\+if\+\_\+t$<$ Cm\+::is\+\_\+decrypt\+\_\+parallelizable $>$ $\ast$  = nullptr$>$ }\\size\+\_\+t {\bfseries decrypt\+\_\+parallel} (const void $\ast$src, size\+\_\+t size, void $\ast$dest, size\+\_\+t dest\+\_\+size, unsigned thread\+\_\+cnt)
 \item 
@@ -24,6 +23,37 @@ void {\bfseries encrypt} (std\+::istream \&in, std\+::ostream \&out)
 \mbox{\Hypertarget{classouchi_1_1crypto_1_1block__encoder_a6c15c5b38a194ad5bd232b0f19a03c6d}\label{classouchi_1_1crypto_1_1block__encoder_a6c15c5b38a194ad5bd232b0f19a03c6d}} 
 void {\bfseries decrypt} (std\+::istream \&in, std\+::ostream \&out)
 \end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1block__encoder_a6db3aa2fb1fd0936a66cdb0eeb19387b}\label{classouchi_1_1crypto_1_1block__encoder_a6db3aa2fb1fd0936a66cdb0eeb19387b}} 
+\index{ouchi::crypto::block\_encoder$<$ CipherMode, Algorithm, $>$@{ouchi::crypto::block\_encoder$<$ CipherMode, Algorithm, $>$}!encrypt\_parallel@{encrypt\_parallel}}
+\index{encrypt\_parallel@{encrypt\_parallel}!ouchi::crypto::block\_encoder$<$ CipherMode, Algorithm, $>$@{ouchi::crypto::block\_encoder$<$ CipherMode, Algorithm, $>$}}
+\subsubsection{\texorpdfstring{encrypt\_parallel()}{encrypt\_parallel()}}
+{\footnotesize\ttfamily template$<$template$<$ class $>$ class Cipher\+Mode, class Algorithm , std\+::enable\+\_\+if\+\_\+t$<$ is\+\_\+crypto\+\_\+algorithm$<$ Algorithm $>$\+::value $>$ $\ast$  = nullptr$>$ \\
+template$<$class Cm  = Cipher\+Mode$<$\+Algorithm$>$, std\+::enable\+\_\+if\+\_\+t$<$ Cm\+::is\+\_\+encrypt\+\_\+parallelizable $>$ $\ast$  = nullptr$>$ \\
+size\+\_\+t \mbox{\hyperlink{classouchi_1_1crypto_1_1block__encoder}{ouchi\+::crypto\+::block\+\_\+encoder}}$<$ Cipher\+Mode, Algorithm, $>$\+::encrypt\+\_\+parallel (\begin{DoxyParamCaption}\item[{const void $\ast$}]{src,  }\item[{size\+\_\+t}]{size,  }\item[{void $\ast$}]{dest,  }\item[{size\+\_\+t}]{dest\+\_\+size,  }\item[{unsigned}]{thread\+\_\+cnt }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+並列に暗号化する。このメソッドは暗号利用モードが並列暗号化に対応している場合のみwell-\/formed 
+
+
+\begin{DoxyParams}{Parameters}
+{\em src} & 平文\\
+\hline
+{\em size} & 平文のサイズ\\
+\hline
+{\em dest} & 暗号文のためのバッファ\\
+\hline
+{\em dest\+\_\+size} & バッファのサイズ\\
+\hline
+{\em thread\+\_\+cnt} & スレッド数\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+暗号文のサイズ
+\end{DoxyReturn}
 
 
 The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
