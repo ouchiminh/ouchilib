@@ -1,0 +1,93 @@
+\hypertarget{classouchi_1_1task_1_1taskinfo}{}\section{ouchi\+::task\+::taskinfo$<$ Key $>$ Class Template Reference}
+\label{classouchi_1_1task_1_1taskinfo}\index{ouchi::task::taskinfo$<$ Key $>$@{ouchi::task::taskinfo$<$ Key $>$}}
+Inheritance diagram for ouchi\+::task\+::taskinfo$<$ Key $>$\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{classouchi_1_1task_1_1taskinfo}
+\end{center}
+\end{figure}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structouchi_1_1task_1_1taskinfo_1_1task__dependency}{task\+\_\+dependency}}
+\end{DoxyCompactItemize}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_afa46feb3c426a763994123c1c8061989}\label{classouchi_1_1task_1_1taskinfo_afa46feb3c426a763994123c1c8061989}} 
+using {\bfseries key\+\_\+type} = std\+::remove\+\_\+reference\+\_\+t$<$ Key $>$
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_a9c2aedd74a7e0421a32422f752e1a88e}\label{classouchi_1_1task_1_1taskinfo_a9c2aedd74a7e0421a32422f752e1a88e}} 
+{\bfseries taskinfo} (key\+\_\+type \&\&key)
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_afc6b555c31c9a55f905d7801c8e7fa04}\label{classouchi_1_1task_1_1taskinfo_afc6b555c31c9a55f905d7801c8e7fa04}} 
+{\bfseries taskinfo} (const key\+\_\+type \&key)
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_a01bbf420ce3dc9ac584539e935f64ce5}\label{classouchi_1_1task_1_1taskinfo_a01bbf420ce3dc9ac584539e935f64ce5}} 
+{\bfseries taskinfo} (const \mbox{\hyperlink{classouchi_1_1task_1_1taskinfo}{taskinfo}} \&)=delete
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_a6297e1d5d1a9ece4587403738e35458e}\label{classouchi_1_1task_1_1taskinfo_a6297e1d5d1a9ece4587403738e35458e}} 
+const key\+\_\+type \& {\bfseries key} ()
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_a42d7cd1b3bb82029da7c9d3460a84fc3}\label{classouchi_1_1task_1_1taskinfo_a42d7cd1b3bb82029da7c9d3460a84fc3}} 
+void {\bfseries add\+\_\+pretask} (const Key \&key)
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_a8ffd0e895f7bdfa958b9a733a7ee8f18}\label{classouchi_1_1task_1_1taskinfo_a8ffd0e895f7bdfa958b9a733a7ee8f18}} 
+void {\bfseries add\+\_\+posttask} (\mbox{\hyperlink{classouchi_1_1task_1_1taskinfo}{taskinfo}} \&ti)
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_afb60066f7029321874155077b40b6031}\label{classouchi_1_1task_1_1taskinfo_afb60066f7029321874155077b40b6031}} 
+bool {\bfseries is\+\_\+ready} () const noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_a3f79896ed11b818bf19a1c3ec036d2af}\label{classouchi_1_1task_1_1taskinfo_a3f79896ed11b818bf19a1c3ec036d2af}} 
+bool {\bfseries does\+\_\+called} () const noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_abad08069f390802a730de9f11fb1a798}\label{classouchi_1_1task_1_1taskinfo_abad08069f390802a730de9f11fb1a798}} 
+virtual void {\bfseries operator()} () final
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_a634b502ca583fd9fce8435dd3dbc1f36}\label{classouchi_1_1task_1_1taskinfo_a634b502ca583fd9fce8435dd3dbc1f36}} 
+\mbox{\hyperlink{structouchi_1_1task_1_1taskinfo_1_1task__dependency}{task\+\_\+dependency}} {\bfseries operator-\/-\/} ()
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_a4bfd9ad1b50395a77aa807972c04f462}\label{classouchi_1_1task_1_1taskinfo_a4bfd9ad1b50395a77aa807972c04f462}} 
+\mbox{\hyperlink{structouchi_1_1task_1_1taskinfo_1_1task__dependency}{task\+\_\+dependency}} {\bfseries operator-\/-\/} (int)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_ae8df1f559435ef2b32fe46a9356ad884}\label{classouchi_1_1task_1_1taskinfo_ae8df1f559435ef2b32fe46a9356ad884}} 
+friend {\bfseries task\+\_\+dependency}
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_a37b3905030468612d293fba1b8963f8c}\label{classouchi_1_1task_1_1taskinfo_a37b3905030468612d293fba1b8963f8c}} 
+{\footnotesize template$<$class T $>$ }\\T {\bfseries get\+\_\+pretask\+\_\+result} (const key\+\_\+type \&key) const
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_a98d30dadf393c8365e96f2bf30ff8791}\label{classouchi_1_1task_1_1taskinfo_a98d30dadf393c8365e96f2bf30ff8791}} 
+void {\bfseries tell\+\_\+result} (std\+::any \&\&result)
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_aa080fcb4e737e78aeeae162c74dff574}\label{classouchi_1_1task_1_1taskinfo_aa080fcb4e737e78aeeae162c74dff574}} 
+void {\bfseries set\+\_\+result} (const key\+\_\+type \&key, const std\+::any \&result)
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_a06d8c0489f05999103d0708ea26f1912}\label{classouchi_1_1task_1_1taskinfo_a06d8c0489f05999103d0708ea26f1912}} 
+virtual void {\bfseries run} ()=0
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_ac4e620dd89d24d1cdef0ff7d59049d73}\label{classouchi_1_1task_1_1taskinfo_ac4e620dd89d24d1cdef0ff7d59049d73}} 
+unsigned {\bfseries run\+\_\+posttask} (std\+::list$<$ std\+::pair$<$ std\+::future$<$ void $>$, std\+::reference\+\_\+wrapper$<$ \mbox{\hyperlink{classouchi_1_1task_1_1taskinfo}{taskinfo}}$<$ Key $>$$>$$>$$>$ \&tlist, unsigned threadcount)
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_aae71502661188bddec020b93d06f644c}\label{classouchi_1_1task_1_1taskinfo_aae71502661188bddec020b93d06f644c}} 
+{\footnotesize template$<$class T $>$ }\\class {\bfseries tasksystem}
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1taskinfo_ab38a0c0d73b74aff55a39e1c04512159}\label{classouchi_1_1task_1_1taskinfo_ab38a0c0d73b74aff55a39e1c04512159}} 
+bool {\bfseries operator==} (const \mbox{\hyperlink{classouchi_1_1task_1_1taskinfo}{taskinfo}}$<$ Key $>$ \&a, const \mbox{\hyperlink{classouchi_1_1task_1_1taskinfo}{taskinfo}}$<$ Key $>$ \&b)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/thread/task.\+hpp\end{DoxyCompactItemize}

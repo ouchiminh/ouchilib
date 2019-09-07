@@ -1,0 +1,43 @@
+\hypertarget{classouchi_1_1property}{}\section{ouchi\+::property$<$ T $>$ Class Template Reference}
+\label{classouchi_1_1property}\index{ouchi::property$<$ T $>$@{ouchi::property$<$ T $>$}}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1property_a8f7ca3696b23bcd175a9d50002eabab4}\label{classouchi_1_1property_a8f7ca3696b23bcd175a9d50002eabab4}} 
+using {\bfseries Value\+Type} = typename \+::std\+::remove\+\_\+reference\+\_\+t$<$ T $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1property_a9dfbf92516cda475663966220b316d0e}\label{classouchi_1_1property_a9dfbf92516cda475663966220b316d0e}} 
+using {\bfseries Setter} = std\+::function$<$ Value\+Type(Value\+Type const \&)$>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1property_a832b5221041162188d224002bac935d2}\label{classouchi_1_1property_a832b5221041162188d224002bac935d2}} 
+using {\bfseries Getter} = std\+::function$<$ Value\+Type(Value\+Type const \&)$>$
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1property_a25a9a519ef7e67015905ab49daa010e4}\label{classouchi_1_1property_a25a9a519ef7e67015905ab49daa010e4}} 
+{\bfseries operator Value\+Type} () const noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1property_ab36cbc9b93049cde03abb5aa045eb835}\label{classouchi_1_1property_ab36cbc9b93049cde03abb5aa045eb835}} 
+Value\+Type {\bfseries operator=} (Value\+Type const \&v) noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1property_afc777c9d4621c592e729b7845467c78e}\label{classouchi_1_1property_afc777c9d4621c592e729b7845467c78e}} 
+Value\+Type {\bfseries operator=} (Value\+Type \&\&v) noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1property_a3dc06b93bfcf59814c486ae4ad21391a}\label{classouchi_1_1property_a3dc06b93bfcf59814c486ae4ad21391a}} 
+{\bfseries property} (Getter \&\&getter, Setter \&\&setter, Value\+Type \&\&val=Value\+Type\{\})
+\item 
+\mbox{\Hypertarget{classouchi_1_1property_a25db96c40fdf31cb8c84bfe24410c258}\label{classouchi_1_1property_a25db96c40fdf31cb8c84bfe24410c258}} 
+{\bfseries property} (Getter \&\&getter, Setter \&\&setter, Value\+Type const \&val=Value\+Type\{\})
+\item 
+\mbox{\Hypertarget{classouchi_1_1property_a277e7087e4fb475f398ffb5504ce8922}\label{classouchi_1_1property_a277e7087e4fb475f398ffb5504ce8922}} 
+{\bfseries property} (Value\+Type \&\&initial)
+\item 
+\mbox{\Hypertarget{classouchi_1_1property_ae6c40982f7bcd3237a2da3c9a86dee70}\label{classouchi_1_1property_ae6c40982f7bcd3237a2da3c9a86dee70}} 
+{\bfseries property} (Value\+Type const \&initial)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/utl/property.\+hpp\end{DoxyCompactItemize}

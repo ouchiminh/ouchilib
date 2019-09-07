@@ -1,0 +1,72 @@
+\hypertarget{classouchi_1_1tokenizer_1_1separator}{}\section{ouchi\+::tokenizer\+::separator$<$ CharT $>$ Class Template Reference}
+\label{classouchi_1_1tokenizer_1_1separator}\index{ouchi::tokenizer::separator$<$ CharT $>$@{ouchi::tokenizer::separator$<$ CharT $>$}}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1separator_acab4bcdefe909bb06073c9d353c48fa0}\label{classouchi_1_1tokenizer_1_1separator_acab4bcdefe909bb06073c9d353c48fa0}} 
+using {\bfseries string} = std\+::basic\+\_\+string$<$ CharT $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1separator_a3296c5b19796d6877f68c16ae118f521}\label{classouchi_1_1tokenizer_1_1separator_a3296c5b19796d6877f68c16ae118f521}} 
+using {\bfseries string\+\_\+view} = std\+::basic\+\_\+string\+\_\+view$<$ CharT $>$
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classouchi_1_1tokenizer_1_1separator_abb47a7dae29f5bc4286054940fe3dd1f}{separator}} (string\+\_\+view separators)
+\begin{DoxyCompactList}\small\item\em セパレータとして扱う文字が全て1符号単位で表せる場合 \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1separator_a8d4f141ac89b156bdef3b87086021f0e}\label{classouchi_1_1tokenizer_1_1separator_a8d4f141ac89b156bdef3b87086021f0e}} 
+{\bfseries separator} (std\+::in\+\_\+place\+\_\+t, std\+::initializer\+\_\+list$<$ string $>$ separators)
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1separator_a1b1d9328105643bc95142fe0a4f51d2c}\label{classouchi_1_1tokenizer_1_1separator_a1b1d9328105643bc95142fe0a4f51d2c}} 
+{\bfseries separator} (std\+::initializer\+\_\+list$<$ CharT $>$ separators)
+\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1separator_a8f14b9e0f364379005b9d4e7b6f45197}\label{classouchi_1_1tokenizer_1_1separator_a8f14b9e0f364379005b9d4e7b6f45197}} 
+{\bfseries separator} (string\+\_\+view separators, std\+::initializer\+\_\+list$<$ string $>$ string\+\_\+separators)
+\item 
+auto \mbox{\hyperlink{classouchi_1_1tokenizer_1_1separator_ad62842349250e62ba12fcca9f0898d00}{operator()}} (string\+\_\+view str) const -\/$>$ std\+::pair$<$ primitive\+\_\+token, typename string\+\_\+view\+::const\+\_\+iterator $>$
+\begin{DoxyCompactList}\small\item\em strの最初の位置から始まる文字列がどの種類のトークンか調べる \mbox{[}str.\+begin(), retval.\+second)がトークン \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1separator_a683e4c5787d1d94124699b12285a9ec7}\label{classouchi_1_1tokenizer_1_1separator_a683e4c5787d1d94124699b12285a9ec7}} 
+auto {\bfseries is\+\_\+separator} (string\+\_\+view c) const
+\end{DoxyCompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1separator_abb47a7dae29f5bc4286054940fe3dd1f}\label{classouchi_1_1tokenizer_1_1separator_abb47a7dae29f5bc4286054940fe3dd1f}} 
+\index{ouchi::tokenizer::separator$<$ CharT $>$@{ouchi::tokenizer::separator$<$ CharT $>$}!separator@{separator}}
+\index{separator@{separator}!ouchi::tokenizer::separator$<$ CharT $>$@{ouchi::tokenizer::separator$<$ CharT $>$}}
+\subsubsection{\texorpdfstring{separator()}{separator()}}
+{\footnotesize\ttfamily template$<$class CharT$>$ \\
+\mbox{\hyperlink{classouchi_1_1tokenizer_1_1separator}{ouchi\+::tokenizer\+::separator}}$<$ CharT $>$\+::\mbox{\hyperlink{classouchi_1_1tokenizer_1_1separator}{separator}} (\begin{DoxyParamCaption}\item[{string\+\_\+view}]{separators }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [explicit]}}
+
+
+
+セパレータとして扱う文字が全て1符号単位で表せる場合 
+
+
+\begin{DoxyParams}{Parameters}
+{\em separators} & \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classouchi_1_1tokenizer_1_1separator_ad62842349250e62ba12fcca9f0898d00}\label{classouchi_1_1tokenizer_1_1separator_ad62842349250e62ba12fcca9f0898d00}} 
+\index{ouchi::tokenizer::separator$<$ CharT $>$@{ouchi::tokenizer::separator$<$ CharT $>$}!operator()@{operator()}}
+\index{operator()@{operator()}!ouchi::tokenizer::separator$<$ CharT $>$@{ouchi::tokenizer::separator$<$ CharT $>$}}
+\subsubsection{\texorpdfstring{operator()()}{operator()()}}
+{\footnotesize\ttfamily template$<$class CharT$>$ \\
+auto \mbox{\hyperlink{classouchi_1_1tokenizer_1_1separator}{ouchi\+::tokenizer\+::separator}}$<$ CharT $>$\+::operator() (\begin{DoxyParamCaption}\item[{string\+\_\+view}]{str }\end{DoxyParamCaption}) const -\/$>$ std\+::pair$<$primitive\+\_\+token, typename string\+\_\+view\+::const\+\_\+iterator$>$
+    \hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+strの最初の位置から始まる文字列がどの種類のトークンか調べる \mbox{[}str.\+begin(), retval.\+second)がトークン 
+
+\begin{DoxyReturn}{Returns}
+トークン, トークンの終わりの位置
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/tokenizer/separator.\+hpp\end{DoxyCompactItemize}

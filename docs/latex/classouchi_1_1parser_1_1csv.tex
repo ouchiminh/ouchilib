@@ -1,0 +1,86 @@
+\hypertarget{classouchi_1_1parser_1_1csv}{}\section{ouchi\+::parser\+::csv$<$ CharT $>$ Class Template Reference}
+\label{classouchi_1_1parser_1_1csv}\index{ouchi::parser::csv$<$ CharT $>$@{ouchi::parser::csv$<$ CharT $>$}}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structouchi_1_1parser_1_1csv_1_1xidx}{xidx}}
+\item 
+struct \mbox{\hyperlink{structouchi_1_1parser_1_1csv_1_1yidx}{yidx}}
+\end{DoxyCompactItemize}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_a8008603a25246477429da64c39c6f99c}\label{classouchi_1_1parser_1_1csv_a8008603a25246477429da64c39c6f99c}} 
+using {\bfseries string} = std\+::basic\+\_\+string$<$ CharT $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_a04e08d70111909af14bb362407a291be}\label{classouchi_1_1parser_1_1csv_a04e08d70111909af14bb362407a291be}} 
+using {\bfseries string\+\_\+view} = std\+::basic\+\_\+string\+\_\+view$<$ CharT $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_a4798e738a6dcf91b621fb513f63075d3}\label{classouchi_1_1parser_1_1csv_a4798e738a6dcf91b621fb513f63075d3}} 
+using {\bfseries istream} = std\+::basic\+\_\+istream$<$ CharT $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_ac6cbbfb0fb5d274ec87e16b469b7556b}\label{classouchi_1_1parser_1_1csv_ac6cbbfb0fb5d274ec87e16b469b7556b}} 
+using {\bfseries ifstream} = std\+::basic\+\_\+ifstream$<$ CharT $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_adefd71e1aeaedc0de2e62b8780c4118f}\label{classouchi_1_1parser_1_1csv_adefd71e1aeaedc0de2e62b8780c4118f}} 
+using {\bfseries ostream} = std\+::basic\+\_\+ostream$<$ CharT $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_a77210c7dcb3a3258c41d37a5701cc0ff}\label{classouchi_1_1parser_1_1csv_a77210c7dcb3a3258c41d37a5701cc0ff}} 
+using {\bfseries ofstream} = std\+::basic\+\_\+ofstream$<$ CharT $>$
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_a2c6125bcebc3321754974e477651f46e}\label{classouchi_1_1parser_1_1csv_a2c6125bcebc3321754974e477651f46e}} 
+using {\bfseries index\+\_\+t} = std\+::variant$<$ string\+\_\+view, size\+\_\+t $>$
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_af70325bf96b147f6cc45cde9e0b7811c}\label{classouchi_1_1parser_1_1csv_af70325bf96b147f6cc45cde9e0b7811c}} 
+{\bfseries csv} (const \mbox{\hyperlink{classouchi_1_1tokenizer_1_1separator}{tokenizer\+::separator}}$<$ CharT $>$ \&sp)
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_ae2bad7d8fbbad46938af4de0e723a0e9}\label{classouchi_1_1parser_1_1csv_ae2bad7d8fbbad46938af4de0e723a0e9}} 
+void {\bfseries parse} (string\+\_\+view text)
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_a41e7d321c28f998edda1aea6fc2ec0cf}\label{classouchi_1_1parser_1_1csv_a41e7d321c28f998edda1aea6fc2ec0cf}} 
+void {\bfseries parse} (const std\+::filesystem\+::path \&csvfile, std\+::locale l)
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_acb5fadc2c82a012e13b596378641cc7f}\label{classouchi_1_1parser_1_1csv_acb5fadc2c82a012e13b596378641cc7f}} 
+void {\bfseries parse} (istream \&text)
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_a2187daae1c21d38091efd65e5c0ed5fb}\label{classouchi_1_1parser_1_1csv_a2187daae1c21d38091efd65e5c0ed5fb}} 
+const string \& {\bfseries at} (index\+\_\+t x, index\+\_\+t y) const
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_a237efa0620d74485e6c9db7af5d9f1a0}\label{classouchi_1_1parser_1_1csv_a237efa0620d74485e6c9db7af5d9f1a0}} 
+string \& {\bfseries at} (index\+\_\+t x, index\+\_\+t y)
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_a6c2ffd14f6bfd42dbfc700add83cc35b}\label{classouchi_1_1parser_1_1csv_a6c2ffd14f6bfd42dbfc700add83cc35b}} 
+auto {\bfseries get} () const -\/$>$ const std\+::vector$<$ std\+::vector$<$ string $>$$>$ \&
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_a849fb02229e6e312f436fe96a9b65343}\label{classouchi_1_1parser_1_1csv_a849fb02229e6e312f436fe96a9b65343}} 
+auto {\bfseries get} (size\+\_\+t y) const -\/$>$ const std\+::vector$<$ string $>$ \&
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_ae95b5687ee6f8b5262cc9db4c222f0c4}\label{classouchi_1_1parser_1_1csv_ae95b5687ee6f8b5262cc9db4c222f0c4}} 
+auto {\bfseries get} () -\/$>$ std\+::vector$<$ std\+::vector$<$ string $>$$>$ \&
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_a8834f9cd76163c5d94a3155272339202}\label{classouchi_1_1parser_1_1csv_a8834f9cd76163c5d94a3155272339202}} 
+auto {\bfseries get} (size\+\_\+t y) -\/$>$ std\+::vector$<$ string $>$ \&
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_a11fe9a3521b61fe1a791c99559350f02}\label{classouchi_1_1parser_1_1csv_a11fe9a3521b61fe1a791c99559350f02}} 
+void {\bfseries write} (const std\+::filesystem\+::path \&path, std\+::locale l, const CharT separator=(CharT)\textquotesingle{},\textquotesingle{})
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_a4479c1f317f52dcc4808dad49a8c3dd5}\label{classouchi_1_1parser_1_1csv_a4479c1f317f52dcc4808dad49a8c3dd5}} 
+void {\bfseries write} (ostream \&out, const CharT separator=(CharT)\textquotesingle{},\textquotesingle{}) const
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_a6c42028e75b528a219aeeba6100a7d25}\label{classouchi_1_1parser_1_1csv_a6c42028e75b528a219aeeba6100a7d25}} 
+struct \mbox{\hyperlink{structouchi_1_1parser_1_1csv_1_1xidx}{ouchi\+::parser\+::csv\+::xidx}} {\bfseries column}
+\item 
+\mbox{\Hypertarget{classouchi_1_1parser_1_1csv_aa7661c90ed5c5d87baf7d28b01910870}\label{classouchi_1_1parser_1_1csv_aa7661c90ed5c5d87baf7d28b01910870}} 
+struct \mbox{\hyperlink{structouchi_1_1parser_1_1csv_1_1yidx}{ouchi\+::parser\+::csv\+::yidx}} {\bfseries row}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/parser/csv.\+hpp\end{DoxyCompactItemize}

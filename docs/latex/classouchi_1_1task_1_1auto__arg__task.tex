@@ -1,0 +1,44 @@
+\hypertarget{classouchi_1_1task_1_1auto__arg__task}{}\section{ouchi\+::task\+::auto\+\_\+arg\+\_\+task$<$ Key, F, Args $>$ Class Template Reference}
+\label{classouchi_1_1task_1_1auto__arg__task}\index{ouchi::task::auto\_arg\_task$<$ Key, F, Args $>$@{ouchi::task::auto\_arg\_task$<$ Key, F, Args $>$}}
+Inheritance diagram for ouchi\+::task\+::auto\+\_\+arg\+\_\+task$<$ Key, F, Args $>$\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{classouchi_1_1task_1_1auto__arg__task}
+\end{center}
+\end{figure}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1auto__arg__task_a51261ad0f9bcc6fb3789a285cf6ffea7}\label{classouchi_1_1task_1_1auto__arg__task_a51261ad0f9bcc6fb3789a285cf6ffea7}} 
+using {\bfseries key\+\_\+type} = typename \mbox{\hyperlink{classouchi_1_1task_1_1task}{task}}$<$ Key, F $>$\+::key\+\_\+type
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1auto__arg__task_a62143af9c70aad698b49094e7e7b0942}\label{classouchi_1_1task_1_1auto__arg__task_a62143af9c70aad698b49094e7e7b0942}} 
+using {\bfseries arg\+\_\+type} = detail\+::ntuple\+\_\+t$<$ key\+\_\+type, sizeof...(Args)$>$
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1auto__arg__task_ad74624c5d6f63d7186f34c3740601cad}\label{classouchi_1_1task_1_1auto__arg__task_ad74624c5d6f63d7186f34c3740601cad}} 
+{\bfseries auto\+\_\+arg\+\_\+task} (F f, const key\+\_\+type \&key, const arg\+\_\+type \&args)
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1auto__arg__task_aa5bd32def3b6838d58eeb07a14f95259}\label{classouchi_1_1task_1_1auto__arg__task_aa5bd32def3b6838d58eeb07a14f95259}} 
+{\bfseries auto\+\_\+arg\+\_\+task} (const key\+\_\+type \&key, const arg\+\_\+type \&args)
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1auto__arg__task_a06b2ac5bca2f1cf1f4cbd6cc4900de72}\label{classouchi_1_1task_1_1auto__arg__task_a06b2ac5bca2f1cf1f4cbd6cc4900de72}} 
+{\bfseries auto\+\_\+arg\+\_\+task} (key\+\_\+type \&\&key, arg\+\_\+type \&\&args)
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1auto__arg__task_ad75398e5b6925ce167dc54f677ebf12e}\label{classouchi_1_1task_1_1auto__arg__task_ad75398e5b6925ce167dc54f677ebf12e}} 
+virtual void {\bfseries run} () override
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1auto__arg__task_a8b3acd3a7181613bbaeaa815283839eb}\label{classouchi_1_1task_1_1auto__arg__task_a8b3acd3a7181613bbaeaa815283839eb}} 
+void {\bfseries run} (const arg\+\_\+type \&arg)
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/thread/task.\+hpp\end{DoxyCompactItemize}

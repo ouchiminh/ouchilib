@@ -1,0 +1,37 @@
+\hypertarget{classouchi_1_1thread_1_1thread__pool}{}\section{ouchi\+::thread\+::thread\+\_\+pool Class Reference}
+\label{classouchi_1_1thread_1_1thread__pool}\index{ouchi::thread::thread\_pool@{ouchi::thread::thread\_pool}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1thread_1_1thread__pool_ad21a9a002c319d79d7319aea6931eb2b}\label{classouchi_1_1thread_1_1thread__pool_ad21a9a002c319d79d7319aea6931eb2b}} 
+{\bfseries thread\+\_\+pool} (size\+\_\+t thread\+\_\+count=2)
+\item 
+\mbox{\Hypertarget{classouchi_1_1thread_1_1thread__pool_a0a46e547d0ad062a20df267757cb72cf}\label{classouchi_1_1thread_1_1thread__pool_a0a46e547d0ad062a20df267757cb72cf}} 
+{\bfseries thread\+\_\+pool} (const \mbox{\hyperlink{classouchi_1_1thread_1_1thread__pool}{thread\+\_\+pool}} \&)=delete
+\item 
+\mbox{\Hypertarget{classouchi_1_1thread_1_1thread__pool_adebd814ecd10301afabacc25f53dc396}\label{classouchi_1_1thread_1_1thread__pool_adebd814ecd10301afabacc25f53dc396}} 
+{\footnotesize template$<$class F , class ... Args$>$ }\\void {\bfseries emplace} (Args \&\&...args)
+\item 
+\mbox{\Hypertarget{classouchi_1_1thread_1_1thread__pool_ad57b3dea8495007e8af6e174f96b1b36}\label{classouchi_1_1thread_1_1thread__pool_ad57b3dea8495007e8af6e174f96b1b36}} 
+{\footnotesize template$<$class F $>$ }\\void {\bfseries push} (F \&\&functor)
+\item 
+\mbox{\Hypertarget{classouchi_1_1thread_1_1thread__pool_a1eb0dc198846dbe012a158ba1e6c3ef5}\label{classouchi_1_1thread_1_1thread__pool_a1eb0dc198846dbe012a158ba1e6c3ef5}} 
+size\+\_\+t {\bfseries remaining} () const noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1thread_1_1thread__pool_a24d333c499424e25f9ea0e70bbde37f5}\label{classouchi_1_1thread_1_1thread__pool_a24d333c499424e25f9ea0e70bbde37f5}} 
+size\+\_\+t {\bfseries size} () const noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1thread_1_1thread__pool_ac9d4e99986bb1859940323303f19bb51}\label{classouchi_1_1thread_1_1thread__pool_ac9d4e99986bb1859940323303f19bb51}} 
+void {\bfseries pause} () noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1thread_1_1thread__pool_ae19c5530bd449095095a80e01d4d766a}\label{classouchi_1_1thread_1_1thread__pool_ae19c5530bd449095095a80e01d4d766a}} 
+void {\bfseries wait} () noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1thread_1_1thread__pool_a3d0640597b765a047c5a0232d299dadf}\label{classouchi_1_1thread_1_1thread__pool_a3d0640597b765a047c5a0232d299dadf}} 
+void {\bfseries resume} () noexcept
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/thread/thread-\/pool.\+hpp\end{DoxyCompactItemize}

@@ -1,0 +1,31 @@
+\hypertarget{classouchi_1_1task_1_1tasksystem}{}\section{ouchi\+::task\+::tasksystem$<$ Key $>$ Class Template Reference}
+\label{classouchi_1_1task_1_1tasksystem}\index{ouchi::task::tasksystem$<$ Key $>$@{ouchi::task::tasksystem$<$ Key $>$}}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1tasksystem_a98c09c195e5629bc3e083e2940e733e6}\label{classouchi_1_1task_1_1tasksystem_a98c09c195e5629bc3e083e2940e733e6}} 
+using {\bfseries key\+\_\+type} = std\+::remove\+\_\+reference\+\_\+t$<$ Key $>$
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1tasksystem_a965fd29c9be9dd883d075dbb824dda29}\label{classouchi_1_1task_1_1tasksystem_a965fd29c9be9dd883d075dbb824dda29}} 
+{\footnotesize template$<$class ... Task$>$ }\\void {\bfseries register\+\_\+task} (Task \&...tasks)
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1tasksystem_aa398cbeb46970e632f6049e33f8aa357}\label{classouchi_1_1task_1_1tasksystem_aa398cbeb46970e632f6049e33f8aa357}} 
+{\footnotesize template$<$class It , std\+::enable\+\_\+if\+\_\+t$<$ std\+::is\+\_\+base\+\_\+of\+\_\+v$<$ taskinfo$<$ Key $>$, typename std\+::iterator\+\_\+traits$<$ It $>$\+::value\+\_\+type $>$$>$ $\ast$  = nullptr$>$ }\\void {\bfseries register\+\_\+task} (It first, It last)
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1tasksystem_a9baec17de9dd7f5bf4ef628c553a9d15}\label{classouchi_1_1task_1_1tasksystem_a9baec17de9dd7f5bf4ef628c553a9d15}} 
+void {\bfseries launch} (unsigned thread\+\_\+count=0)
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1tasksystem_aaa6c347579b1d9f5cfa93d0483b5395e}\label{classouchi_1_1task_1_1tasksystem_aaa6c347579b1d9f5cfa93d0483b5395e}} 
+void {\bfseries run} (unsigned thread\+\_\+count=0)
+\item 
+\mbox{\Hypertarget{classouchi_1_1task_1_1tasksystem_ac2df79d7ed0d63b43b7a6e91e1b8b0d2}\label{classouchi_1_1task_1_1tasksystem_ac2df79d7ed0d63b43b7a6e91e1b8b0d2}} 
+void {\bfseries wait} ()
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/thread/tasksystem.\+hpp\end{DoxyCompactItemize}

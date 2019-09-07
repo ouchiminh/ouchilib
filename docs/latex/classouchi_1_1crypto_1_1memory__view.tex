@@ -1,0 +1,46 @@
+\hypertarget{classouchi_1_1crypto_1_1memory__view}{}\section{ouchi\+::crypto\+::memory\+\_\+view$<$ Size\+In\+Byte $>$ Class Template Reference}
+\label{classouchi_1_1crypto_1_1memory__view}\index{ouchi::crypto::memory\_view$<$ SizeInByte $>$@{ouchi::crypto::memory\_view$<$ SizeInByte $>$}}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1memory__view_aa3365f51cbc999ced8231dd87d400206}\label{classouchi_1_1crypto_1_1memory__view_aa3365f51cbc999ced8231dd87d400206}} 
+using {\bfseries value\+\_\+type} = std\+::uint8\+\_\+t
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1memory__view_a5c27fc91fda6975a1b693169b97c9332}\label{classouchi_1_1crypto_1_1memory__view_a5c27fc91fda6975a1b693169b97c9332}} 
+{\bfseries memory\+\_\+view} (const void $\ast$ptr)
+\item 
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1memory__view_af985753f08c7cf67592560ddcca432a8}\label{classouchi_1_1crypto_1_1memory__view_af985753f08c7cf67592560ddcca432a8}} 
+{\bfseries memory\+\_\+view} (const \mbox{\hyperlink{structouchi_1_1crypto_1_1memory__entity}{memory\+\_\+entity}}$<$ Size\+In\+Byte $>$ \&me)
+\item 
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1memory__view_a76e1b9cb701542962ebca57ac3fcb35f}\label{classouchi_1_1crypto_1_1memory__view_a76e1b9cb701542962ebca57ac3fcb35f}} 
+const std\+::uint8\+\_\+t \& {\bfseries operator\mbox{[}$\,$\mbox{]}} (size\+\_\+t i) const noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1memory__view_a7c3718b4a17e2df7bc02acf38aa2b737}\label{classouchi_1_1crypto_1_1memory__view_a7c3718b4a17e2df7bc02acf38aa2b737}} 
+constexpr size\+\_\+t {\bfseries size} () const noexcept
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1memory__view_a1a6ee83ab6aba45a8459daeda76ef58d}\label{classouchi_1_1crypto_1_1memory__view_a1a6ee83ab6aba45a8459daeda76ef58d}} 
+const std\+::uint8\+\_\+t $\ast$ {\bfseries data}
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1memory__view_a6d41a4abd1db87421781a6a806ed87c9}\label{classouchi_1_1crypto_1_1memory__view_a6d41a4abd1db87421781a6a806ed87c9}} 
+\mbox{\hyperlink{structouchi_1_1crypto_1_1memory__entity}{memory\+\_\+entity}}$<$ Size\+In\+Byte $>$ {\bfseries operator$^\wedge$} (\mbox{\hyperlink{classouchi_1_1crypto_1_1memory__view}{memory\+\_\+view}}$<$ Size\+In\+Byte $>$ l, \mbox{\hyperlink{classouchi_1_1crypto_1_1memory__view}{memory\+\_\+view}}$<$ Size\+In\+Byte $>$ r) noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1memory__view_a277259b3645e77112edb8b22822a0718}\label{classouchi_1_1crypto_1_1memory__view_a277259b3645e77112edb8b22822a0718}} 
+{\footnotesize template$<$class Int , std\+::enable\+\_\+if\+\_\+t$<$ std\+::is\+\_\+integral\+\_\+v$<$ Int $>$$>$ $\ast$  = nullptr$>$ }\\\mbox{\hyperlink{structouchi_1_1crypto_1_1memory__entity}{memory\+\_\+entity}}$<$ Size\+In\+Byte $>$ {\bfseries operator$^\wedge$} (\mbox{\hyperlink{classouchi_1_1crypto_1_1memory__view}{memory\+\_\+view}}$<$ Size\+In\+Byte $>$ l, Int r) noexcept
+\item 
+\mbox{\Hypertarget{classouchi_1_1crypto_1_1memory__view_a578018b83509d55f77a8825a50aaed50}\label{classouchi_1_1crypto_1_1memory__view_a578018b83509d55f77a8825a50aaed50}} 
+{\footnotesize template$<$class Int , std\+::enable\+\_\+if\+\_\+t$<$ std\+::is\+\_\+integral\+\_\+v$<$ Int $>$$>$ $\ast$  = nullptr$>$ }\\\mbox{\hyperlink{structouchi_1_1crypto_1_1memory__entity}{memory\+\_\+entity}}$<$ Size\+In\+Byte $>$ {\bfseries operator$^\wedge$} (Int l, \mbox{\hyperlink{classouchi_1_1crypto_1_1memory__view}{memory\+\_\+view}}$<$ Size\+In\+Byte $>$ r) noexcept
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/crypto/common.\+hpp\end{DoxyCompactItemize}

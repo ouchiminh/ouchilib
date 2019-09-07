@@ -1,0 +1,64 @@
+\hypertarget{classouchi_1_1log_1_1basic__out}{}\section{ouchi\+::log\+::basic\+\_\+out$<$ CharT $>$ Class Template Reference}
+\label{classouchi_1_1log_1_1basic__out}\index{ouchi::log::basic\_out$<$ CharT $>$@{ouchi::log::basic\_out$<$ CharT $>$}}
+
+
+this class writes log.  
+
+
+
+
+{\ttfamily \#include $<$out.\+hpp$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1basic__out_ad19f237b539b645db74f185484524632}\label{classouchi_1_1log_1_1basic__out_ad19f237b539b645db74f185484524632}} 
+{\bfseries basic\+\_\+out} (Func \&\&func=default\+\_\+out)
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1basic__out_af99bccb07511cfb9e89ad2fb966e754f}\label{classouchi_1_1log_1_1basic__out_af99bccb07511cfb9e89ad2fb966e754f}} 
+void {\bfseries out} (cat\+\_\+v c, std\+::basic\+\_\+string\+\_\+view$<$ CharT $>$ msg)
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1basic__out_ad1d94a6256de2e34884822b336f056d6}\label{classouchi_1_1log_1_1basic__out_ad1d94a6256de2e34884822b336f056d6}} 
+\mbox{\hyperlink{classouchi_1_1log_1_1basic__out}{basic\+\_\+out}}$<$ CharT $>$ \& {\bfseries fatal} (std\+::basic\+\_\+string\+\_\+view$<$ CharT $>$ msg)
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1basic__out_a39f084688640bce9e132729419fc6148}\label{classouchi_1_1log_1_1basic__out_a39f084688640bce9e132729419fc6148}} 
+\mbox{\hyperlink{classouchi_1_1log_1_1basic__out}{basic\+\_\+out}}$<$ CharT $>$ \& {\bfseries error} (std\+::basic\+\_\+string\+\_\+view$<$ CharT $>$ msg)
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1basic__out_afb190b55472bde0a4602598b8e69d009}\label{classouchi_1_1log_1_1basic__out_afb190b55472bde0a4602598b8e69d009}} 
+\mbox{\hyperlink{classouchi_1_1log_1_1basic__out}{basic\+\_\+out}}$<$ CharT $>$ \& {\bfseries warn} (std\+::basic\+\_\+string\+\_\+view$<$ CharT $>$ msg)
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1basic__out_a11b169da2c6f6b251e4b7f9ac7cbffe4}\label{classouchi_1_1log_1_1basic__out_a11b169da2c6f6b251e4b7f9ac7cbffe4}} 
+\mbox{\hyperlink{classouchi_1_1log_1_1basic__out}{basic\+\_\+out}}$<$ CharT $>$ \& {\bfseries info} (std\+::basic\+\_\+string\+\_\+view$<$ CharT $>$ msg)
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1basic__out_ae25b00212ae8a8b225001a70457d116a}\label{classouchi_1_1log_1_1basic__out_ae25b00212ae8a8b225001a70457d116a}} 
+\mbox{\hyperlink{classouchi_1_1log_1_1basic__out}{basic\+\_\+out}}$<$ CharT $>$ \& {\bfseries debug} (std\+::basic\+\_\+string\+\_\+view$<$ CharT $>$ msg)
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1basic__out_a212edd322483ef79bd724b165deafce5}\label{classouchi_1_1log_1_1basic__out_a212edd322483ef79bd724b165deafce5}} 
+\mbox{\hyperlink{classouchi_1_1log_1_1basic__out}{basic\+\_\+out}}$<$ CharT $>$ \& {\bfseries trace} (std\+::basic\+\_\+string\+\_\+view$<$ CharT $>$ msg)
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1basic__out_a7a575e8681b8a88179d6b73fd9ca697f}\label{classouchi_1_1log_1_1basic__out_a7a575e8681b8a88179d6b73fd9ca697f}} 
+\mbox{\hyperlink{classouchi_1_1log_1_1basic__out}{basic\+\_\+out}}$<$ CharT $>$ \& {\bfseries raw} (std\+::basic\+\_\+string\+\_\+view$<$ CharT $>$ msg)
+\item 
+\mbox{\Hypertarget{classouchi_1_1log_1_1basic__out_a06a3892f67accc522d0e8379b89e207f}\label{classouchi_1_1log_1_1basic__out_a06a3892f67accc522d0e8379b89e207f}} 
+\mbox{\hyperlink{classouchi_1_1log_1_1message__format}{message\+\_\+format}}$<$ CharT $>$ \& {\bfseries reset\+\_\+format} () noexcept
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\subsubsection*{template$<$class CharT$>$\newline
+class ouchi\+::log\+::basic\+\_\+out$<$ Char\+T $>$}
+
+this class writes log. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em Func} & このクラスの()演算子に渡された文字列が出力されます。operator()(std\+::basic\+\_\+string\+\_\+view)\\
+\hline
+{\em Args} & Funcのコンストラクタに渡す引数。\\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/log/out.\+hpp\end{DoxyCompactItemize}

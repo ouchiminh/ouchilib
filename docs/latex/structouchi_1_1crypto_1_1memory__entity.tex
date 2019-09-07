@@ -1,0 +1,65 @@
+\hypertarget{structouchi_1_1crypto_1_1memory__entity}{}\section{ouchi\+::crypto\+::memory\+\_\+entity$<$ Size\+In\+Byte $>$ Struct Template Reference}
+\label{structouchi_1_1crypto_1_1memory__entity}\index{ouchi::crypto::memory\_entity$<$ SizeInByte $>$@{ouchi::crypto::memory\_entity$<$ SizeInByte $>$}}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1memory__entity_a4b7efb6818bc884a1d2381a02d85cfff}\label{structouchi_1_1crypto_1_1memory__entity_a4b7efb6818bc884a1d2381a02d85cfff}} 
+using {\bfseries value\+\_\+type} = std\+::uint8\+\_\+t
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1memory__entity_a8a6cc91006ed3c1be5f1e2b66aff702b}\label{structouchi_1_1crypto_1_1memory__entity_a8a6cc91006ed3c1be5f1e2b66aff702b}} 
+{\bfseries memory\+\_\+entity} (const \mbox{\hyperlink{structouchi_1_1crypto_1_1memory__entity}{memory\+\_\+entity}} \&)=default
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1memory__entity_a9d833eeacf2a93604d9acaf58060e6c2}\label{structouchi_1_1crypto_1_1memory__entity_a9d833eeacf2a93604d9acaf58060e6c2}} 
+{\bfseries memory\+\_\+entity} (void $\ast$mem)
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1memory__entity_a459e6b406bb5fa2cf696da0110983bd7}\label{structouchi_1_1crypto_1_1memory__entity_a459e6b406bb5fa2cf696da0110983bd7}} 
+{\bfseries memory\+\_\+entity} (\mbox{\hyperlink{classouchi_1_1crypto_1_1memory__view}{memory\+\_\+view}}$<$ Size\+In\+Byte $>$ mv)
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1memory__entity_ac87b49dd9785d95a9fff61696bedbb20}\label{structouchi_1_1crypto_1_1memory__entity_ac87b49dd9785d95a9fff61696bedbb20}} 
+\mbox{\hyperlink{structouchi_1_1crypto_1_1memory__entity}{memory\+\_\+entity}} \& {\bfseries operator=} (\mbox{\hyperlink{classouchi_1_1crypto_1_1memory__view}{memory\+\_\+view}}$<$ Size\+In\+Byte $>$ mv) noexcept
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1memory__entity_a0fc13acb3adbfa0091cc73c16fa02e17}\label{structouchi_1_1crypto_1_1memory__entity_a0fc13acb3adbfa0091cc73c16fa02e17}} 
+\mbox{\hyperlink{structouchi_1_1crypto_1_1memory__entity}{memory\+\_\+entity}} \& {\bfseries operator=} (const \mbox{\hyperlink{structouchi_1_1crypto_1_1memory__entity}{memory\+\_\+entity}} \&)=default
+\item 
+size\+\_\+t \mbox{\hyperlink{structouchi_1_1crypto_1_1memory__entity_a64914a9119c3a872fcae17517045eb8e}{load}} (const void $\ast$src, size\+\_\+t size, size\+\_\+t to=0)
+\begin{DoxyCompactList}\small\item\em load size byte of data from src to data\mbox{[}to..to+size\mbox{]}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1memory__entity_a1e6f4fe50a11a9d6565862f0cab599a7}\label{structouchi_1_1crypto_1_1memory__entity_a1e6f4fe50a11a9d6565862f0cab599a7}} 
+constexpr size\+\_\+t {\bfseries size} () const noexcept
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1memory__entity_afece6e6cb16e435909f4823362bed5ad}\label{structouchi_1_1crypto_1_1memory__entity_afece6e6cb16e435909f4823362bed5ad}} 
+std\+::uint8\+\_\+t \& {\bfseries operator\mbox{[}$\,$\mbox{]}} (size\+\_\+t i) noexcept
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1memory__entity_a0ce62fa0e683c45fcb34049c1eeacf10}\label{structouchi_1_1crypto_1_1memory__entity_a0ce62fa0e683c45fcb34049c1eeacf10}} 
+const std\+::uint8\+\_\+t \& {\bfseries operator\mbox{[}$\,$\mbox{]}} (size\+\_\+t i) const noexcept
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1memory__entity_ad0b770fd59fba46d7d936034b11905b0}\label{structouchi_1_1crypto_1_1memory__entity_ad0b770fd59fba46d7d936034b11905b0}} 
+std\+::uint8\+\_\+t {\bfseries data} \mbox{[}Size\+In\+Byte\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{structouchi_1_1crypto_1_1memory__entity_a64914a9119c3a872fcae17517045eb8e}\label{structouchi_1_1crypto_1_1memory__entity_a64914a9119c3a872fcae17517045eb8e}} 
+\index{ouchi::crypto::memory\_entity$<$ SizeInByte $>$@{ouchi::crypto::memory\_entity$<$ SizeInByte $>$}!load@{load}}
+\index{load@{load}!ouchi::crypto::memory\_entity$<$ SizeInByte $>$@{ouchi::crypto::memory\_entity$<$ SizeInByte $>$}}
+\subsubsection{\texorpdfstring{load()}{load()}}
+{\footnotesize\ttfamily template$<$size\+\_\+t Size\+In\+Byte$>$ \\
+size\+\_\+t \mbox{\hyperlink{structouchi_1_1crypto_1_1memory__entity}{ouchi\+::crypto\+::memory\+\_\+entity}}$<$ Size\+In\+Byte $>$\+::load (\begin{DoxyParamCaption}\item[{const void $\ast$}]{src,  }\item[{size\+\_\+t}]{size,  }\item[{size\+\_\+t}]{to = {\ttfamily 0} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+load size byte of data from src to data\mbox{[}to..to+size\mbox{]}. 
+
+\begin{DoxyReturn}{Returns}
+loaded size
+\end{DoxyReturn}
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/ouchilib/crypto/common.\+hpp\end{DoxyCompactItemize}
