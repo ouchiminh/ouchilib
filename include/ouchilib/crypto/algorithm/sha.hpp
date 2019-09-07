@@ -177,6 +177,7 @@ public:
         detail::unpack(0, buffer_ + last_block_m_length);
         detail::unpack(length_ * 8, buffer_ + last_block_m_length + sizeof(std::uint64_t));
         process_block(buffer_);
+        secure_memset(buffer_, 0);
         memory_entity<512/8> ret{};
         for (auto i = 0u; i < sizeof(h_) / sizeof(*h_); ++i) {
             detail::unpack(h_[i], ret.data + (i << 3));
