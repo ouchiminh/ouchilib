@@ -33,9 +33,6 @@
     <ClInclude Include="include\ouchilib\tokenizer\tokenizer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\ouchilib\utl\convertible.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\ouchilib\utl\fps-counter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

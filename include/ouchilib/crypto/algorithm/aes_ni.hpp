@@ -74,22 +74,36 @@ private:
     void expand_key()
     {
         using aes = aes<KeyLength>;
-        constexpr std::uint32_t Rcon[10] = { 0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36 };
-        std::uint32_t temp;
         std::uint32_t w[60];
+        constexpr std::uint32_t Rcon[10] = {
+            0x0100'0000,0x0200'0000,0x0400'0000,0x0800'0000,0x100'00000,
+            0x2000'0000,0x4000'0000,0x8000'0000,0x1b00'0000,0x3600'0000 };
+        constexpr auto nk = KeyLength / 4;
+        size_t i;
 
-        std::memcpy(w, key_.data, KeyLength);
-        for (size_t i = KeyLength / 4; i<nb*(nr + 1); i++) {
-            temp = w[i - 1];
-            if ((i % (KeyLength / 4)) == 0)
-                temp = aes::subword(rotword(temp)) ^ Rcon[i / (KeyLength / 4) - 1];
-            else if ((KeyLength / 4) > 6 && (i % (KeyLength / 4)) == 4)
+        for (i = 0u; i < nk; ++i) {
+            w[i] = detail::pack<std::uint32_t>(key_.data + i * 4);
+        }
+
+        for (i = nk; i<nb*(nr + 1); ++i) {
+            std::uint32_t temp = w[i - 1];
+            if ((i % nk) == 0)
+                temp = aes::subword(rotword(temp)) ^ Rcon[i / nk - 1];
+            else if (nk > 6 && (i % nk) == 4)
                 temp = aes::subword(temp);
-            w[i] = w[i - (KeyLength / 4)] ^ temp;
+            w[i] = w[i - nk] ^ temp;
         }
         // copy expanded key
         for (auto r : ouchi::step(nr + 1)) {
-            w128[r] = _mm_setr_epi32(w[r * 4], w[r * 4 + 1], w[r * 4 + 2], w[r * 4 + 3]);
+            std::uint8_t tmp[16];
+            detail::unpack(w[r*4], tmp);
+            detail::unpack(w[r*4+1], tmp+4);
+            detail::unpack(w[r*4+2], tmp+8);
+            detail::unpack(w[r*4+3], tmp+12);
+            w128[r] = _mm_setr_epi8(tmp[0], tmp[1], tmp[2], tmp[3],
+                                    tmp[4], tmp[5], tmp[6], tmp[7],
+                                    tmp[8], tmp[9], tmp[10], tmp[11],
+                                    tmp[12], tmp[13], tmp[14], tmp[15]);
         }
         dw128[0] = w128[0];
         for (auto i : ouchi::step(1u, nr)) {

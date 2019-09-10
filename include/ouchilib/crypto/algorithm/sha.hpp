@@ -59,32 +59,6 @@ inline constexpr std::uint64_t sha_f3(std::uint64_t x) noexcept
     return rotr(x, 19) ^ rotr(x, 61) ^ (x >> 6);
 }
 
-template<class Int, size_t ...S>
-inline constexpr void unpack_impl(Int src, std::uint8_t* dest, std::index_sequence<S...>)
-{
-    ((dest[S] = static_cast<std::uint8_t>(src >> (8 * (sizeof(Int) - S - 1)))), ...);
-}
-
-template<class Int, std::enable_if_t<std::is_integral_v<Int>>* = nullptr>
-inline constexpr void unpack(Int src, void* dest)
-{
-    auto* ptr = reinterpret_cast<std::uint8_t*>(dest);
-    unpack_impl(src, ptr, std::make_index_sequence<sizeof(Int)>{});
-}
-
-template<class Int, size_t ...S>
-inline constexpr Int pack_impl(const std::uint8_t* src, std::index_sequence<S...>) noexcept
-{
-    return ((static_cast<Int>(src[S]) << (8 * (sizeof(Int) - S - 1))) | ...);
-}
-
-template<class Int, std::enable_if_t<std::is_integral_v<Int>>* = nullptr>
-inline constexpr Int pack(const void* src) noexcept
-{
-    return pack_impl<Int>(reinterpret_cast<const std::uint8_t*>(src),
-                          std::make_index_sequence<sizeof(Int)>{});
-}
-
 // constants
 template<class Int>
 inline constexpr void* sha_constants = nullptr;

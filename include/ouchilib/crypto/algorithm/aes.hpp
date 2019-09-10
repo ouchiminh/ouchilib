@@ -12,6 +12,8 @@ inline constexpr std::uint32_t rotword(std::uint32_t in) {
     return rotl(in, 8);
 }
 
+static_assert(rotword(0x00112233) == 0x11223300);
+
 inline std::uint32_t mul(std::uint32_t dt, std::uint32_t n)
 {
 	std::uint32_t x = 0;
@@ -135,25 +137,31 @@ struct aes {
 private:
     void expand_key() noexcept
     {
-    /* FIPS 197  P.27 Appendix A.1 Rcon[i/Nk] */ //又は mulを使用する
-        constexpr std::uint32_t Rcon[10] = { 0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36 };
-        std::uint32_t temp;
+        constexpr std::uint32_t Rcon[10] = {
+            0x0100'0000,0x0200'0000,0x0400'0000,0x0800'0000,0x100'00000,
+            0x2000'0000,0x4000'0000,0x8000'0000,0x1b00'0000,0x3600'0000 };
+        constexpr auto nk = KeyLength / 4;
+        size_t i;
 
-        std::memcpy(w_, key_.data, KeyLength);
-        for (size_t i = KeyLength / 4; i<nb*(nr + 1); i++) {
-            temp = w_[i - 1];
-            if ((i % (KeyLength / 4)) == 0)
-                temp = subword(rotword(temp)) ^ Rcon[i / (KeyLength / 4) - 1];
-            else if ((KeyLength / 4) > 6 && (i % (KeyLength / 4)) == 4)
+        for (i = 0u; i < nk; ++i) {
+            w_[i] = detail::pack<std::uint32_t>(key_.data + i * 4);
+        }
+
+        for (i = nk; i<nb*(nr + 1); ++i) {
+            std::uint32_t temp = w_[i - 1];
+            if ((i % nk) == 0)
+                temp = subword(rotword(temp)) ^ Rcon[i / nk - 1];
+            else if (nk > 6 && (i % nk) == 4)
                 temp = subword(temp);
-            w_[i] = w_[i - (KeyLength / 4)] ^ temp;
+            w_[i] = w_[i - nk] ^ temp;
         }
     }
     void add_roundkey(void* data, unsigned round) const noexcept
     {
-        auto ptr = reinterpret_cast<std::uint32_t*>(data);
+        auto ptr = reinterpret_cast<std::uint8_t*>(data);
         for (auto i : ouchi::step(4)) {
-            ptr[i] ^= w_[i + round * 4];
+            detail::unpack(detail::pack<std::uint32_t>(ptr + i * 4) ^ w_[i + round * 4],
+                           ptr + i * 4);
         }
     }
 
@@ -254,7 +262,7 @@ private:
         }
     }
     key_t key_;
-    std::uint32_t w_[60];    // expanded key
+    std::uint32_t w_[nb * (nr + 1)];    // expanded key
 };
 
 using aes128 = aes<16>;
