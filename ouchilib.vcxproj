@@ -123,6 +123,7 @@
   <ItemGroup>
     <ClInclude Include="include\ouchilib\crypto\algorithm\aes.hpp" />
     <ClInclude Include="include\ouchilib\crypto\algorithm\aes_ni.hpp" />
+    <ClInclude Include="include\ouchilib\crypto\algorithm\mugi.hpp" />
     <ClInclude Include="include\ouchilib\crypto\algorithm\oca.hpp" />
     <ClInclude Include="include\ouchilib\crypto\algorithm\sha.hpp" />
     <ClInclude Include="include\ouchilib\crypto\cipher_mode.hpp" />
@@ -133,6 +134,7 @@
     <ClInclude Include="include\ouchilib\log\format.hpp" />
     <ClInclude Include="include\ouchilib\log\out.hpp" />
     <ClInclude Include="include\ouchilib\log\rule.hpp" />
+    <ClInclude Include="include\ouchilib\math\gf.hpp" />
     <ClInclude Include="include\ouchilib\parser\csv.hpp" />
     <ClInclude Include="include\ouchilib\program_options\key_parser.hpp" />
     <ClInclude Include="include\ouchilib\program_options\option_value.hpp" />

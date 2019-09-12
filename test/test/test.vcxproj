@@ -24,6 +24,7 @@
   <ItemGroup>
     <ClCompile Include="..\crypto\test_aes.cpp" />
     <ClCompile Include="..\crypto\test_encoder.cpp" />
+    <ClCompile Include="..\crypto\test_mugi.cpp" />
     <ClCompile Include="..\crypto\test_sha512.cpp" />
     <ClCompile Include="..\program_options\test_program_options.cpp" />
     <ClCompile Include="..\tasksystem\testtask.cpp" />
