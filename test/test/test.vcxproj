@@ -26,6 +26,7 @@
     <ClCompile Include="..\crypto\test_encoder.cpp" />
     <ClCompile Include="..\crypto\test_mugi.cpp" />
     <ClCompile Include="..\crypto\test_sha512.cpp" />
+    <ClCompile Include="..\math\test_math.cpp" />
     <ClCompile Include="..\program_options\test_program_options.cpp" />
     <ClCompile Include="..\tasksystem\testtask.cpp" />
     <ClCompile Include="..\test-main.cpp" />
