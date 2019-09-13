@@ -29,12 +29,21 @@ struct mugi {
         for (auto i = 0u; i < 16; ++i) rho(zero);
         for (auto i = 0u; i < 16; ++i) update();
     }
+    ~mugi()
+    {
+        secure_memset(a_, 0);
+        secure_memset(b_, 0);
+    }
 
-    result_type operator()() noexcept
+    result_type operator()()
     {
         auto cp = a_[2];
         update();
         return cp;
+    }
+    void discard(size_t n)
+    {
+        for (auto i = 0ull; i < n; ++i) (void)operator()();
     }
 
 private:
