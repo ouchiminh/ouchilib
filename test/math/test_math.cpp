@@ -26,6 +26,9 @@ DEFINE_TEST(test_gf)
     for (auto i : ouchi::step(256)) {
         CHECK_EQUAL(ouchi::math::gf256::mul(0x02, i), mul2[i]);
     }
+    for (auto i : ouchi::step(256)) {
+        CHECK_EQUAL(ouchi::math::gf256::mul(0x03, i), i ^ mul2[i]);
+    }
 }
 
 DEFINE_TEST(test_mat)

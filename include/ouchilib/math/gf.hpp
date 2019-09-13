@@ -46,9 +46,12 @@ struct gf {
         return res;
     }
 
-    friend constexpr gf operator+(gf lhs, gf rhs) noexcept { return gf{ add(lhs, rhs) }; }
-    friend constexpr gf operator-(gf lhs, gf rhs) noexcept { return gf{ add(lhs, rhs) }; }
-    friend constexpr gf operator*(gf lhs, gf rhs) noexcept { return gf{ mul(lhs, rhs) }; }
+    friend constexpr gf operator+(gf lhs, gf rhs) noexcept { return gf{ add((Int)lhs, (Int)rhs) }; }
+    friend constexpr gf operator-(gf lhs, gf rhs) noexcept { return gf{ add((Int)lhs, (Int)rhs) }; }
+    friend constexpr gf operator*(gf lhs, gf rhs) noexcept { return gf{ mul((Int)lhs, (Int)rhs) }; }
+    constexpr gf& operator+=(gf rhs) noexcept { return *this = *this + rhs; }
+    constexpr gf& operator-=(gf rhs) noexcept { return *this = *this - rhs; }
+    constexpr gf& operator*=(gf rhs) noexcept { return *this = *this * rhs; }
 };
 
 using gf256 = gf<unsigned char, 0x1b>;

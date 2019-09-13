@@ -12,11 +12,10 @@ struct matrix {
 private:
     std::vector<T> data_;
 public:
-    constexpr matrix() : data_(Row* Column) {};
+    matrix() : data_(Row* Column) {};
     matrix(std::initializer_list<T> il) : matrix()
     {
-        assert(il.size() == Row * Column);
-        data_.assign(il);
+        assign(il);
     }
     matrix(const T& value)
         : data_(Row * Column, value)
@@ -25,6 +24,12 @@ public:
     matrix(matrix&&) = default;
     matrix& operator=(const matrix&) = default;
     matrix& operator=(matrix&&) = default;
+
+    void assign(const std::initializer_list<T>& il)
+    {
+        assert(il.size() == Row * Column);
+        data_.assign(il);
+    }
     
     template<size_t OtherColumn>
     friend matrix<T, Row, OtherColumn> 
