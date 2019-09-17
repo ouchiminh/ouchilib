@@ -5,6 +5,7 @@
 
 DEFINE_TEST(test_gf)
 {
+    using gf256 = ouchi::math::gf<unsigned char, 0x1b>;
     static constexpr std::uint8_t mul2[] = {
         0x00, 0x02, 0x04, 0x06, 0x08, 0x0a, 0x0c, 0x0e, 0x10, 0x12, 0x14, 0x16, 0x18, 0x1a, 0x1c, 0x1e,
         0x20, 0x22, 0x24, 0x26, 0x28, 0x2a, 0x2c, 0x2e, 0x30, 0x32, 0x34, 0x36, 0x38, 0x3a, 0x3c, 0x3e,
@@ -24,10 +25,10 @@ DEFINE_TEST(test_gf)
         0xfb, 0xf9, 0xff, 0xfd, 0xf3, 0xf1, 0xf7, 0xf5, 0xeb, 0xe9, 0xef, 0xed, 0xe3, 0xe1, 0xe7, 0xe5
     };
     for (auto i : ouchi::step(256)) {
-        CHECK_EQUAL(ouchi::math::gf256::mul(0x02, i), mul2[i]);
+        CHECK_EQUAL(gf256::mul(0x02, i), mul2[i]);
     }
     for (auto i : ouchi::step(256)) {
-        CHECK_EQUAL(ouchi::math::gf256::mul(0x03, i), i ^ mul2[i]);
+        CHECK_EQUAL(gf256::mul(0x03, i), i ^ mul2[i]);
     }
 }
 
@@ -36,10 +37,42 @@ DEFINE_TEST(test_mat)
     ouchi::math::matrix<int, 3, 2> a{ 2,3,1,4,2,1 };
     ouchi::math::matrix<int, 2, 3> b{ 3,1,2,2,4,2 };
     auto r(a * b);
-
     auto ans = { 12,14,10,11,17,10,8,6,6 };
 
     for (auto [a, r] : ouchi::multiitr{ ans, r }) {
         CHECK_EQUAL(a, r);
     }
+}
+
+DEFINE_TEST(test_pow)
+{
+    using gf256 = ouchi::math::gf<unsigned char, 0x1b>;
+    for (auto i : ouchi::step(1, 255)) {
+        gf256 a(i);
+        CHECK_EQUAL((gf256{ gf256::power(i, 254) } * a).value, 1);
+    }
+}
+
+DEFINE_TEST(test_pow2)
+{
+    using namespace ouchi::math;
+    constexpr std::uint8_t a = 0x11;
+    auto a2 = gf256<>::mul(a, a);
+    CHECK_EQUAL(gf256<>::power(a, 4), gf256<>::mul(a2, a2));
+    CHECK_EQUAL(gf256<>::power(a, 5), gf256<>::mul(a, gf256<>::mul(a2, a2)));
+}
+
+DEFINE_TEST(test_gfinv)
+{
+    using namespace ouchi::math;
+    for (auto i : ouchi::step(1, 256)) {
+        CHECK_EQUAL(gf256<>::mul(gf256<>::inv(i), i), 1);
+    }
+    for (auto i : ouchi::step(1, 5)) {
+        CHECK_EQUAL(gf2_16<>::mul(gf2_16<>::inv(i), i), 1);
+    }
+    for (auto i : ouchi::step(1, 256)) {
+        CHECK_EQUAL(gf2_32<>::mul(gf2_32<>::inv(i), i), 1);
+    }
+
 }

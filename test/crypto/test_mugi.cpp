@@ -22,4 +22,3 @@ DEFINE_TEST(test_mugi)
         CHECK_EQUAL(rnd(), 0x0b96982890b6e143);
     }
 }
-

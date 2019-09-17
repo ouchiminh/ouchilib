@@ -52,7 +52,7 @@ private:
     static constexpr std::uint64_t c[3] = {
         0x6A09E667F3BCC908,0xBB67AE8584CAA73B,0x3C6EF372FE94F82B
     };
-    mutable ouchi::math::matrix<ouchi::math::gf256, 4, 1> xm_;
+    mutable ouchi::math::matrix<ouchi::math::gf256<0x1b>, 4, 1> xm_;
     void update()
     {
         std::uint64_t at[3] = { a_[0], a_[1], a_[2] };
@@ -96,8 +96,8 @@ private:
     }
     std::uint32_t M(std::uint32_t x) const
     {
-        using namespace ouchi::math;
-        static const matrix<gf256, 4, 4> m{
+        using gf256 = ouchi::math::gf<unsigned char, 0x1b>;
+        static const ouchi::math::matrix<gf256, 4, 4> m{
             gf256{0x02},gf256{0x03},gf256{0x01},gf256{0x01},
             gf256{0x01},gf256{0x02},gf256{0x03},gf256{0x01},
             gf256{0x01},gf256{0x01},gf256{0x02},gf256{0x03},
