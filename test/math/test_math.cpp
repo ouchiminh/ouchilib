@@ -71,7 +71,7 @@ DEFINE_TEST(test_gfinv)
     for (auto i : ouchi::step(1, 5)) {
         CHECK_EQUAL(gf2_16<>::mul(gf2_16<>::inv(i), i), 1);
     }
-    for (auto i : ouchi::step(1, 256)) {
+    for (auto i : ouchi::step(1, 25)) {
         CHECK_EQUAL(gf2_32<>::mul(gf2_32<>::inv(i), i), 1);
     }
 

@@ -70,16 +70,6 @@ struct gf {
         constexpr auto r = std::numeric_limits<Int>::max() - 1;
         return power(v, r);
     }
-    static constexpr Int norm(Int v) noexcept
-    {
-        constexpr auto r = sizeof(Int) * 8;
-        Int y = 1;
-        size_t buf = 1;
-        for (auto i = 1ull; i < r; ++i) {
-            y = mul(y, power(v, buf <<= 1));
-        }
-        return mul(v, y);
-    }
 
     friend constexpr gf operator+(gf lhs, gf rhs) noexcept { return gf{ add((Int)lhs, (Int)rhs) }; }
     friend constexpr gf operator-(gf lhs, gf rhs) noexcept { return gf{ add((Int)lhs, (Int)rhs) }; }
