@@ -25,6 +25,7 @@
     <ClCompile Include="..\crypto\test_aes.cpp" />
     <ClCompile Include="..\crypto\test_encoder.cpp" />
     <ClCompile Include="..\crypto\test_mugi.cpp" />
+    <ClCompile Include="..\crypto\test_secret_sharing.cpp" />
     <ClCompile Include="..\crypto\test_sha512.cpp" />
     <ClCompile Include="..\math\test_math.cpp" />
     <ClCompile Include="..\program_options\test_program_options.cpp" />
