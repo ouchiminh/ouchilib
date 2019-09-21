@@ -27,7 +27,12 @@ template<class Int, Int F, std::enable_if_t<std::is_integral_v<Int> && std::is_u
 struct gf {
     Int value;
     gf() = default;
+    constexpr gf(const gf&) = default;
+    constexpr gf(gf&&) = default;
     explicit constexpr gf(Int v) : value{ v } {}
+
+    gf& operator=(const gf&) = default;
+    gf& operator=(gf&&) = default;
 
     explicit constexpr operator Int() const noexcept { return value; }
 
@@ -65,16 +70,23 @@ struct gf {
             return impl(v, c, impl);
         }();
     }
+    friend constexpr gf pow(gf v, size_t c) noexcept { return gf{ gf::power((Int)v, c) }; }
     static constexpr Int inv(Int v) noexcept
     {
         constexpr auto r = std::numeric_limits<Int>::max() - 1;
         return power(v, r);
     }
+    friend constexpr bool operator<(gf lhs, gf rhs) noexcept { return lhs.value < rhs.value; }
+    friend constexpr bool operator>(gf lhs, gf rhs) noexcept { return rhs < lhs; }
+    friend constexpr bool operator==(gf lhs, gf rhs) noexcept { return lhs.value == rhs.value; }
+    friend constexpr bool operator!=(gf lhs, gf rhs) noexcept { return !(lhs == rhs); }
+    friend constexpr bool operator<=(gf lhs, gf rhs) noexcept { return (lhs < rhs) || (lhs == rhs); }
+    friend constexpr bool operator>=(gf lhs, gf rhs) noexcept { return (lhs > rhs) || (lhs == rhs); }
 
     friend constexpr gf operator+(gf lhs, gf rhs) noexcept { return gf{ add((Int)lhs, (Int)rhs) }; }
     friend constexpr gf operator-(gf lhs, gf rhs) noexcept { return gf{ add((Int)lhs, (Int)rhs) }; }
     friend constexpr gf operator*(gf lhs, gf rhs) noexcept { return gf{ mul((Int)lhs, (Int)rhs) }; }
-    friend constexpr gf operator/(gf lhs, gf rhs) noexcept { return gf{ mul((Int)lhs, gf::inv(rhs)) }; }
+    friend constexpr gf operator/(gf lhs, gf rhs) noexcept { return gf{ mul((Int)lhs, gf::inv((Int)rhs)) }; }
     constexpr gf& operator+=(gf rhs) noexcept { return *this = *this + rhs; }
     constexpr gf& operator-=(gf rhs) noexcept { return *this = *this - rhs; }
     constexpr gf& operator*=(gf rhs) noexcept { return *this = *this * rhs; }
