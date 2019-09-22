@@ -4,14 +4,16 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <cstdio>
 #include "ouchilib/utl/step.hpp"
 #include "ouchilib/utl/indexed_iterator.hpp"
 #include "ouchilib/math/gf.hpp"
+#include "../common.hpp"
 
 namespace ouchi::crypto {
 
 /// <summary>
-/// T : 四則演算が定義される体の表現型。1 byte整数に縮小せずに変換可能でなければならない。
+/// T : 四則演算が定義される体の表現型。1 byte符号なし整数と縮小せずに相互に変換可能でなければならない。
 /// </summary>
 template<class T = ouchi::math::gf256<>>
 class secret_sharing {
@@ -22,7 +24,7 @@ public:
     /// <param name="randgen">シェアを作成する際に必要な乱数生成器。 引数を取らずランダムなTのインスタンスを返す。</param>
     /// <param name="threshold">閾値</param>
     template<class RandomGenerator, std::enable_if_t<std::is_invocable_r_v<T, RandomGenerator>>* = nullptr>
-    constexpr secret_sharing(RandomGenerator&& randgen, unsigned threshold)
+    secret_sharing(RandomGenerator&& randgen, unsigned threshold)
         : threshold_{threshold}
         , polynominal_(threshold - 1)
         , secret_{}
@@ -31,6 +33,8 @@ public:
         assert(threshold && threshold < 255);
         for (auto& i : polynominal_)
             i = randgen();
+
+        secret_.reserve(256);
     }
 
     /// <summary>
@@ -44,7 +48,24 @@ public:
         , secret_{}
     {}
     constexpr secret_sharing() = default;
+    ~secret_sharing()
+    {
+        if (secret_.size())
+            secure_memset(secret_.data(), 0, secret_.size());
+        if (polynominal_.size())
+            secure_memset(polynominal_.data(), 0, polynominal_.size() * sizeof(T));
+    }
 
+    template<class RandomGenerator, std::enable_if_t<std::is_invocable_r_v<T, RandomGenerator>>* = nullptr>
+    void set_threshold(RandomGenerator&& randgen, unsigned threshold)
+    {
+        assert(threshold && threshold < 255);
+        set_threshold(threshold);
+        for (auto& i : polynominal_)
+            i = randgen();
+
+        secret_.reserve(256);
+    }
     void set_threshold(unsigned threshold) noexcept { threshold_ = threshold; }
 
     /// <summary>
@@ -53,19 +74,46 @@ public:
     /// <param name="secret">秘密情報が書かれているアドレス</param>
     /// <param name="size">秘密情報のサイズ</param>
     /// <returns>秘密情報の累計サイズ</returns>
-    size_t push(const void* secret, size_t size);
-    void push(std::string_view secret);
+    size_t push(const void* secret, size_t size)
+    {
+        secret_.reserve(secret_.size() + size);
+        for (auto i = 0u; i < size; ++i) {
+            secret_.push_back(((std::uint8_t*)secret)[i]);
+        }
+    }
+    void push(std::string_view secret)
+    {
+        secret_.reserve(secret_.size() + secret.size());
+        for (auto c : secret)
+            secret_.push_back((std::uint8_t)c);
+    }
     /// <summary>
     /// シェアを計算する
     /// </summary>
     /// <param name="n">シェアの番号</param>
     /// <returns>シェア</returns>
-    std::string get_share(unsigned n) const;
+    std::string get_share(unsigned n) const
+    {
+        if (n == 0) n = 255;
+        T x{ (std::uint8_t)n };
+        std::string ret;
+        char buffer[3] = {};
+        ret.reserve(secret_.size() * 2 + 2);
+        sprintf_s(buffer, sizeof(buffer), "%02x", 0xFF & n);
+        ret.append(buffer, 2ul);
+
+        for (auto s : secret_) {
+            sprintf_s(buffer, sizeof(buffer), "%02x", (unsigned)(std::uint8_t)f(x, T{ s }));
+            ret.append(buffer, 2ul);
+        }
+        return ret;
+    }
     /// <summary>
     /// 秘密情報のみリセットする。
     /// </summary>
     void reset() noexcept
     {
+        secure_memset(secret_.data(), 0, secret_.size());
         secret_.clear();
     }
 
@@ -75,11 +123,39 @@ public:
     /// <param name="buffer">シークレットの書き込みバッファ</param>
     /// <param name="size">バッファのサイズ</param>
     /// <param name="share">シェア</param>
-    /// <returns>実際に書き込んだバッファのサイズ</returns>
-    size_t recover_secret(void* buffer, size_t size, std::initializer_list<std::string_view> share) const noexcept
+    /// <exception cref="std::invalid_argument">
+    /// shareの数が足りなかった場合。
+    /// </exception>
+    /// <exception cref="std::out_of_range">未実装。bufferのsizeを超える書き込みがある場合</exception>
+    /// <exception cref="std::domain_error">
+    /// shareから秘密を復元する際に計算できない値が含まれていた場合
+    /// </exception>
+    /// <exception cref="std::exception">
+    /// 文字->数値変換やメモリアロケーションについて標準ライブラリが投げるエラー
+    /// </exception>
+    // TODO:戻り値型をresultにして例外によるエラー報告を削除する
+    void recover_secret(void* buffer, size_t size, const std::vector<std::string>& share) const
     {
-        if (share.size() < threshold_) return 0;
+        if (share.size() < threshold_) throw std::invalid_argument("too few share! "
+                                                                   "at least, number of share shall be equal to threshold.");
         // テキスト表現をTの配列に変換し、solveにかける。
+        const auto s_len = share.front().size() / 2;
+        std::vector<T> x;
+        std::vector<T> y;
+        x.reserve(threshold_);
+        y.reserve(threshold_);
+        // init x
+        for (auto sh : ouchi::step(threshold_)) {
+            x.push_back(T{ (std::uint8_t)std::stoul(share[sh].substr(0, 2), nullptr, 16) });
+        }
+        // solve
+        for (auto l : ouchi::step(1ull, s_len)) { // l byte 目の秘密情報について
+            for (auto i : ouchi::step(threshold_)) { // i番目のシェアについて
+                y.push_back(T{ (std::uint8_t)std::stoul(share[i].substr(l * 2, 2), nullptr, 16) });
+            }
+            *((std::uint8_t*)buffer + l - 1) = (std::uint8_t)solve(x, y);
+            y.clear();
+        }
     }
 #if !defined(_DEBUG)
 private:
@@ -100,7 +176,7 @@ private:
         return res;
     }
 
-    T solve(std::vector<T> x, std::vector<T> y) const
+    T solve(const std::vector<T>& x, const std::vector<T>& y) const
     {
         // a(x**1) + b(x**2) + .... + c = y
         assert(x.size() == y.size() && x.size() > 0);

@@ -79,7 +79,11 @@ struct gf {
     friend constexpr bool operator<(gf lhs, gf rhs) noexcept { return lhs.value < rhs.value; }
     friend constexpr bool operator>(gf lhs, gf rhs) noexcept { return rhs < lhs; }
     friend constexpr bool operator==(gf lhs, gf rhs) noexcept { return lhs.value == rhs.value; }
+    friend constexpr bool operator==(gf lhs, Int rhs) noexcept { return lhs.value == rhs; }
+    friend constexpr bool operator==(Int lhs, gf rhs) noexcept { return lhs == rhs.value; }
     friend constexpr bool operator!=(gf lhs, gf rhs) noexcept { return !(lhs == rhs); }
+    friend constexpr bool operator!=(gf lhs, Int rhs) noexcept { return !(lhs == rhs); }
+    friend constexpr bool operator!=(Int lhs, gf rhs) noexcept { return !(lhs == rhs); }
     friend constexpr bool operator<=(gf lhs, gf rhs) noexcept { return (lhs < rhs) || (lhs == rhs); }
     friend constexpr bool operator>=(gf lhs, gf rhs) noexcept { return (lhs > rhs) || (lhs == rhs); }
 

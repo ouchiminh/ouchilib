@@ -1,5 +1,6 @@
 ﻿#include "../test.hpp"
 #include "ouchilib/crypto/algorithm/secret_sharing.hpp"
+#include <random>
 
 #ifdef _DEBUG
 
@@ -16,5 +17,18 @@ DEFINE_TEST(test_secret_sharing_solve)
     CHECK_EQUAL(res.value, 2);
 }
 
-
 #endif
+
+DEFINE_TEST(test_secret_sharing_share_creation_and_recover)
+{
+    using namespace ouchi::crypto;
+    using ouchi::math::gf256;
+    using namespace std::string_literals;
+    char ans[256] = {};
+    secret_sharing<> ss([r = std::mt19937{ std::random_device{}() }]() mutable {return gf256<>{r() & 0xff}; },
+                        2);
+    ss.push("hogehoge");
+    auto share = { ss.get_share(1),ss.get_share(2),ss.get_share(3) };
+    ss.recover_secret(ans, sizeof(ans), share);
+    CHECK_EQUAL(ans, "hogehoge"s);
+}
