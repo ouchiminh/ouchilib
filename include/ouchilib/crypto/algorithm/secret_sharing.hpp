@@ -8,6 +8,7 @@
 #include "ouchilib/utl/step.hpp"
 #include "ouchilib/utl/indexed_iterator.hpp"
 #include "ouchilib/math/gf.hpp"
+#include "ouchilib/result/result.hpp"
 #include "../common.hpp"
 
 namespace ouchi::crypto {
@@ -123,21 +124,12 @@ public:
     /// <param name="buffer">シークレットの書き込みバッファ</param>
     /// <param name="size">バッファのサイズ</param>
     /// <param name="share">シェア</param>
-    /// <exception cref="std::invalid_argument">
-    /// shareの数が足りなかった場合。
-    /// </exception>
-    /// <exception cref="std::out_of_range">未実装。bufferのsizeを超える書き込みがある場合</exception>
-    /// <exception cref="std::domain_error">
-    /// shareから秘密を復元する際に計算できない値が含まれていた場合
-    /// </exception>
-    /// <exception cref="std::exception">
-    /// 文字->数値変換やメモリアロケーションについて標準ライブラリが投げるエラー
-    /// </exception>
-    /// TODO:戻り値型をresultにして例外によるエラー報告を削除する
-    void recover_secret(void* buffer, size_t size, const std::vector<std::string>& share) const
+    /// <returns>結果。エラー情報のみが意味を持つ。</returns>
+    ouchi::result::result<std::monostate, std::string_view>
+    recover_secret(void* buffer, size_t size, const std::vector<std::string>& share) const
     {
-        if (share.size() < threshold_) throw std::invalid_argument("too few share! "
-                                                                   "at least, number of share shall be equal to threshold.");
+        if (share.size() < threshold_) return ouchi::result::err("too few share! "
+                                                                 "at least, number of share shall be equal to threshold.");
         // テキスト表現をTの配列に変換し、solveにかける。
         const auto s_len = share.front().size() / 2;
         std::vector<T> x;
@@ -153,9 +145,12 @@ public:
             for (auto i : ouchi::step(threshold_)) { // i番目のシェアについて
                 y.push_back(T{ (std::uint8_t)std::stoul(share[i].substr(l * 2, 2), nullptr, 16) });
             }
-            *((std::uint8_t*)buffer + l - 1) = (std::uint8_t)solve(x, y);
+            auto r = solve(x, y);
+            if (r.is_err()) return ouchi::result::err(r.unwrap_err());
+            *((std::uint8_t*)buffer + l - 1) = (std::uint8_t)r.unwrap();
             y.clear();
         }
+        return ouchi::result::ok(std::monostate{});
     }
 #if !defined(_DEBUG)
 private:
@@ -176,7 +171,8 @@ private:
         return res;
     }
 
-    T solve(const std::vector<T>& x, const std::vector<T>& y) const
+    ouchi::result::result<T, std::string_view>
+    solve(const std::vector<T>& x, const std::vector<T>& y) const
     {
         // a(x**1) + b(x**2) + .... + c = y
         assert(x.size() == y.size() && x.size() > 0);
@@ -213,7 +209,7 @@ private:
             auto f = non_zero_column(i);
             if (f < x.size())
                 apply(i, [v = T{ 1 } / at(i, f)](auto& el){ el *= v; });
-            else throw std::domain_error("あ～！いけません！不正な値は計算できません！");
+            else return ouchi::result::err("あ～！いけません！不正な値は計算できません！");
             for (auto j : ouchi::step(x.size())) {
                 if (j == i) continue;
                 sub_row(j, i, at(j, f) / at(i, f));
@@ -221,10 +217,10 @@ private:
         }
         for (auto i : ouchi::step(x.size())) {
             if (non_zero_column(i) == x.size() - 1) {
-                return T{ at(i, x.size()) };
+                return ouchi::result::ok(T{ at(i, x.size()) });
             }
         }
-        throw std::domain_error("error; no solution");
+        return ouchi::result::err("error; no solution");
     }
     unsigned threshold_;
     std::vector<T> polynominal_;
