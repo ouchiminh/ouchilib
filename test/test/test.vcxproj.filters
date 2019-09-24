@@ -62,5 +62,8 @@
     <ClCompile Include="..\crypto\test_secret_sharing.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="..\result\test_result.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -28,7 +28,8 @@ DEFINE_TEST(test_secret_sharing_share_creation_and_recover)
     secret_sharing<> ss([r = std::mt19937{ std::random_device{}() }]() mutable {return gf256<>{r() & 0xff}; },
                         2);
     ss.push("hogehoge");
+    ss.push("fugafuga");
     auto share = { ss.get_share(1),ss.get_share(2),ss.get_share(3) };
     ss.recover_secret(ans, sizeof(ans), share);
-    CHECK_EQUAL(ans, "hogehoge"s);
+    CHECK_EQUAL(ans, "hogehogefugafuga"s);
 }

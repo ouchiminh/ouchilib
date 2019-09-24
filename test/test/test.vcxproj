@@ -29,6 +29,7 @@
     <ClCompile Include="..\crypto\test_sha512.cpp" />
     <ClCompile Include="..\math\test_math.cpp" />
     <ClCompile Include="..\program_options\test_program_options.cpp" />
+    <ClCompile Include="..\result\test_result.cpp" />
     <ClCompile Include="..\tasksystem\testtask.cpp" />
     <ClCompile Include="..\test-main.cpp" />
     <ClCompile Include="..\threadpool\test-thread_pool.cpp" />

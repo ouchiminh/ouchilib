@@ -143,6 +143,7 @@
     <ClInclude Include="include\ouchilib\program_options\option_value_restriction.hpp" />
     <ClInclude Include="include\ouchilib\program_options\program_options_description.hpp" />
     <ClInclude Include="include\ouchilib\program_options\program_options_parser.hpp" />
+    <ClInclude Include="include\ouchilib\result\result.hpp" />
     <ClInclude Include="include\ouchilib\thread\task.hpp" />
     <ClInclude Include="include\ouchilib\thread\tasksystem.hpp" />
     <ClInclude Include="include\ouchilib\thread\thread-pool.hpp" />

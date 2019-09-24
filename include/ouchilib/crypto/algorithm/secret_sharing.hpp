@@ -29,7 +29,6 @@ public:
         , polynominal_(threshold - 1)
         , secret_{}
     {
-        // GF(256)上で計算することが前提なので、閾値には0を除いた元の数以下の数しか受け付けない。
         assert(threshold && threshold < 255);
         for (auto& i : polynominal_)
             i = randgen();
@@ -59,6 +58,7 @@ public:
     template<class RandomGenerator, std::enable_if_t<std::is_invocable_r_v<T, RandomGenerator>>* = nullptr>
     void set_threshold(RandomGenerator&& randgen, unsigned threshold)
     {
+        // GF(256)上で計算することが前提なので、閾値には0を除いた元の数以下の数しか受け付けない。
         assert(threshold && threshold < 255);
         set_threshold(threshold);
         for (auto& i : polynominal_)
@@ -133,7 +133,7 @@ public:
     /// <exception cref="std::exception">
     /// 文字->数値変換やメモリアロケーションについて標準ライブラリが投げるエラー
     /// </exception>
-    // TODO:戻り値型をresultにして例外によるエラー報告を削除する
+    /// TODO:戻り値型をresultにして例外によるエラー報告を削除する
     void recover_secret(void* buffer, size_t size, const std::vector<std::string>& share) const
     {
         if (share.size() < threshold_) throw std::invalid_argument("too few share! "
