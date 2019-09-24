@@ -124,8 +124,8 @@ public:
     /// <param name="buffer">シークレットの書き込みバッファ</param>
     /// <param name="size">バッファのサイズ</param>
     /// <param name="share">シェア</param>
-    /// <returns>結果。エラー情報のみが意味を持つ。</returns>
-    ouchi::result::result<std::monostate, std::string_view>
+    /// <returns>成功した場合、bufferに書き込んだ文字数を返す。失敗した場合エラー情報を返す。</returns>
+    ouchi::result::result<size_t, std::string_view>
     recover_secret(void* buffer, size_t size, const std::vector<std::string>& share) const
     {
         if (share.size() < threshold_) return ouchi::result::err("too few share! "
@@ -150,7 +150,7 @@ public:
             *((std::uint8_t*)buffer + l - 1) = (std::uint8_t)r.unwrap();
             y.clear();
         }
-        return ouchi::result::ok(std::monostate{});
+        return ouchi::result::ok(s_len);
     }
 #if !defined(_DEBUG)
 private:
@@ -160,7 +160,6 @@ private:
     /// </summary>
     /// <param name="nshare">シェアの番号。(多項式中のx)</param>
     /// <param name="secret">秘密情報。(多項式中の切片C)</param>
-    /// <returns></returns>
     T f(T nshare, T secret) const noexcept
     {
         T res{ secret };
