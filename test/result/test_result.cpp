@@ -63,4 +63,13 @@ DEFINE_TEST(test_result_map)
                     "10"s);
         CHECK_EQUAL(e.map([](int) {return 0; }).unwrap_err(), false);
     }
+    {
+        constexpr result<int, int> r1 = ok(10);
+        constexpr result<double> r2 = ok(4);
+        constexpr result<int, int> e1 = err(1);
+        CHECK_TRUE(r1 && r2);
+        CHECK_TRUE(r1 || e1);
+        CHECK_TRUE(!(r1 && e1));
+
+    }
 }
