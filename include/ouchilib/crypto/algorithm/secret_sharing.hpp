@@ -132,7 +132,7 @@ public:
         const auto s_len = share.front().size() / 2;
         if (share.size() < threshold_) return ouchi::result::err("too few share! "
                                                                  "at least, number of share shall be equal to threshold.");
-        if (size < s_len) return ouchi::result::err("too short buffer!");
+        if (size < s_len - 1) return ouchi::result::err("too short buffer!");
         // テキスト表現をTの配列に変換し、solveにかける。
         std::vector<T> x;
         std::vector<T> y;
@@ -152,7 +152,7 @@ public:
             *((std::uint8_t*)buffer + l - 1) = (std::uint8_t)r.unwrap();
             y.clear();
         }
-        return ouchi::result::ok(s_len);
+        return ouchi::result::ok(s_len - 1);
     }
 #if !defined(_DEBUG)
 private:

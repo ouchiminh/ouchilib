@@ -30,7 +30,7 @@ DEFINE_TEST(test_secret_sharing_share_creation_and_recover)
     ss.push("hogehoge");
     ss.push("fugafuga");
     auto share = { ss.get_share(1),ss.get_share(2),ss.get_share(3) };
-    CHECK_TRUE(ss.recover_secret(ans, sizeof(ans), share));
+    CHECK_EQUAL(ss.recover_secret(ans, sizeof(ans), share).unwrap(), 16);
     CHECK_EQUAL(ans, "hogehogefugafuga"s);
 }
 

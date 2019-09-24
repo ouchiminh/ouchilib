@@ -91,7 +91,7 @@ public:
     {
         return !is_ok();
     }
-    constexpr operator bool() const noexcept
+    explicit constexpr operator bool() const noexcept
     {
         return is_ok();
     }
@@ -116,11 +116,11 @@ public:
         return std::nullopt;
     }
 
-    const T& unwrap() const
+    constexpr const T& unwrap() const
     {
         return std::get<0>(data_);
     }
-    const Err& unwrap_err() const
+    constexpr const Err& unwrap_err() const
     {
         return std::get<1>(data_);
     }
