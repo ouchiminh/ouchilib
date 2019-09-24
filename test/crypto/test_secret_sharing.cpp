@@ -46,4 +46,5 @@ DEFINE_TEST(test_secret_sharing_error_handling)
     ss.push("fugafuga");
     CHECK_TRUE(!ss.recover_secret(ans, sizeof(ans), { ss.get_share(1) }));
     CHECK_TRUE(!ss.recover_secret(ans, sizeof(ans), { ss.get_share(1), ss.get_share(1) }));
+    CHECK_TRUE(!ss.recover_secret(ans, 0, { ss.get_share(1), ss.get_share(2) }));
 }

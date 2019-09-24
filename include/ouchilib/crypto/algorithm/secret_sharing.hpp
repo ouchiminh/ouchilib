@@ -125,13 +125,15 @@ public:
     /// <param name="size">バッファのサイズ</param>
     /// <param name="share">シェア</param>
     /// <returns>成功した場合、bufferに書き込んだ文字数を返す。失敗した場合エラー情報を返す。</returns>
+    /// <remarks>シークレットの復元に失敗した場合でも`buffer`には復元途中のデータが書き込まれることがある。</remarks>
     ouchi::result::result<size_t, std::string_view>
     recover_secret(void* buffer, size_t size, const std::vector<std::string>& share) const
     {
+        const auto s_len = share.front().size() / 2;
         if (share.size() < threshold_) return ouchi::result::err("too few share! "
                                                                  "at least, number of share shall be equal to threshold.");
+        if (size < s_len) return ouchi::result::err("too short buffer!");
         // テキスト表現をTの配列に変換し、solveにかける。
-        const auto s_len = share.front().size() / 2;
         std::vector<T> x;
         std::vector<T> y;
         x.reserve(threshold_);
