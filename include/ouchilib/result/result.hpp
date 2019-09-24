@@ -10,10 +10,10 @@ template<class T>
 struct ok{
     template<class U, std::enable_if_t<std::is_same_v<std::remove_reference_t<U>,
                                                       std::remove_reference_t<T>>>* = nullptr>
-    ok(U& v) : value(v) {};
+    constexpr ok(U& v) : value(v) {};
     template<class U, std::enable_if_t<std::is_same_v<std::remove_reference_t<U>,
                                                       std::remove_reference_t<T>>>* = nullptr>
-    ok(U&& v) : value(v) {};
+    constexpr ok(U&& v) : value(v) {};
     T value;
 };
 
@@ -26,10 +26,10 @@ template<class T>
 struct err{
     template<class U, std::enable_if_t<std::is_same_v<std::remove_reference_t<U>,
                                                       std::remove_reference_t<T>>>* = nullptr>
-    err(U& v) : value(v) {};
+    constexpr err(U& v) : value(v) {};
     template<class U, std::enable_if_t<std::is_same_v<std::remove_reference_t<U>,
                                                       std::remove_reference_t<T>>>* = nullptr>
-    err(U&& v) : value(v) {};
+    constexpr err(U&& v) : value(v) {};
     T value;
 };
 
@@ -58,18 +58,24 @@ public:
     using ok_type = std::conditional_t<std::is_reference_v<T>, std::reference_wrapper<std::remove_reference_t<T>>, T>;
     using err_type = std::conditional_t<std::is_reference_v<Err>, std::reference_wrapper<std::remove_reference_t<Err>>, Err>;
 
-    constexpr result(::ouchi::result::ok<T>&& success)
+    template<class U = T,
+             std::enable_if_t<std::is_convertible_v<std::remove_reference_t<U>, std::remove_reference_t<T>>>* = nullptr>
+    constexpr result(::ouchi::result::ok<U>&& success)
         : data_{ std::in_place_index<0>, success.value }
     {}
-    constexpr result(::ouchi::result::err<Err>&& error)
+    template<class U = T,
+             std::enable_if_t<std::is_convertible_v<std::remove_reference_t<U>, std::remove_reference_t<Err>>>* = nullptr>
+    constexpr result(::ouchi::result::err<U>&& error)
         : data_{ std::in_place_index<1>, error.value }
     {}
-    template<class U = T, std::enable_if_t<std::is_same_v<std::remove_reference_t<U>, U>>* = nullptr>
-    constexpr result(::ouchi::result::ok<T&>&& success)
+    template<class U = T,
+             std::enable_if_t<std::is_convertible_v<std::remove_reference_t<U>, std::remove_reference_t<T>>>* = nullptr>
+    constexpr result(::ouchi::result::ok<U&>&& success)
         : data_{ std::in_place_index<0>, success.value }
     {}
-    template<class U = Err, std::enable_if_t<std::is_same_v<std::remove_reference_t<U>, U>>* = nullptr>
-    constexpr result(::ouchi::result::err<Err&>&& error)
+    template<class U = Err,
+             std::enable_if_t<std::is_convertible_v<std::remove_reference_t<U>, std::remove_reference_t<Err>>>* = nullptr>
+    constexpr result(::ouchi::result::err<U&>&& error)
         : data_{ std::in_place_index<1>, error.value }
     {}
     result(const result&) = default;
@@ -84,6 +90,19 @@ public:
     constexpr bool is_err() const noexcept
     {
         return !is_ok();
+    }
+    constexpr operator bool() const noexcept
+    {
+        return is_ok();
+    }
+    template<class T2>
+    friend constexpr result<T2, Err> operator&&(const result<T, Err>& lhs, const result<T2, Err> rhs) noexcept
+    {
+        return lhs.is_ok() ? rhs : ::ouchi::result::err(lhs.unwrap_err());
+    }
+    friend constexpr result<T, Err> operator||(const result<T, Err>& lhs, const result<T, Err> rhs) noexcept
+    {
+        return lhs.is_ok() ? lhs : rhs;
     }
 
     constexpr std::optional<ok_type> ok() const noexcept
@@ -149,14 +168,11 @@ public:
             result<ok_type, std::invoke_result_t<Op, err_type>>
         >
     {
-        if (is_ok()) return result{ (T)unwrap() };
-        return result{ op(unwrap_err()) };
+        if (is_ok()) return ::ouchi::result::ok(unwrap());
+        return ::ouchi::result::err(op(unwrap_err()));
     }
 
 private:
-    constexpr result(const ok_type&);
-    constexpr result(const err_type&);
-
     std::variant<ok_type, err_type> data_;
 };
 
