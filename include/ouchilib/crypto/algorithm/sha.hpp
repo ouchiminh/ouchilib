@@ -135,11 +135,11 @@ public:
             h = ih;
         }
     }
-    void update(std::string_view message)
+    void update(std::string_view message) noexcept
     {
         update(message.data(), message.size());
     }
-    void update(const void* message, size_t size)
+    void update(const void* message, size_t size) noexcept
     {
         constexpr size_t lidx = block_length - 1;
         auto* ptr = reinterpret_cast<const std::uint8_t*>(message);
@@ -152,7 +152,7 @@ public:
             }
         }
     }
-    memory_entity<Len/8> finalize()
+    memory_entity<Len/8> finalize() noexcept
     {
         constexpr size_t lidx = block_length - 1;
         buffer_[length_ & lidx] = 0x80;
@@ -182,7 +182,7 @@ public:
     }
 
 private:
-    void process_block(void* block)
+    void process_block(void* block) noexcept
     {
         constexpr size_t w_size = Len > 256 ? 80 : 64;
         elm_type w[w_size] = {};
