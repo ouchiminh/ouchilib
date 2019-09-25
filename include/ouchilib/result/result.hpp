@@ -13,7 +13,7 @@ struct ok{
     constexpr ok(U& v) : value(v) {};
     template<class U, std::enable_if_t<std::is_same_v<std::remove_reference_t<U>,
                                                       std::remove_reference_t<T>>>* = nullptr>
-    constexpr ok(U&& v) : value(v) {};
+    constexpr ok(U&& v) : value(std::move(v)) {};
     T value;
 };
 
@@ -29,7 +29,7 @@ struct err{
     constexpr err(U& v) : value(v) {};
     template<class U, std::enable_if_t<std::is_same_v<std::remove_reference_t<U>,
                                                       std::remove_reference_t<T>>>* = nullptr>
-    constexpr err(U&& v) : value(v) {};
+    constexpr err(U&& v) : value(std::move(v)) {};
     T value;
 };
 
@@ -61,12 +61,12 @@ public:
     template<class U = T,
              std::enable_if_t<std::is_convertible_v<std::remove_reference_t<U>, std::remove_reference_t<T>>>* = nullptr>
     constexpr result(::ouchi::result::ok<U>&& success)
-        : data_{ std::in_place_index<0>, success.value }
+        : data_{ std::in_place_index<0>, std::move(success.value) }
     {}
     template<class U = T,
              std::enable_if_t<std::is_convertible_v<std::remove_reference_t<U>, std::remove_reference_t<Err>>>* = nullptr>
     constexpr result(::ouchi::result::err<U>&& error)
-        : data_{ std::in_place_index<1>, error.value }
+        : data_{ std::in_place_index<1>, std::move(error.value) }
     {}
     template<class U = T,
              std::enable_if_t<std::is_convertible_v<std::remove_reference_t<U>, std::remove_reference_t<T>>>* = nullptr>
