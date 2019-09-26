@@ -123,8 +123,10 @@
   <ItemGroup>
     <ClInclude Include="include\ouchilib\crypto\algorithm\aes.hpp" />
     <ClInclude Include="include\ouchilib\crypto\algorithm\aes_ni.hpp" />
+    <ClInclude Include="include\ouchilib\crypto\algorithm\mugi.hpp" />
     <ClInclude Include="include\ouchilib\crypto\algorithm\oca.hpp" />
     <ClInclude Include="include\ouchilib\crypto\algorithm\sha.hpp" />
+    <ClInclude Include="include\ouchilib\crypto\algorithm\secret_sharing.hpp" />
     <ClInclude Include="include\ouchilib\crypto\cipher_mode.hpp" />
     <ClInclude Include="include\ouchilib\crypto\common.hpp" />
     <ClInclude Include="include\ouchilib\crypto\block_encoder.hpp" />
@@ -133,12 +135,15 @@
     <ClInclude Include="include\ouchilib\log\format.hpp" />
     <ClInclude Include="include\ouchilib\log\out.hpp" />
     <ClInclude Include="include\ouchilib\log\rule.hpp" />
+    <ClInclude Include="include\ouchilib\math\gf.hpp" />
+    <ClInclude Include="include\ouchilib\math\matrix.hpp" />
     <ClInclude Include="include\ouchilib\parser\csv.hpp" />
     <ClInclude Include="include\ouchilib\program_options\key_parser.hpp" />
     <ClInclude Include="include\ouchilib\program_options\option_value.hpp" />
     <ClInclude Include="include\ouchilib\program_options\option_value_restriction.hpp" />
     <ClInclude Include="include\ouchilib\program_options\program_options_description.hpp" />
     <ClInclude Include="include\ouchilib\program_options\program_options_parser.hpp" />
+    <ClInclude Include="include\ouchilib\result\result.hpp" />
     <ClInclude Include="include\ouchilib\thread\task.hpp" />
     <ClInclude Include="include\ouchilib\thread\tasksystem.hpp" />
     <ClInclude Include="include\ouchilib\thread\thread-pool.hpp" />

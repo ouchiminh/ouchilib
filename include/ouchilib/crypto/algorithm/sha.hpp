@@ -4,8 +4,7 @@
 #include <string_view>
 #include <utility>
 #include "../common.hpp"
-
-#include <iostream>
+#include "ouchilib/utl/multiitr.hpp"
 
 namespace ouchi::crypto {
 
@@ -100,28 +99,47 @@ inline constexpr std::uint64_t sha_constants<std::uint64_t>[80] = {
 0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a475817
 };
 
-} // namespace detail
+template<class Int>
+inline constexpr void* initial_hash_value = nullptr;
 
-class sha512 {
-    static constexpr unsigned last_block_m_length = (1024 - 128) / 8;
-    static constexpr unsigned block_length = 1024 / 8;
-    std::uint64_t h_[8] = {
+template<>
+inline constexpr std::uint32_t initial_hash_value<std::uint32_t>[8] = {
+    0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+    0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
+};
+template<>
+inline constexpr std::uint64_t initial_hash_value<std::uint64_t>[8] = {
         0x6a09e667f3bcc908, 0xbb67ae8584caa73b, 0x3c6ef372fe94f82b, 0xa54ff53a5f1d36f1,
         0x510e527fade682d1, 0x9b05688c2b3e6c1f, 0x1f83d9abfb41bd6b, 0x5be0cd19137e2179
-    };
+};
 
+inline constexpr int v[] = { 1, 2, 3, 4 };
+
+} // namespace detail
+
+template<int Len>
+class sha {
+    static constexpr unsigned last_block_m_length = (1024 - 128) / 8 / (Len <= 256 ? 2 : 1);
+    static constexpr unsigned block_length = 1024 / 8 / (Len <= 256 ? 2 : 1);
+    using elm_type = std::conditional_t<(Len > 256), std::uint64_t, std::uint32_t>;
+    elm_type h_[8];
     size_t length_;
     std::uint8_t buffer_[block_length];
 public:
-    sha512()
-        : length_{0}
+    sha()
+        : h_{}
+        , length_{0}
         , buffer_{}
-    {}
-    void update(std::string_view message)
+    {
+        for (auto [h, ih] : ouchi::multiitr{ h_, detail::initial_hash_value<elm_type> }) {
+            h = ih;
+        }
+    }
+    void update(std::string_view message) noexcept
     {
         update(message.data(), message.size());
     }
-    void update(const void* message, size_t size)
+    void update(const void* message, size_t size) noexcept
     {
         constexpr size_t lidx = block_length - 1;
         auto* ptr = reinterpret_cast<const std::uint8_t*>(message);
@@ -134,7 +152,7 @@ public:
             }
         }
     }
-    memory_entity<512/8> finalize()
+    memory_entity<Len/8> finalize() noexcept
     {
         constexpr size_t lidx = block_length - 1;
         buffer_[length_ & lidx] = 0x80;
@@ -148,33 +166,38 @@ public:
                 process_block(buffer_);
             }
         }
-        detail::unpack(0, buffer_ + last_block_m_length);
-        detail::unpack(length_ * 8, buffer_ + last_block_m_length + sizeof(std::uint64_t));
+        if constexpr (sizeof(elm_type) == sizeof(std::uint64_t)) {
+            detail::unpack(0, buffer_ + last_block_m_length);
+            detail::unpack(length_ * 8, buffer_ + last_block_m_length + sizeof(elm_type));
+        } else {
+            detail::unpack(length_ * 8, buffer_ + last_block_m_length);
+        }
         process_block(buffer_);
         secure_memset(buffer_, 0);
-        memory_entity<512/8> ret{};
+        memory_entity<Len/8> ret{};
         for (auto i = 0u; i < sizeof(h_) / sizeof(*h_); ++i) {
-            detail::unpack(h_[i], ret.data + (i << 3));
+            detail::unpack(h_[i], ret.data + (i * sizeof(elm_type)));
         }
         return ret;
     }
 
 private:
-    void process_block(void* block)
+    void process_block(void* block) noexcept
     {
-        std::uint64_t w[80] = {};
+        constexpr size_t w_size = Len > 256 ? 80 : 64;
+        elm_type w[w_size] = {};
         auto* ptr = reinterpret_cast<const std::uint8_t*>(block);
         for (auto i = 0u; i < 16; ++i) {
-            w[i] = detail::pack<std::uint64_t>(ptr + (i << 3));
+            w[i] = detail::pack<elm_type>(ptr + (i * sizeof(elm_type)));
         }
-        for (auto i = 16u; i < 80; ++i) {
+        for (auto i = 16u; i < w_size; ++i) {
             w[i] = detail::sha_f3(w[i - 2]) + w[i - 7] + detail::sha_f2(w[i - 15]) + w[i - 16];
         }
-        std::uint64_t a{ h_[0] }, b{ h_[1] }, c{ h_[2] }, d{ h_[3] },
+        elm_type a{ h_[0] }, b{ h_[1] }, c{ h_[2] }, d{ h_[3] },
             e{ h_[4] }, f{ h_[5] }, g{ h_[6] }, h{ h_[7] };
-        for (auto i = 0u; i < 80; ++i) {
+        for (auto i = 0u; i < w_size; ++i) {
             auto t1 = h + detail::sha_f1(e) + detail::ch(e, f, g) +
-                detail::sha_constants<std::uint64_t>[i] + w[i];
+                detail::sha_constants<elm_type>[i] + w[i];
             auto t2 = detail::sha_f0(a) + detail::maj(a, b, c);
             h = g;
             g = f;
@@ -197,20 +220,30 @@ private:
     }
 };
 
-
+using sha512 = sha<512>;
+using sha256 = sha<256>;
 
 }
 namespace ouchi {
 
 inline namespace literals {
 inline namespace crypto_literals {
+
 crypto::memory_entity<64> operator""_sha512(const char* str, size_t size)
 {
     crypto::sha512 hash;
     hash.update(str);
     return hash.finalize();
 }
+
+crypto::memory_entity<32> operator""_sha256(const char* str, size_t size)
+{
+    crypto::sha256 hash;
+    hash.update(str);
+    return hash.finalize();
 }
+
+} // namespace crypto_literals
 }
 
 }

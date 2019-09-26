@@ -95,15 +95,12 @@ private:
         }
         // copy expanded key
         for (auto r : ouchi::step(nr + 1)) {
-            std::uint8_t tmp[16];
+            alignas(16) std::uint8_t tmp[16];
             detail::unpack(w[r*4], tmp);
             detail::unpack(w[r*4+1], tmp+4);
             detail::unpack(w[r*4+2], tmp+8);
             detail::unpack(w[r*4+3], tmp+12);
-            w128[r] = _mm_setr_epi8(tmp[0], tmp[1], tmp[2], tmp[3],
-                                    tmp[4], tmp[5], tmp[6], tmp[7],
-                                    tmp[8], tmp[9], tmp[10], tmp[11],
-                                    tmp[12], tmp[13], tmp[14], tmp[15]);
+            w128[r] = _mm_load_si128((__m128i*)tmp);
         }
         dw128[0] = w128[0];
         for (auto i : ouchi::step(1u, nr)) {
