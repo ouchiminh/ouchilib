@@ -130,11 +130,10 @@ public:
         if (is_err()) return ok_val;
         return unwrap();
     }
-    template<class F, std::enable_if_t<std::is_invocable_r_v<ok_type, F, err_type>>* = nullptr>
-    auto unwrap_or_else(F&& closure) const noexcept(noexcept(std::declval<F&>()(std::declval<err_type&>())))
-        ->std::common_type_t<decltype(std::declval<F&>()(std::declval<err_type&>())), const ok_type&>
+    template<class F, std::enable_if_t<std::is_invocable_r_v<T, F, Err>>* = nullptr>
+    T unwrap_or_else(F&& closure) const noexcept(noexcept(std::declval<F&>()(std::declval<err_type&>())))
     {
-        if (is_err()) return closure(err().value());
+        if (is_err()) return closure(unwrap_err());
         return unwrap();
     }
 
