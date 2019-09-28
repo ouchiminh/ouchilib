@@ -78,20 +78,21 @@ private:
         constexpr std::uint32_t Rcon[10] = {
             0x0100'0000,0x0200'0000,0x0400'0000,0x0800'0000,0x100'00000,
             0x2000'0000,0x4000'0000,0x8000'0000,0x1b00'0000,0x3600'0000 };
-        constexpr auto nk = KeyLength / 4;
-        size_t i;
+        {
+            size_t i;
 
-        for (i = 0u; i < nk; ++i) {
-            w[i] = detail::pack<std::uint32_t>(key_.data + i * 4);
-        }
+            for (i = 0u; i < nk; ++i) {
+                w[i] = detail::pack<std::uint32_t>(key_.data + i * 4);
+            }
 
-        for (i = nk; i<nb*(nr + 1); ++i) {
-            std::uint32_t temp = w[i - 1];
-            if ((i % nk) == 0)
-                temp = aes::subword(rotword(temp)) ^ Rcon[i / nk - 1];
-            else if (nk > 6 && (i % nk) == 4)
-                temp = aes::subword(temp);
-            w[i] = w[i - nk] ^ temp;
+            for (i = nk; i<nb*(nr + 1); ++i) {
+                std::uint32_t temp = w[i - 1];
+                if ((i % nk) == 0)
+                    temp = aes::subword(rotword(temp)) ^ Rcon[i / nk - 1];
+                else if (nk > 6 && (i % nk) == 4)
+                    temp = aes::subword(temp);
+                w[i] = w[i - nk] ^ temp;
+            }
         }
         // copy expanded key
         for (auto r : ouchi::step(nr + 1)) {

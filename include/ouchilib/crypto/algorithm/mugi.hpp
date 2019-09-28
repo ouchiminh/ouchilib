@@ -80,7 +80,7 @@ private:
     {
         std::uint8_t o[8] = {};
         detail::unpack(x ^ b, o);
-        for (auto& i : o) { i = aes128::subchar(i); }
+        for (auto& i : o) { i = (std::uint8_t)aes128::subchar(i); }
         std::uint32_t ph = detail::pack<std::uint32_t>(o);
         std::uint32_t pl = detail::pack<std::uint32_t>(o + 4);
         auto qh = M(ph), ql = M(pl);

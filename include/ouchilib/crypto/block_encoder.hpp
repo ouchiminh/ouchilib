@@ -79,7 +79,7 @@ public:
             const memory_iterator<Algorithm::block_size> last(destptr + dest_size, 0);
             memory_iterator<Algorithm::block_size> it(dest, dest_size);
             auto width = first.count() / thread_cnt;
-            for (auto i : ouchi::step(thread_cnt - 1)) {
+            for ([[maybe_unused]] auto i : ouchi::step(thread_cnt - 1)) {
                 tp.push([device, first, it, width]() mutable {
                     auto end = it + width;
                     if(it != first) device.set_encrypt_state(first, it - 1);
@@ -119,7 +119,7 @@ public:
             const memory_iterator<Algorithm::block_size> last(destptr + dest_size, 0);
             memory_iterator<Algorithm::block_size> it(dest, dest_size);
             auto width = first.count() / thread_cnt;
-            for (auto i : ouchi::step(thread_cnt - 1)) {
+            for ([[maybe_unused]] auto i : ouchi::step(thread_cnt - 1)) {
                 tp.push([device, first, it, width]() mutable {
                     auto end = it + width;
                     if(it != first) device.set_decrypt_state(first, it - 1);
@@ -202,7 +202,7 @@ private:
     static void check_pad(size_t padsize, std::uint8_t* padbegin)
     {
         if(!(padsize <= Algorithm::block_size &&
-             std::count(padbegin, padbegin + padsize, (std::uint8_t)padsize) == padsize))
+             (size_t)std::count(padbegin, padbegin + padsize, (std::uint8_t)padsize) == padsize))
             throw std::runtime_error("decryption failed. please check key or initial condition.");
     }
     CipherMode<Algorithm> cipher_device_;
