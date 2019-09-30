@@ -124,7 +124,6 @@
     <ClInclude Include="include\ouchilib\crypto\algorithm\aes.hpp" />
     <ClInclude Include="include\ouchilib\crypto\algorithm\aes_ni.hpp" />
     <ClInclude Include="include\ouchilib\crypto\algorithm\mugi.hpp" />
-    <ClInclude Include="include\ouchilib\crypto\algorithm\oca.hpp" />
     <ClInclude Include="include\ouchilib\crypto\algorithm\sha.hpp" />
     <ClInclude Include="include\ouchilib\crypto\algorithm\secret_sharing.hpp" />
     <ClInclude Include="include\ouchilib\crypto\cipher_mode.hpp" />

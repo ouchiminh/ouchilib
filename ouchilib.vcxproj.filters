@@ -105,9 +105,6 @@
     <ClInclude Include="include\ouchilib\crypto\algorithm\aes.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\ouchilib\crypto\algorithm\oca.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\ouchilib\crypto\block_encoder.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
