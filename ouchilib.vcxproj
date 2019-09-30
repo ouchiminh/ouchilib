@@ -130,7 +130,6 @@
     <ClInclude Include="include\ouchilib\crypto\common.hpp" />
     <ClInclude Include="include\ouchilib\crypto\block_encoder.hpp" />
     <ClInclude Include="include\ouchilib\data_structure\ring_buffer.hpp" />
-    <ClInclude Include="include\ouchilib\log.hpp" />
     <ClInclude Include="include\ouchilib\log\format.hpp" />
     <ClInclude Include="include\ouchilib\log\out.hpp" />
     <ClInclude Include="include\ouchilib\log\rule.hpp" />

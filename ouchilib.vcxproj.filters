@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\ouchilib\log.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\ouchilib\log\format.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
