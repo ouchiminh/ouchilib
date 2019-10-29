@@ -147,34 +147,32 @@ public:
     {
         return values_[i * column_size_ + j];
     }
-    T& operator()(size_t i, size_t j) noexcept
+    constexpr T& operator()(size_t i, size_t j) noexcept
     {
         return values_[i * column_size_ + j];
     }
     /// <summary>
-    /// 0行目0列 (0, 0) から (0, 1), (0, 2)...と数えていったときのi番目の成分
+    /// 0行0列 (0, 0) から (0, 1), (0, 2)...と数えていったときのi番目の成分
     /// </summary>
     constexpr const T& operator()(size_t i) const noexcept
     {
         return values_[i];
     }
-    T& operator()(size_t i)  noexcept
+    constexpr T& operator()(size_t i)  noexcept
     {
         return values_[i];
     }
 
-
-
     /******** 算術演算子 ********/
 
 private:
-    template<class M1, class M2>
-    auto add(const M1& m1, const M2& m2) noexcept
+    template<class M1, class M2, class RM>
+    static constexpr auto add(const M1& m1, const M2& m2, RM& res) noexcept
         -> std::enable_if_t<(detail::add_possibility_v<typename M1::size_spec_type, typename M2::size_spec_type> > detail::computability::impossible)>
     {
         // privateなので十分な加算可能性が検証された後で呼ばれる前提。型チェックは行わない。
-        for (auto i = 0u; i < total_size(); ++i) {
-            this->operator()(i) = static_cast<T>(m1(i)) + static_cast<T>(m2(i));
+        for (auto i = 0u; i < res.total_size(); ++i) {
+            res(i) = static_cast<T>(m1(i)) + static_cast<T>(m2(i));
         }
     }
 public:
@@ -189,7 +187,7 @@ public:
             throw std::domain_error("two matrixes that have different size cannot be added each other.");
         using res_t = std::common_type_t<U, T>;
         basic_matrix<res_t, variable_length> res(a.size().first, a.size().second);
-        res.add(a, b);
+        res.add(a, b, res);
         return res;
     }
     /// <summary>
@@ -201,7 +199,7 @@ public:
     {
         using res_t = std::common_type_t<T, U>;
         basic_matrix<res_t, Size> res;
-        res.add(a, b);
+        res.add(a, b, res);
         return res;
     }
 };
