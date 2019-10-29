@@ -47,17 +47,17 @@ enum class computability {
 
 template<class S, class T, class = void>
 struct add_possibility {
-    computability value = computability::impossible;
+    static constexpr computability value = computability::impossible;
 };
 template<class S, class T>
 struct add_possibility<S, T, std::enable_if_t<is_variable_length_v<S> || is_variable_length_v<T> &&
                                              (is_size_spec_v<S> && is_size_spec_v<T>)>>
 {
-    computability value = computability::maybe;
+    static constexpr computability value = computability::maybe;
 };
 template<size_t R, size_t C>
 struct add_possibility<fixed_length<R, C>, fixed_length<R, C>, void> {
-    computability value = computability::possible;
+    static constexpr computability value = computability::possible;
 };
 template<class S, class T>
 constexpr computability add_possibility_v = add_possibility<S, T>::value;
@@ -66,17 +66,17 @@ constexpr computability add_possibility_v = add_possibility<S, T>::value;
 
 template<class S, class T, class = void>
 struct mul_possibility {
-    computability value = computability::impossible;
+    static constexpr computability value = computability::impossible;
 };
 template<class S, class T>
 struct mul_possibility<S, T, std::enable_if_t<is_variable_length_v<S> || is_variable_length_v<T> &&
                                              (is_size_spec_v<S> && is_size_spec_v<T>)>>
 {
-    computability value = computability::maybe;
+    static constexpr computability value = computability::maybe;
 };
 template<size_t R, size_t C, size_t C2>
 struct mul_possibility<fixed_length<R, C>, fixed_length<C, C2>, void> {
-    computability value = computability::possible;
+    static constexpr computability value = computability::possible;
 };
 template<class S, class T>
 constexpr computability mul_possibility_v = mul_possibility<S, T>::value;

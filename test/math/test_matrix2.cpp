@@ -1,6 +1,21 @@
 ﻿#include "../test.hpp"
 #include "ouchilib/math/matrix2.hpp"
 
+DEFINE_TEST(test_computability)
+{
+    using namespace ouchi::math::matrix_size_specifier;
+    static_assert(detail::add_possibility_v<variable_length, variable_length> == detail::computability::maybe);
+    static_assert(detail::add_possibility_v<fixed_length<1, 2>, variable_length> == detail::computability::maybe);
+    static_assert(detail::add_possibility_v<fixed_length<1, 2>, fixed_length<1, 2>> == detail::computability::possible);
+    static_assert(detail::add_possibility_v<fixed_length<2, 2>, fixed_length<1, 2>> == detail::computability::impossible);
+
+    static_assert(detail::mul_possibility_v<variable_length, variable_length> == detail::computability::maybe);
+    static_assert(detail::mul_possibility_v<fixed_length<2, 2>, variable_length> == detail::computability::maybe);
+    static_assert(detail::mul_possibility_v<fixed_length<2, 2>, fixed_length<2, 2>> == detail::computability::possible);
+    static_assert(detail::mul_possibility_v<fixed_length<5, 2>, fixed_length<2, 4>> == detail::computability::possible);
+    static_assert(detail::mul_possibility_v<fixed_length<3, 3>, fixed_length<2, 4>> == detail::computability::impossible);
+}
+
 DEFINE_TEST(test_matrix2_instantiation)
 {
     /*constexpr*/ ouchi::math::vl_matrix<int> vm;
