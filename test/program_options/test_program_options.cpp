@@ -91,7 +91,10 @@ DEFINE_TEST(test_arg_parse)
     d
         .add("flag;f", "f", opo::flag)
         .add("default_flag;df", "", opo::flag, opo::default_value)
-        .add("nope;n", "f", opo::flag);
+        .add("nope;n", "f", opo::flag)
+        .add("nopem;nm", "non", opo::multi<int>)
+        .add("nopes;ns", "non", opo::single<int>);
+
     
     ap.parse(d, argv, argc);
     CHECK_EQUAL(ap.get<int>(""), 3);
@@ -102,6 +105,8 @@ DEFINE_TEST(test_arg_parse)
     CHECK_TRUE(ap.exist("flag"));
     CHECK_TRUE(ap.exist("default_flag"));
     CHECK_TRUE(!ap.exist("nope"));
+    CHECK_EQUAL(ap.get<std::vector<int>>("nopem").size(), 0);
+    CHECK_TRUE(!ap.exist("nopes"));
 }
 
 DEFINE_TEST(test_parse_error)
