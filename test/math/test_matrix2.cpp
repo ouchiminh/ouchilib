@@ -37,3 +37,28 @@ DEFINE_TEST(test_matrix2_initialization)
         4,5,6
     };
 }
+
+DEFINE_TEST(test_matrix2_addition)
+{
+    using namespace ouchi::math;
+    vl_matrix<int> vm1({ 1,1,1,1 }, 2, 2);
+    vl_matrix<int> vm2({ 1,2,3,4 }, 2, 2);
+    fl_matrix<int, 2, 2> fm1{ 1,1,1,1 };
+    fl_matrix<int, 2, 2> fm2{ 1,2,3,4 };
+
+    auto r1 = vm1 + vm2;
+    for (auto i = 0u; i < r1.total_size(); ++i) {
+        CHECK_EQUAL(r1(i), (int)i+2);
+    }
+    auto r2 = vm1 + fm2;
+    for (auto i = 0u; i < r2.total_size(); ++i) {
+        CHECK_EQUAL(r2(i), (int)i+2);
+    }
+    auto r3 = fm1 + fm2;
+    for (auto i = 0u; i < r3.total_size(); ++i) {
+        CHECK_EQUAL(r3(i), (int)i+2);
+    }
+    fl_matrix<int, 1, 2> err;
+    CHECK_THROW(vm1 + err);
+    // fm1 + err;
+}

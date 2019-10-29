@@ -1,5 +1,8 @@
 ﻿#pragma once
 
+#include <stdexcept>
+#include <string> // for error message
+
 #include <type_traits>
 #include <array>
 #include <vector>
@@ -50,8 +53,8 @@ struct add_possibility {
     static constexpr computability value = computability::impossible;
 };
 template<class S, class T>
-struct add_possibility<S, T, std::enable_if_t<is_variable_length_v<S> || is_variable_length_v<T> &&
-                                             (is_size_spec_v<S> && is_size_spec_v<T>)>>
+struct add_possibility<S, T, std::enable_if_t<(is_variable_length_v<S> || is_variable_length_v<T>) &&
+                                              (is_size_spec_v<S> && is_size_spec_v<T>)>>
 {
     static constexpr computability value = computability::maybe;
 };
@@ -69,8 +72,8 @@ struct mul_possibility {
     static constexpr computability value = computability::impossible;
 };
 template<class S, class T>
-struct mul_possibility<S, T, std::enable_if_t<is_variable_length_v<S> || is_variable_length_v<T> &&
-                                             (is_size_spec_v<S> && is_size_spec_v<T>)>>
+struct mul_possibility<S, T, std::enable_if_t<(is_variable_length_v<S> || is_variable_length_v<T>) &&
+                                              (is_size_spec_v<S> && is_size_spec_v<T>)>>
 {
     static constexpr computability value = computability::maybe;
 };
@@ -84,13 +87,18 @@ constexpr computability mul_possibility_v = mul_possibility<S, T>::value;
 } // namespace detail
 } // namespace matrix_size_specifier
 
-template<class T, class Size, std::enable_if_t<is_size_spec_v<Size>>* = nullptr>
-class basic_matrix {
+template<class, class Size, class = void>
+class basic_matrix;
+
+template<class T, class Size>
+class basic_matrix<T, Size, std::enable_if_t<is_size_spec_v<Size>>> {
     using container_type = typename Size:: template container_type<T>;
     size_t row_size_;
     size_t column_size_;
     container_type values_;
 public:
+    using size_spec_type = Size;
+    using value_type = T;
     // 固定長行列
     template<class S = Size, std::enable_if_t<is_fixed_length_v<S>>* = nullptr>
     constexpr basic_matrix()
@@ -132,7 +140,70 @@ public:
     {
         return row_size_ * column_size_;
     }
+    /// <summary>
+    /// 行列のi, j成分を返す
+    /// </summary>
+    constexpr const T& operator()(size_t i, size_t j) const noexcept
+    {
+        return values_[i * column_size_ + j];
+    }
+    T& operator()(size_t i, size_t j) noexcept
+    {
+        return values_[i * column_size_ + j];
+    }
+    /// <summary>
+    /// 0行目0列 (0, 0) から (0, 1), (0, 2)...と数えていったときのi番目の成分
+    /// </summary>
+    constexpr const T& operator()(size_t i) const noexcept
+    {
+        return values_[i];
+    }
+    T& operator()(size_t i)  noexcept
+    {
+        return values_[i];
+    }
 
+
+
+    /******** 算術演算子 ********/
+
+private:
+    template<class M1, class M2>
+    auto add(const M1& m1, const M2& m2) noexcept
+        -> std::enable_if_t<(detail::add_possibility_v<typename M1::size_spec_type, typename M2::size_spec_type> > detail::computability::impossible)>
+    {
+        // privateなので十分な加算可能性が検証された後で呼ばれる前提。型チェックは行わない。
+        for (auto i = 0u; i < total_size(); ++i) {
+            this->operator()(i) = static_cast<T>(m1(i)) + static_cast<T>(m2(i));
+        }
+    }
+public:
+    /// <summary>
+    /// すくなくとも一方がvariable_lengthであるような行列同士の足し算
+    /// </summary>
+    template<class U, class S>
+    friend auto operator+(const basic_matrix& a, const basic_matrix<U, S>& b)
+        -> std::enable_if_t<(detail::add_possibility_v<Size, S> == detail::computability::maybe), basic_matrix<std::common_type_t<U, T>, variable_length>>
+    {
+        if (a.size() != b.size())
+            throw std::domain_error("two matrixes that have different size cannot be added each other.");
+        using res_t = std::common_type_t<U, T>;
+        basic_matrix<res_t, variable_length> res(a.size().first, a.size().second);
+        res.add(a, b);
+        return res;
+    }
+    /// <summary>
+    /// ともにサイズが同じである行列の足し算
+    /// </summary>
+    template<class U, class S>
+    friend constexpr auto operator+(const basic_matrix& a, const basic_matrix<U, S>& b) noexcept
+        -> std::enable_if_t<detail::add_possibility_v<Size, S> == detail::computability::possible, basic_matrix<std::common_type_t<T, U>, Size>>
+    {
+        using res_t = std::common_type_t<T, U>;
+        basic_matrix<res_t, Size> res;
+        res.add(a, b);
+        return res;
+    }
 };
 
 // 固定長の行列(constexpr)
