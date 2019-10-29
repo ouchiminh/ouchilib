@@ -28,6 +28,7 @@
     <ClCompile Include="..\crypto\test_secret_sharing.cpp" />
     <ClCompile Include="..\crypto\test_sha512.cpp" />
     <ClCompile Include="..\math\test_math.cpp" />
+    <ClCompile Include="..\math\test_matrix2.cpp" />
     <ClCompile Include="..\program_options\test_program_options.cpp" />
     <ClCompile Include="..\result\test_result.cpp" />
     <ClCompile Include="..\tasksystem\testtask.cpp" />

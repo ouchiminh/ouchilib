@@ -132,5 +132,8 @@
     <ClInclude Include="include\ouchilib\result\result.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\ouchilib\math\matrix2.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
