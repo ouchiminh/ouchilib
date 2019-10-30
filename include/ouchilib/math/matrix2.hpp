@@ -17,13 +17,13 @@ struct size_base {};
 
 } // namespace detail
 template<size_t Row, size_t Column>
-struct fixed_length : detail::size_base {
+struct fixed_length final : detail::size_base {
     static constexpr size_t row_size = Row;
     static constexpr size_t column_size = Column;
     template<class T>
     using container_type = std::array<T, row_size * column_size>;
 };
-struct variable_length : detail::size_base {
+struct variable_length final : detail::size_base {
     template<class T>
     using container_type = std::vector<T>;
 };
@@ -107,6 +107,14 @@ public:
         , values_{}
     {}
     template<class S = Size, std::enable_if_t<is_fixed_length_v<S>>* = nullptr>
+    constexpr basic_matrix(const T& fill_value)
+        : row_size_{S::row_size}
+        , column_size_{S::column_size}
+        , values_{}
+    {
+        values_.fill(fill_value);
+    }
+    template<class S = Size, std::enable_if_t<is_fixed_length_v<S>>* = nullptr>
     constexpr basic_matrix(std::initializer_list<T> il)
         : basic_matrix()
     {
@@ -118,10 +126,10 @@ public:
     }
     // 可変長行列
     template<class S = Size, std::enable_if_t<is_variable_length_v<S>>* = nullptr>
-    basic_matrix(size_t row = 0, size_t column = 0)
+    basic_matrix(size_t row = 0, size_t column = 0, const T& fill_value = T{})
         : row_size_{row}
         , column_size_{column}
-        , values_(row * column)
+        , values_(row * column, fill_value)
     {}
     template<class S = Size, std::enable_if_t<is_variable_length_v<S>>* = nullptr>
     basic_matrix(std::initializer_list<T> il, size_t row, size_t column)
@@ -175,10 +183,35 @@ private:
             res(i) = static_cast<T>(m1(i)) + static_cast<T>(m2(i));
         }
     }
+    template<class M1, class M2, class RM>
+    static constexpr auto mul(const M1& m1, const M2& m2, RM& res) noexcept
+        ->std::enable_if_t<(detail::add_possibility_v<typename M1::size_spec_type, typename M2::size_spec_type> > detail::computability::impossible)>
+    {
+        // privateなので十分な乗算可能性が検証された後で呼ばれる前提。型チェックは行わない。
+        auto [m1r, m1c] = m1.size();
+        auto m2c = m2.size().second;
+        
+        for (auto i = 0u; i < m1r; ++i) {
+            for (auto k = 0u; k < m1c; ++k) {
+                for (auto j = 0u; j < m2c; ++j) {
+                    res(i, j) += m1(i, k) * m2(k, j);
+                }
+            }
+        }
+    }
 public:
-    /// <summary>
-    /// すくなくとも一方がvariable_lengthであるような行列同士の足し算
-    /// </summary>
+    template<class S = Size>
+    friend constexpr auto operator-(const basic_matrix& a) noexcept
+        -> std::enable_if_t<is_fixed_length_v<S>, basic_matrix>
+    {
+        basic_matrix res;
+        for (auto i = 0u; i < res.total_size(); ++i)
+            res(i) = -a(i);
+        return res;
+    }
+
+    /******** 足し算 ********/
+
     template<class U, class S>
     friend auto operator+(const basic_matrix& a, const basic_matrix<U, S>& b)
         -> std::enable_if_t<(detail::add_possibility_v<Size, S> == detail::computability::maybe), basic_matrix<std::common_type_t<U, T>, variable_length>>
@@ -187,19 +220,44 @@ public:
             throw std::domain_error("two matrixes that have different size cannot be added each other.");
         using res_t = std::common_type_t<U, T>;
         basic_matrix<res_t, variable_length> res(a.size().first, a.size().second);
-        res.add(a, b, res);
+        basic_matrix::add(a, b, res);
         return res;
     }
-    /// <summary>
-    /// ともにサイズが同じである行列の足し算
-    /// </summary>
     template<class U, class S>
     friend constexpr auto operator+(const basic_matrix& a, const basic_matrix<U, S>& b) noexcept
         -> std::enable_if_t<detail::add_possibility_v<Size, S> == detail::computability::possible, basic_matrix<std::common_type_t<T, U>, Size>>
     {
         using res_t = std::common_type_t<T, U>;
         basic_matrix<res_t, Size> res;
-        res.add(a, b, res);
+        basic_matrix::add(a, b, res);
+        return res;
+    }
+    template<class U, class S>
+    friend auto operator-(const basic_matrix& a, const basic_matrix<U, S>& b)
+    {
+        return a + (-b);
+    }
+
+    /******** 掛け算 ********/
+
+    template<class U, class S>
+    friend auto operator*(const basic_matrix& a, const basic_matrix<U, S>& b)
+        -> std::enable_if_t<(detail::mul_possibility_v<Size, S> == detail::computability::maybe), basic_matrix<std::common_type_t<U, T>, variable_length>>
+    {
+        if (a.size().second != b.size().first)
+            throw std::domain_error("multiplication can be applied only if size of lhs.column == that of rhs.row");
+        using res_t = std::common_type_t<U, T>;
+        basic_matrix<res_t, variable_length> res(a.size().first, b.size().second);
+        basic_matrix::mul(a, b, res);
+        return res;
+    }
+    template<class U, class S>
+    friend constexpr auto operator*(const basic_matrix& a, const basic_matrix<U, S>& b) noexcept
+        -> std::enable_if_t<detail::mul_possibility_v<Size, S> == detail::computability::possible, basic_matrix<std::common_type_t<T, U>, Size>>
+    {
+        using res_t = std::common_type_t<T, U>;
+        basic_matrix<res_t, fixed_length<basic_matrix::size_spec_type::row_size, S::column_size>> res;
+        basic_matrix::mul(a, b, res);
         return res;
     }
 };
