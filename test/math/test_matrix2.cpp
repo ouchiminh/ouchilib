@@ -9,6 +9,8 @@ DEFINE_TEST(test_mat2_static)
     static_assert(detail::add_possibility_v<fixed_length<1, 2>, fixed_length<1, 2>> == detail::computability::possible);
     static_assert(detail::add_possibility_v<fixed_length<2, 2>, fixed_length<1, 2>> == detail::computability::impossible);
 
+    static_assert(std::is_same_v<detail::add_possibility_t<fixed_length<2, 2>, fixed_length<2, 2>>, fixed_length<2, 2>>);
+
     static_assert(detail::mul_possibility_v<variable_length, variable_length> == detail::computability::maybe);
     static_assert(detail::mul_possibility_v<fixed_length<2, 2>, variable_length> == detail::computability::maybe);
     static_assert(detail::mul_possibility_v<fixed_length<2, 2>, fixed_length<2, 2>> == detail::computability::possible);
@@ -105,4 +107,13 @@ DEFINE_TEST(test_matrix_sub)
         CHECK_EQUAL(r2(i), 1);
     }
 
+}
+
+DEFINE_TEST(test_matrix_resize)
+{
+    using namespace ouchi::math;
+    vl_matrix<int> vm;
+    vm.resize(2, 2);
+    for (auto i = 0u; i < 4; ++i)
+        CHECK_EQUAL(vm(i), 0);
 }

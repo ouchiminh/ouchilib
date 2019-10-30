@@ -55,13 +55,17 @@ struct add_possibility<S, T, std::enable_if_t<(is_variable_length_v<S> || is_var
                                               (is_size_spec_v<S> && is_size_spec_v<T>)>>
 {
     static constexpr computability value = computability::maybe;
+    using result_type = variable_length;
 };
 template<size_t R, size_t C>
 struct add_possibility<fixed_length<R, C>, fixed_length<R, C>, void> {
     static constexpr computability value = computability::possible;
+    using result_type = fixed_length<R, C>;
 };
 template<class S, class T>
 constexpr computability add_possibility_v = add_possibility<S, T>::value;
+template<class S, class T>
+using add_possibility_t = typename add_possibility<S, T>::result_type;
 
 /*************** 乗算可能性 ****************/
 
@@ -74,13 +78,17 @@ struct mul_possibility<S, T, std::enable_if_t<(is_variable_length_v<S> || is_var
                                               (is_size_spec_v<S> && is_size_spec_v<T>)>>
 {
     static constexpr computability value = computability::maybe;
+    using result_type = variable_length;
 };
 template<size_t R, size_t C, size_t C2>
 struct mul_possibility<fixed_length<R, C>, fixed_length<C, C2>, void> {
     static constexpr computability value = computability::possible;
+    using result_type = fixed_length<R, C2>;
 };
 template<class S, class T>
 constexpr computability mul_possibility_v = mul_possibility<S, T>::value;
+template<class S, class T>
+using mul_possibility_t = typename mul_possibility<S, T>::result_type;
 
 } // namespace detail
 } // namespace matrix_size_specifier
@@ -169,6 +177,15 @@ public:
         return values_[i];
     }
 
+    template<class S = Size>
+    auto resize(size_t row, size_t column, const T& v = T{})
+        -> std::enable_if_t<is_variable_length_v<S>>
+    {
+        row_size_ = row;
+        column_size_ = column;
+        values_.resize(total_size(), v);
+    }
+
     /******** 算術演算子 ********/
 
 private:
@@ -220,24 +237,17 @@ public:
     /******** 足し算 ********/
 
     template<class U, class S>
-    friend auto operator+(const basic_matrix& a, const basic_matrix<U, S>& b)
-        -> std::enable_if_t<(detail::add_possibility_v<Size, S> == detail::computability::maybe), basic_matrix<std::common_type_t<U, T>, variable_length>>
+    friend constexpr auto operator+(const basic_matrix& a, const basic_matrix<U, S>& b)
+        ->std::enable_if_t<(detail::add_possibility_v<Size, S> > detail::computability::impossible), basic_matrix<std::common_type_t<T, U>, detail::add_possibility_t<S, Size>>>
     {
-        if (a.size() != b.size())
-            throw std::domain_error("two matrixes that have different size cannot be added each other.");
-        using res_t = std::common_type_t<U, T>;
-        basic_matrix<res_t, variable_length> res(a.size().first, a.size().second);
+        basic_matrix<std::common_type_t<T, U>, detail::add_possibility_t<S, Size>> res;
+        // 分岐はコンパイル時だが、副文の実行は実行時
+        if constexpr (is_variable_length_v<detail::add_possibility_t<Size, S>>) {
+            if(a.size() != b.size()) throw std::domain_error("two matrixes that have different size cannot be added each other.");
+            res.resize(a.size().first, a.size().second);
+        }
         basic_matrix::add(a, b, res);
         return std::move(res);
-    }
-    template<class U, class S>
-    friend constexpr auto operator+(const basic_matrix& a, const basic_matrix<U, S>& b) noexcept
-        -> std::enable_if_t<detail::add_possibility_v<Size, S> == detail::computability::possible, basic_matrix<std::common_type_t<T, U>, Size>>
-    {
-        using res_t = std::common_type_t<T, U>;
-        basic_matrix<res_t, Size> res;
-        basic_matrix::add(a, b, res);
-        return res;
     }
     template<class U, class S>
     friend constexpr auto operator-(const basic_matrix& a, const basic_matrix<U, S>& b)
@@ -248,24 +258,16 @@ public:
     /******** 掛け算 ********/
 
     template<class U, class S>
-    friend auto operator*(const basic_matrix& a, const basic_matrix<U, S>& b)
-        -> std::enable_if_t<(detail::mul_possibility_v<Size, S> == detail::computability::maybe), basic_matrix<std::common_type_t<U, T>, variable_length>>
+    friend constexpr auto operator*(const basic_matrix& a, const basic_matrix<U, S>& b)
+        ->std::enable_if_t<(detail::mul_possibility_v<Size, S> > detail::computability::impossible), basic_matrix<std::common_type_t<T, U>, detail::mul_possibility_t<S, Size>>>
     {
-        if (a.size().second != b.size().first)
-            throw std::domain_error("multiplication can be applied only if size of lhs.column == that of rhs.row");
-        using res_t = std::common_type_t<U, T>;
-        basic_matrix<res_t, variable_length> res(a.size().first, b.size().second);
+        basic_matrix<std::common_type_t<T, U>, detail::mul_possibility_t<S, Size>> res;
+        if constexpr (is_variable_length_v<detail::mul_possibility_t<Size, S>>) {
+            if(a.size().second != b.size().first) throw std::domain_error("multiplication can be applied only if size of lhs.column == that of rhs.row");
+            res.resize(a.size().first, b.size().second);
+        }
         basic_matrix::mul(a, b, res);
         return std::move(res);
-    }
-    template<class U, class S>
-    friend constexpr auto operator*(const basic_matrix& a, const basic_matrix<U, S>& b) noexcept
-        -> std::enable_if_t<detail::mul_possibility_v<Size, S> == detail::computability::possible, basic_matrix<std::common_type_t<T, U>, Size>>
-    {
-        using res_t = std::common_type_t<T, U>;
-        basic_matrix<res_t, fixed_length<basic_matrix::size_spec_type::row_size, S::column_size>> res;
-        basic_matrix::mul(a, b, res);
-        return res;
     }
 };
 
