@@ -209,6 +209,15 @@ public:
             res(i) = -a(i);
         return res;
     }
+    template<class S = Size>
+    friend auto operator-(const basic_matrix& a)
+        -> std::enable_if_t<is_variable_length_v<S>, basic_matrix>
+    {
+        basic_matrix res(a.size().first, a.size().second);
+        for (auto i = 0u; i < res.total_size(); ++i)
+            res(i) = -a(i);
+        return std::move(res);
+    }
 
     /******** 足し算 ********/
 
@@ -221,7 +230,7 @@ public:
         using res_t = std::common_type_t<U, T>;
         basic_matrix<res_t, variable_length> res(a.size().first, a.size().second);
         basic_matrix::add(a, b, res);
-        return res;
+        return std::move(res);
     }
     template<class U, class S>
     friend constexpr auto operator+(const basic_matrix& a, const basic_matrix<U, S>& b) noexcept
@@ -233,7 +242,7 @@ public:
         return res;
     }
     template<class U, class S>
-    friend auto operator-(const basic_matrix& a, const basic_matrix<U, S>& b)
+    friend constexpr auto operator-(const basic_matrix& a, const basic_matrix<U, S>& b)
     {
         return a + (-b);
     }
@@ -249,7 +258,7 @@ public:
         using res_t = std::common_type_t<U, T>;
         basic_matrix<res_t, variable_length> res(a.size().first, b.size().second);
         basic_matrix::mul(a, b, res);
-        return res;
+        return std::move(res);
     }
     template<class U, class S>
     friend constexpr auto operator*(const basic_matrix& a, const basic_matrix<U, S>& b) noexcept

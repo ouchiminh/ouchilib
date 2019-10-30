@@ -97,9 +97,12 @@ DEFINE_TEST(test_matrix_sub)
     using namespace ouchi::math;
     constexpr fl_matrix<int, 2, 2> fm1{ 2,0,0,2 };
     constexpr fl_matrix<int, 2, 2> fm2{ 3, 1, 1, 3 };
-    auto r1 = fm2 - fm1;
+    vl_matrix<int> vm2({ 3,1,1,3 }, 2, 2);
+    constexpr auto r1 = fm2 - fm1;
+    auto r2 = vm2 - fm1;
     for (auto i = 0u; i < r1.total_size(); ++i) {
         CHECK_EQUAL(r1(i), 1);
+        CHECK_EQUAL(r2(i), 1);
     }
 
 }
