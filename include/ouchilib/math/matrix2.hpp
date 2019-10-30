@@ -1,8 +1,6 @@
 ﻿#pragma once
 
 #include <stdexcept>
-#include <string> // for error message
-
 #include <type_traits>
 #include <array>
 #include <vector>
