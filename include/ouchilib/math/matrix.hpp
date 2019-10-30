@@ -40,30 +40,30 @@ constexpr bool is_fixed_length_v = is_size_spec_v<T> && !is_variable_length_v<T>
 
 namespace detail {
 
-enum class computability {
-    impossible, possible, maybe
+enum class condvalue {
+    no, yes, maybe
 };
 
 /*************** 加算可能性 ****************/
 
 template<class S, class T, class = void>
 struct add_possibility {
-    static constexpr computability value = computability::impossible;
+    static constexpr condvalue value = condvalue::no;
 };
 template<class S, class T>
 struct add_possibility<S, T, std::enable_if_t<(is_variable_length_v<S> || is_variable_length_v<T>) &&
                                               (is_size_spec_v<S> && is_size_spec_v<T>)>>
 {
-    static constexpr computability value = computability::maybe;
+    static constexpr condvalue value = condvalue::maybe;
     using result_type = variable_length;
 };
 template<size_t R, size_t C>
 struct add_possibility<fixed_length<R, C>, fixed_length<R, C>, void> {
-    static constexpr computability value = computability::possible;
+    static constexpr condvalue value = condvalue::yes;
     using result_type = fixed_length<R, C>;
 };
 template<class S, class T>
-constexpr computability add_possibility_v = add_possibility<S, T>::value;
+constexpr condvalue add_possibility_v = add_possibility<S, T>::value;
 template<class S, class T>
 using add_possibility_t = typename add_possibility<S, T>::result_type;
 
@@ -71,22 +71,22 @@ using add_possibility_t = typename add_possibility<S, T>::result_type;
 
 template<class S, class T, class = void>
 struct mul_possibility {
-    static constexpr computability value = computability::impossible;
+    static constexpr condvalue value = condvalue::no;
 };
 template<class S, class T>
 struct mul_possibility<S, T, std::enable_if_t<(is_variable_length_v<S> || is_variable_length_v<T>) &&
                                               (is_size_spec_v<S> && is_size_spec_v<T>)>>
 {
-    static constexpr computability value = computability::maybe;
+    static constexpr condvalue value = condvalue::maybe;
     using result_type = variable_length;
 };
 template<size_t R, size_t C, size_t C2>
 struct mul_possibility<fixed_length<R, C>, fixed_length<C, C2>, void> {
-    static constexpr computability value = computability::possible;
+    static constexpr condvalue value = condvalue::yes;
     using result_type = fixed_length<R, C2>;
 };
 template<class S, class T>
-constexpr computability mul_possibility_v = mul_possibility<S, T>::value;
+constexpr condvalue mul_possibility_v = mul_possibility<S, T>::value;
 template<class S, class T>
 using mul_possibility_t = typename mul_possibility<S, T>::result_type;
 
@@ -230,7 +230,7 @@ public:
 private:
     template<class M1, class M2, class RM>
     static constexpr auto add(const M1& m1, const M2& m2, RM& res) noexcept
-        -> std::enable_if_t<(detail::add_possibility_v<typename M1::size_spec_type, typename M2::size_spec_type> > detail::computability::impossible)>
+        -> std::enable_if_t<(detail::add_possibility_v<typename M1::size_spec_type, typename M2::size_spec_type> > detail::condvalue::no)>
     {
         // privateなので十分な加算可能性が検証された後で呼ばれる前提。型チェックは行わない。
         for (auto i = 0u; i < res.total_size(); ++i) {
@@ -239,7 +239,7 @@ private:
     }
     template<class M1, class M2, class RM>
     static constexpr auto mul(const M1& m1, const M2& m2, RM& res) noexcept
-        ->std::enable_if_t<(detail::mul_possibility_v<typename M1::size_spec_type, typename M2::size_spec_type> > detail::computability::impossible)>
+        ->std::enable_if_t<(detail::mul_possibility_v<typename M1::size_spec_type, typename M2::size_spec_type> > detail::condvalue::no)>
     {
         // privateなので十分な乗算可能性が検証された後で呼ばれる前提。型チェックは行わない。
         auto [m1r, m1c] = m1.size();
@@ -272,7 +272,7 @@ public:
     [[nodiscard]]
     friend constexpr auto operator+(const basic_matrix& a, const basic_matrix<U, S>& b)
         noexcept(is_fixed_length_v<Size> && is_fixed_length_v<S>)
-        ->std::enable_if_t<(detail::add_possibility_v<Size, S> > detail::computability::impossible), basic_matrix<std::common_type_t<T, U>, detail::add_possibility_t<S, Size>>>
+        ->std::enable_if_t<(detail::add_possibility_v<Size, S> > detail::condvalue::no), basic_matrix<std::common_type_t<T, U>, detail::add_possibility_t<S, Size>>>
     {
         basic_matrix<std::common_type_t<T, U>, detail::add_possibility_t<S, Size>> res;
         // 分岐はコンパイル時だが、副文の実行は実行時
@@ -297,7 +297,7 @@ public:
     [[nodiscard]]
     friend constexpr auto operator*(const basic_matrix<T, Size>& a, const basic_matrix<U, S>& b)
         noexcept(is_fixed_length_v<Size> && is_fixed_length_v<S>)
-        ->std::enable_if_t<(detail::mul_possibility_v<Size, S> > detail::computability::impossible), basic_matrix<std::common_type_t<T, U>, detail::mul_possibility_t<Size, S>>>
+        ->std::enable_if_t<(detail::mul_possibility_v<Size, S> > detail::condvalue::no), basic_matrix<std::common_type_t<T, U>, detail::mul_possibility_t<Size, S>>>
     {
         basic_matrix<std::common_type_t<T, U>, detail::mul_possibility_t<Size, S>> res;
         if constexpr (is_variable_length_v<detail::mul_possibility_t<Size, S>>) {

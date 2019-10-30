@@ -4,19 +4,19 @@
 DEFINE_TEST(test_mat2_static)
 {
     using namespace ouchi::math::matrix_size_specifier;
-    static_assert(detail::add_possibility_v<variable_length, variable_length> == detail::computability::maybe);
-    static_assert(detail::add_possibility_v<fixed_length<1, 2>, variable_length> == detail::computability::maybe);
-    static_assert(detail::add_possibility_v<fixed_length<1, 2>, fixed_length<1, 2>> == detail::computability::possible);
-    static_assert(detail::add_possibility_v<fixed_length<2, 2>, fixed_length<1, 2>> == detail::computability::impossible);
+    static_assert(detail::add_possibility_v<variable_length, variable_length> == detail::condvalue::maybe);
+    static_assert(detail::add_possibility_v<fixed_length<1, 2>, variable_length> == detail::condvalue::maybe);
+    static_assert(detail::add_possibility_v<fixed_length<1, 2>, fixed_length<1, 2>> == detail::condvalue::yes);
+    static_assert(detail::add_possibility_v<fixed_length<2, 2>, fixed_length<1, 2>> == detail::condvalue::no);
 
     static_assert(std::is_same_v<detail::add_possibility_t<fixed_length<2, 2>, fixed_length<2, 2>>, fixed_length<2, 2>>);
 
-    static_assert(detail::mul_possibility_v<variable_length, variable_length> == detail::computability::maybe);
-    static_assert(detail::mul_possibility_v<fixed_length<2, 2>, variable_length> == detail::computability::maybe);
-    static_assert(detail::mul_possibility_v<fixed_length<2, 2>, fixed_length<2, 2>> == detail::computability::possible);
-    static_assert(detail::mul_possibility_v<fixed_length<5, 2>, fixed_length<2, 4>> == detail::computability::possible);
-    static_assert(detail::mul_possibility_v<fixed_length<4, 4>, fixed_length<4, 1>> == detail::computability::possible);
-    static_assert(detail::mul_possibility_v<fixed_length<3, 3>, fixed_length<2, 4>> == detail::computability::impossible);
+    static_assert(detail::mul_possibility_v<variable_length, variable_length> == detail::condvalue::maybe);
+    static_assert(detail::mul_possibility_v<fixed_length<2, 2>, variable_length> == detail::condvalue::maybe);
+    static_assert(detail::mul_possibility_v<fixed_length<2, 2>, fixed_length<2, 2>> == detail::condvalue::yes);
+    static_assert(detail::mul_possibility_v<fixed_length<5, 2>, fixed_length<2, 4>> == detail::condvalue::yes);
+    static_assert(detail::mul_possibility_v<fixed_length<4, 4>, fixed_length<4, 1>> == detail::condvalue::yes);
+    static_assert(detail::mul_possibility_v<fixed_length<3, 3>, fixed_length<2, 4>> == detail::condvalue::no);
 
     static_assert(std::is_same_v<detail::mul_possibility_t<fixed_length<4, 4>, fixed_length<4, 1>>, fixed_length<4, 1>>);
     
