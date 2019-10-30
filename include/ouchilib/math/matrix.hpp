@@ -173,6 +173,10 @@ public:
     {
         return values_.data();
     }
+    auto begin() noexcept { return values_.begin(); }
+    auto begin() const noexcept { return values_.begin(); }
+    auto end() noexcept { return values_.end(); }
+    auto end() const noexcept { return values_.end(); }
 
     [[nodiscard]]
     constexpr std::pair<size_t, size_t> size() const noexcept
@@ -234,7 +238,7 @@ private:
         }
     }
     template<class M1, class M2, class RM>
-    static constexpr auto mul(const M1& m1, const M2& m2, RM& res)
+    static constexpr auto mul(const M1& m1, const M2& m2, RM& res) noexcept
         ->std::enable_if_t<(detail::mul_possibility_v<typename M1::size_spec_type, typename M2::size_spec_type> > detail::computability::impossible)>
     {
         // privateなので十分な乗算可能性が検証された後で呼ばれる前提。型チェックは行わない。
@@ -251,7 +255,7 @@ private:
     }
 public:
     [[nodiscard]]
-    friend constexpr auto operator-(const basic_matrix& a) noexcept
+    friend constexpr auto operator-(const basic_matrix& a) noexcept(is_fixed_length_v<Size>)
     {
         basic_matrix res;
         if constexpr (is_variable_length_v<typename basic_matrix::size_spec_type>) {
@@ -267,6 +271,7 @@ public:
     template<class U, class S>
     [[nodiscard]]
     friend constexpr auto operator+(const basic_matrix& a, const basic_matrix<U, S>& b)
+        noexcept(is_fixed_length_v<Size> && is_fixed_length_v<S>)
         ->std::enable_if_t<(detail::add_possibility_v<Size, S> > detail::computability::impossible), basic_matrix<std::common_type_t<T, U>, detail::add_possibility_t<S, Size>>>
     {
         basic_matrix<std::common_type_t<T, U>, detail::add_possibility_t<S, Size>> res;
@@ -281,6 +286,7 @@ public:
     template<class U, class S>
     [[nodiscard]]
     friend constexpr auto operator-(const basic_matrix& a, const basic_matrix<U, S>& b)
+        noexcept(is_fixed_length_v<Size> && is_fixed_length_v<S>)
     {
         return a + (-b);
     }
@@ -290,6 +296,7 @@ public:
     template<class U, class S>
     [[nodiscard]]
     friend constexpr auto operator*(const basic_matrix<T, Size>& a, const basic_matrix<U, S>& b)
+        noexcept(is_fixed_length_v<Size> && is_fixed_length_v<S>)
         ->std::enable_if_t<(detail::mul_possibility_v<Size, S> > detail::computability::impossible), basic_matrix<std::common_type_t<T, U>, detail::mul_possibility_t<Size, S>>>
     {
         basic_matrix<std::common_type_t<T, U>, detail::mul_possibility_t<Size, S>> res;
