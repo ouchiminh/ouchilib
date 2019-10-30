@@ -1,5 +1,5 @@
 ﻿#include "../test.hpp"
-#include "ouchilib/math/matrix2.hpp"
+#include "ouchilib/math/matrix.hpp"
 
 DEFINE_TEST(test_mat2_static)
 {
@@ -15,7 +15,10 @@ DEFINE_TEST(test_mat2_static)
     static_assert(detail::mul_possibility_v<fixed_length<2, 2>, variable_length> == detail::computability::maybe);
     static_assert(detail::mul_possibility_v<fixed_length<2, 2>, fixed_length<2, 2>> == detail::computability::possible);
     static_assert(detail::mul_possibility_v<fixed_length<5, 2>, fixed_length<2, 4>> == detail::computability::possible);
+    static_assert(detail::mul_possibility_v<fixed_length<4, 4>, fixed_length<4, 1>> == detail::computability::possible);
     static_assert(detail::mul_possibility_v<fixed_length<3, 3>, fixed_length<2, 4>> == detail::computability::impossible);
+
+    static_assert(std::is_same_v<detail::mul_possibility_t<fixed_length<4, 4>, fixed_length<4, 1>>, fixed_length<4, 1>>);
     
     static_assert(is_fixed_length_v<fixed_length<1, 1>>);
     static_assert(!is_fixed_length_v<variable_length>);
@@ -91,7 +94,11 @@ DEFINE_TEST(test_matrix2_mul)
 
     constexpr fl_matrix<int, 1, 2> err{};
     CHECK_THROW(vm1 * err);
+    (void)(err * fm1);
     //fm1 * err;
+    constexpr fl_matrix<int, 4, 4> fm4{};
+    constexpr fl_matrix<int, 4, 1> fm5{};
+    (void)(fm4 * fm5);
 }
 
 DEFINE_TEST(test_matrix_sub)

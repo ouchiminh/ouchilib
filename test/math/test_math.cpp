@@ -1,6 +1,5 @@
 ﻿#include "../test.hpp"
 #include "ouchilib/math/gf.hpp"
-#include "ouchilib/math/matrix.hpp"
 #include "ouchilib/utl/step.hpp"
 
 DEFINE_TEST(test_gf)
@@ -29,18 +28,6 @@ DEFINE_TEST(test_gf)
     }
     for (auto i : ouchi::step(256)) {
         CHECK_EQUAL(gf256::mul(0x03, (std::uint8_t)i), i ^ mul2[i]);
-    }
-}
-
-DEFINE_TEST(test_mat)
-{
-    ouchi::math::matrix<int, 3, 2> a{ 2,3,1,4,2,1 };
-    ouchi::math::matrix<int, 2, 3> b{ 3,1,2,2,4,2 };
-    auto r(a * b);
-    auto ans = { 12,14,10,11,17,10,8,6,6 };
-
-    for (auto [v, rv] : ouchi::multiitr{ ans, r }) {
-        CHECK_EQUAL(v, rv);
     }
 }
 

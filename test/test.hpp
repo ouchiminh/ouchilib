@@ -88,14 +88,14 @@ namespace test {
 
 #define CHECK_THROW(expr) do{\
 	try{\
-		expr;\
+		(void)(expr);\
 		FAILED_LOG(expr, name_, "exception are not thrown.\n");\
 	} catch(...){}\
 } while(false)
 
 #define CHECK_SPECIFIC_EXCEPTION(expr, exception_type) do{\
 	try{\
-		expr; \
+		(void)(expr); \
 		FAILED_LOG(expr, name_, "exception are not thrown\n");\
 	} catch(exception_type){}\
 	catch(...){\

@@ -123,16 +123,13 @@
     <ClInclude Include="include\ouchilib\math\gf.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\ouchilib\math\matrix.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\ouchilib\crypto\algorithm\secret_sharing.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\ouchilib\result\result.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\ouchilib\math\matrix2.hpp">
+    <ClInclude Include="include\ouchilib\math\matrix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

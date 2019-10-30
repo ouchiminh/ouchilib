@@ -135,7 +135,6 @@
     <ClInclude Include="include\ouchilib\log\rule.hpp" />
     <ClInclude Include="include\ouchilib\math\gf.hpp" />
     <ClInclude Include="include\ouchilib\math\matrix.hpp" />
-    <ClInclude Include="include\ouchilib\math\matrix2.hpp" />
     <ClInclude Include="include\ouchilib\parser\csv.hpp" />
     <ClInclude Include="include\ouchilib\program_options\key_parser.hpp" />
     <ClInclude Include="include\ouchilib\program_options\option_value.hpp" />
