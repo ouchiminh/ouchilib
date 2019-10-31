@@ -4,6 +4,12 @@
 DEFINE_TEST(test_mat2_static)
 {
     using namespace ouchi::math::matrix_size_specifier;
+
+    static_assert(detail::is_n_by_n_or_larger_v<fixed_length<1, 1>> == detail::condvalue::yes);
+    static_assert(detail::is_n_by_n_or_larger_v<fixed_length<0, 0>> == detail::condvalue::no);
+    static_assert(detail::is_n_by_n_or_larger_v<fixed_length<2, 2>> == detail::condvalue::yes);
+    static_assert(detail::is_n_by_n_or_larger_v<variable_length> == detail::condvalue::maybe);
+
     static_assert(detail::add_possibility_v<variable_length, variable_length> == detail::condvalue::maybe);
     static_assert(detail::add_possibility_v<fixed_length<1, 2>, variable_length> == detail::condvalue::maybe);
     static_assert(detail::add_possibility_v<fixed_length<1, 2>, fixed_length<1, 2>> == detail::condvalue::yes);
@@ -136,7 +142,7 @@ DEFINE_TEST(test_lu)
             1.,3.,2.,1.
         }, 4, 4
     );
-    lu_pivoting(m2);
+    // lu_pivoting(m2);
 }
 
 DEFINE_TEST(test_det)
@@ -154,4 +160,27 @@ DEFINE_TEST(test_det)
     );
     auto d = det(m2);
     CHECK_EQUAL(det(m2), -22);
+}
+
+DEFINE_TEST(test_cofactor)
+{
+    using namespace ouchi::math;
+    constexpr fl_matrix<double, 2, 2> m1{
+        1, 2,
+        3, 4
+    };
+    constexpr auto co = m1.cofactor(1, 1);
+    CHECK_EQUAL(co(0, 0), 1);
+    CHECK_EQUAL(co.total_size(), 1);
+
+    vl_matrix<double> m2(
+        {
+            1, 2,
+            3, 4
+        }, 2, 2
+    );
+    auto co2 = m2.cofactor(1, 0);
+
+    CHECK_EQUAL(co2(0, 0), 2);
+    CHECK_EQUAL(co2.total_size(), 1);
 }
