@@ -297,10 +297,12 @@ public:
         auto q = 0ul;
         for (auto l = 0ul; l < size().first; ++l) {
             if (l == i) continue;
+            q = 0;
             for (auto m = 0ul; m < size().second; ++m) {
                 if (m == j) continue;
-                ret(p++, q++) = (*this)(l, m);
+                ret(p, q++) = (*this)(l, m);
             }
+            ++p;
         }
         return std::move(ret);
     }
@@ -424,7 +426,18 @@ constexpr auto slow_det(const basic_matrix<T, S>& m)
     noexcept(detail::is_square_v<S> == detail::condvalue::yes)
     ->std::enable_if_t<(detail::is_square_v<S> > detail::condvalue::no), T>
 {
-
+    auto sgn = [](auto i, auto j) { return (i + j) & 1 ? -1 : 1; };
+    if constexpr (detail::is_square_v<S> == detail::condvalue::maybe) {
+        if (m.size().first != m.size().second) throw std::domain_error("non-square matrix doesn't have determinant");
+    }
+    if (m.total_size() == 1) return m(0);
+    T ret = T{};
+    if constexpr (detail::is_n_by_n_or_larger_v<S, 2> > detail::condvalue::no) {
+        for (auto i = 0ul; i < m.size().first; ++i) {
+            ret += sgn(i, 0) * m(i, 0) * slow_det(m.cofactor(i, 0));
+        }
+    }
+    return ret;
 }
 
 // 固定長の行列(constexpr)
