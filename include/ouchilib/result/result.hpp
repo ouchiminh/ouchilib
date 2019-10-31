@@ -125,16 +125,27 @@ public:
         return std::get<1>(data_);
     }
 
-    constexpr const T& unwrap_or(const ok_type& ok_val) const noexcept
+    constexpr const T& unwrap_or(const T& ok_val) const noexcept
     {
         if (is_err()) return ok_val;
         return unwrap();
     }
-    template<class F, std::enable_if_t<std::is_invocable_r_v<T, F, Err>>* = nullptr>
-    T unwrap_or_else(F&& closure) const noexcept(noexcept(std::declval<F&>()(std::declval<err_type&>())))
+    constexpr const Err& unwrap_err_or(const Err& err_val) const noexcept
     {
-        if (is_err()) return closure(unwrap_err());
+        if (is_ok()) return err_val;
+        return unwrap_err();
+    }
+    template<class F, std::enable_if_t<std::is_invocable_r_v<T, F, Err>>* = nullptr>
+    T unwrap_or_else(F&& closure) const noexcept(noexcept(std::invoke(std::declval<F&>(), std::declval<Err&>())))
+    {
+        if (is_err()) return std::invoke(std::forward<F>(closure), unwrap_err());
         return unwrap();
+    }
+    template<class F, std::enable_if_t<std::is_invocable_r_v<Err, F, T>>* = nullptr>
+    Err unwrap_err_or_else(F&& closure) const noexcept(noexcept(std::invoke(std::declval<F&>(), std::declval<T&>())))
+    {
+        if (is_ok()) return std::invoke(std::forward<F>(closure), unwrap());
+        return unwrap_err();
     }
 
     template<class Exc = std::logic_error>
