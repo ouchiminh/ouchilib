@@ -47,6 +47,21 @@ struct is_fixed_length<fixed_length<R, C>> : std::true_type {};
 template<class T>
 constexpr bool is_fixed_length_v = is_fixed_length<T>::value;
 
+template<class T>
+struct mat_size {
+    static constexpr size_t row = 0;
+    static constexpr size_t column = 0;
+};
+template<size_t R, size_t C>
+struct mat_size<fixed_length<R, C>> {
+    static constexpr size_t row = R;
+    static constexpr size_t column = C;
+};
+template<class T>
+constexpr size_t mat_size_r = mat_size<T>::row;
+template<class T>
+constexpr size_t mat_size_c = mat_size<T>::column;
+
 namespace detail {
 
 enum class condvalue {
@@ -54,7 +69,6 @@ enum class condvalue {
 };
 
 /*************** 加算可能性 ****************/
-
 template<class S, class T, class = void>
 struct add_possibility {
     static constexpr condvalue value = condvalue::no;
@@ -77,7 +91,6 @@ template<class S, class T>
 using add_possibility_t = typename add_possibility<S, T>::result_type;
 
 /*************** 乗算可能性 ****************/
-
 template<class S, class T, class = void>
 struct mul_possibility {
     static constexpr condvalue value = condvalue::no;
@@ -266,8 +279,10 @@ public:
         values_.resize(total_size(), v);
     }
 
+    // 余因子
     constexpr auto cofactor(size_t i, size_t j) const noexcept(is_fixed_length_v<Size>)
-        -> std::enable_if_t<(detail::is_n_by_n_or_larger_v<Size, 1> > detail::condvalue::no)>
+        -> std::enable_if_t<(detail::is_n_by_n_or_larger_v<Size, 1> > detail::condvalue::no),
+                            basic_matrix<T, std::conditional_t<is_fixed_length_v<Size>, fixed_length<mat_size_r - 1, mat_size_c - 1>, variable_length>>>>
     {
         
     }
