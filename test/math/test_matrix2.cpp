@@ -124,3 +124,34 @@ DEFINE_TEST(test_matrix_resize)
     for (auto i = 0u; i < 4; ++i)
         CHECK_EQUAL(vm(i), 0);
 }
+
+DEFINE_TEST(test_lu)
+{
+    using namespace ouchi::math;
+    vl_matrix<double> m2(
+        {
+            3.,1.,1.,2.,
+            5.,1.,3.,4.,
+            2.,0.,1.,0.,
+            1.,3.,2.,1.
+        }, 4, 4
+    );
+    lu_pivoting(m2);
+}
+
+DEFINE_TEST(test_det)
+{
+    using namespace ouchi::math;
+    fl_matrix<double, 2, 2> m1{ 0, 0, 0, 0 };
+    CHECK_EQUAL(det(m1), 0);
+    vl_matrix<double> m2(
+        {
+            3.,1.,1.,2.,
+            5.,1.,3.,4.,
+            2.,0.,1.,0.,
+            1.,3.,2.,1.
+        }, 4, 4
+    );
+    auto d = det(m2);
+    CHECK_EQUAL(det(m2), -22);
+}

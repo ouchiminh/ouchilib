@@ -1,11 +1,14 @@
 ﻿#pragma once
 
+#include <string> // for error message
 #include <stdexcept>
 #include <type_traits>
 #include <array>
 #include <vector>
 #include <cstddef>
 #include <cassert>
+
+#include "ouchilib/result/result.hpp"
 
 namespace ouchi::math {
 
@@ -34,9 +37,15 @@ template<class T>
 constexpr bool is_size_spec_v = is_size_spec<T>::value;
 
 template<class T>
-constexpr bool is_variable_length_v = std::is_same_v<variable_length, T>;
+struct is_variable_length : std::bool_constant<std::is_same_v<variable_length, T>> {};
 template<class T>
-constexpr bool is_fixed_length_v = is_size_spec_v<T> && !is_variable_length_v<T>;
+constexpr bool is_variable_length_v = is_variable_length<T>::value;
+template<class T>
+struct is_fixed_length : std::false_type {};
+template<size_t R, size_t C>
+struct is_fixed_length<fixed_length<R, C>> : std::true_type {};
+template<class T>
+constexpr bool is_fixed_length_v = is_fixed_length<T>::value;
 
 namespace detail {
 
@@ -89,6 +98,38 @@ template<class S, class T>
 constexpr condvalue mul_possibility_v = mul_possibility<S, T>::value;
 template<class S, class T>
 using mul_possibility_t = typename mul_possibility<S, T>::result_type;
+
+/*************** 正方 ****************/
+template<class S>
+struct is_square {
+    static constexpr condvalue value = condvalue::no;
+};
+template<>
+struct is_square<variable_length> {
+    static constexpr condvalue value = condvalue::maybe;
+};
+template<size_t Size>
+struct is_square<fixed_length<Size, Size>> {
+    static constexpr condvalue value = condvalue::yes;
+};
+template<class S>
+constexpr condvalue is_square_v = is_square<S>::value;
+
+/*************** N次以上の正方行列か ****************/
+template<class S, size_t N = 1, class = void>
+struct is_n_by_n_or_larger {
+    static constexpr condvalue value = condvalue::no;
+};
+template<class S, size_t N>
+struct is_n_by_n_or_larger<S, N, std::enable_if_t<is_variable_length_v<S>>> {
+    static constexpr condvalue value = condvalue::maybe;
+};
+template<size_t R, size_t N>
+struct is_n_by_n_or_larger<fixed_length<R, R>, N, std::enable_if_t<(R >= N)>> {
+    static constexpr condvalue value = condvalue::yes;
+};
+template<class T, size_t N = 1>
+constexpr condvalue is_n_by_n_or_larger_v = is_n_by_n_or_larger<T, N>::value;
 
 } // namespace detail
 } // namespace matrix_size_specifier
@@ -225,6 +266,12 @@ public:
         values_.resize(total_size(), v);
     }
 
+    constexpr auto cofactor(size_t i, size_t j) const noexcept(is_fixed_length_v<Size>)
+        -> std::enable_if_t<(detail::is_n_by_n_or_larger_v<Size, 1> > detail::condvalue::no)>
+    {
+        
+    }
+    
     /******** 算術演算 ********/
 
 private:
@@ -271,13 +318,13 @@ public:
     template<class U, class S>
     [[nodiscard]]
     friend constexpr auto operator+(const basic_matrix& a, const basic_matrix<U, S>& b)
-        noexcept(is_fixed_length_v<Size> && is_fixed_length_v<S>)
+        noexcept(is_fixed_length_v<Size>&& is_fixed_length_v<S>)
         ->std::enable_if_t<(detail::add_possibility_v<Size, S> > detail::condvalue::no), basic_matrix<std::common_type_t<T, U>, detail::add_possibility_t<S, Size>>>
     {
         basic_matrix<std::common_type_t<T, U>, detail::add_possibility_t<S, Size>> res;
         // 分岐はコンパイル時だが、副文の実行は実行時
         if constexpr (is_variable_length_v<detail::add_possibility_t<Size, S>>) {
-            if(a.size() != b.size()) throw std::domain_error("two matrixes that have different size cannot be added each other.");
+            if (a.size() != b.size()) throw std::domain_error("two matrixes that have different size cannot be added each other.");
             res.resize(a.size().first, a.size().second);
         }
         basic_matrix::add(a, b, res);
@@ -286,7 +333,7 @@ public:
     template<class U, class S>
     [[nodiscard]]
     friend constexpr auto operator-(const basic_matrix& a, const basic_matrix<U, S>& b)
-        noexcept(is_fixed_length_v<Size> && is_fixed_length_v<S>)
+        noexcept(is_fixed_length_v<Size>&& is_fixed_length_v<S>)
     {
         return a + (-b);
     }
@@ -296,7 +343,7 @@ public:
     template<class U, class S>
     [[nodiscard]]
     friend constexpr auto operator*(const basic_matrix<T, Size>& a, const basic_matrix<U, S>& b)
-        noexcept(is_fixed_length_v<Size> && is_fixed_length_v<S>)
+        noexcept(is_fixed_length_v<Size>&& is_fixed_length_v<S>)
         ->std::enable_if_t<(detail::mul_possibility_v<Size, S> > detail::condvalue::no), basic_matrix<std::common_type_t<T, U>, detail::mul_possibility_t<Size, S>>>
     {
         basic_matrix<std::common_type_t<T, U>, detail::mul_possibility_t<Size, S>> res;
@@ -308,6 +355,44 @@ public:
         return std::move(res);
     }
 };
+
+template<class T, class S>
+constexpr auto det(const basic_matrix<T, S>& m)
+    noexcept(detail::is_square_v<S> == detail::condvalue::yes)
+    ->std::enable_if_t<(detail::is_square_v<S> > detail::condvalue::no), T>
+{
+    if constexpr (detail::is_square_v<S> == detail::condvalue::maybe) {
+        if (m.size().first != m.size().second) throw std::domain_error("non-square matrix doesn't have determinant");
+    }
+    size_t n = m.size().first;
+    T res = T{ 1 }, buf;
+    basic_matrix<T, S> mat = m;
+    for (auto i = 0ul; i<n; i++) {
+        for (auto j = 0ul; j<n; j++) {
+            if (i<j) {
+                buf = mat(j, i)/mat(i, i);
+                for (auto k = 0ul; k<n; k++) {
+                    mat(j, k) -= mat(i, k)*buf;
+                }
+            }
+        }
+    }
+
+    //対角部分の積
+    for (auto i = 0ul; i<n; i++) {
+        res *= mat(i, i);
+    }
+    return res;
+}
+
+template<class T, class S>
+constexpr auto slow_det(const basic_matrix<T, S>& m)
+    noexcept(detail::is_square_v<S> == detail::condvalue::yes)
+    ->std::enable_if_t<(detail::is_square_v<S> > detail::condvalue::no), T>
+{
+
+}
+
 // 固定長の行列(constexpr)
 template<class T, size_t R, size_t C>
 using fl_matrix = basic_matrix<T, fixed_length<R, C>>;
