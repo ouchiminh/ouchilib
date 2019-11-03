@@ -1,14 +1,12 @@
 ﻿#pragma once
 
-#include <string> // for error message
+#include <utility>
 #include <stdexcept>
 #include <type_traits>
 #include <array>
 #include <vector>
 #include <cstddef>
 #include <cassert>
-
-#include "ouchilib/result/result.hpp"
 
 namespace ouchi::math {
 
@@ -388,6 +386,30 @@ public:
         }
         basic_matrix::mul(a, b, res);
         return std::move(res);
+    }
+
+    /************* スカラーとの積 *************/
+
+    [[nodiscard]]
+    friend constexpr auto operator*(const basic_matrix& a, const T& scalar)
+        noexcept(is_fixed_length_v<Size>)
+        -> basic_matrix<T, Size>
+    {
+        basic_matrix<T, Size> ret;
+        if constexpr (is_variable_length_v<Size>) {
+            ret.resize(a.size().first, a.size().second);
+        }
+        for (auto i = 0ul; i < a.total_size(); ++i) {
+            ret(i) = a(i) * scalar;
+        }
+        return std::move(ret);
+    }
+    [[nodiscard]]
+    friend constexpr auto operator*(const T& scalar, const basic_matrix& a)
+        noexcept(is_fixed_length_v<Size>)
+        -> basic_matrix<T, Size>
+    {
+        return a * scalar;
     }
 };
 

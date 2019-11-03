@@ -184,3 +184,26 @@ DEFINE_TEST(test_cofactor)
     CHECK_EQUAL(co2(0, 0), 2);
     CHECK_EQUAL(co2.total_size(), 1);
 }
+
+DEFINE_TEST(test_scalar_production)
+{
+    using namespace ouchi::math;
+    constexpr fl_matrix<double, 2, 2> m1{
+        0, 1,
+        2, 3
+    };
+    vl_matrix<double> m2(
+        {
+            0, 1,
+            2, 3
+        }, 2, 2
+    );
+    auto r1 = m1 * 2;
+    auto r2 = m2 * 2;
+    auto r3 = 2 * m1;
+    for (auto i = 0ul; i < m1.total_size(); ++i) {
+        CHECK_EQUAL(r1(i), i * 2);
+        CHECK_EQUAL(r2(i), i * 2);
+        CHECK_EQUAL(r3(i), i * 2);
+    }
+}
