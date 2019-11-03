@@ -392,7 +392,7 @@ public:
 
     [[nodiscard]]
     friend constexpr auto operator*(const basic_matrix& a, const T& scalar)
-        noexcept(is_fixed_length_v<Size>)
+        noexcept(is_fixed_length_v<Size> && noexcept(std::declval<T>() * std::declval<T>()))
         -> basic_matrix<T, Size>
     {
         basic_matrix<T, Size> ret;
@@ -406,7 +406,7 @@ public:
     }
     [[nodiscard]]
     friend constexpr auto operator*(const T& scalar, const basic_matrix& a)
-        noexcept(is_fixed_length_v<Size>)
+        noexcept(is_fixed_length_v<Size> && noexcept(std::declval<T>() * std::declval<T>()))
         -> basic_matrix<T, Size>
     {
         return a * scalar;
