@@ -89,20 +89,44 @@ public:
         }
         return separators_.end();
     }
-    // cで最初に現れるいずれかseparators_と一致する部分の最初のイテレータとマッチした文字数を返す
+    // cで最初に現れるいずれかseparators_と一致する部分の最初のイテレータとマッチしたseparatorの文字数を返す
     [[nodiscard]]
     auto find_separator(string_view c) const noexcept
     {
-        auto p = c.end();
-        size_t msize = 0;
-        for (auto&& s : separators_) {
-            auto d = c.find(s.data());
-            if (d == string_view::npos) continue;
-            auto r = d + c.begin();
-            if (d == 0) return std::make_pair(r, s.size());
-            else if (d < std::distance(c.begin(), p)) p = r, msize = s.size();
+        //auto p = c.end();
+        //size_t msize = 0;
+        //for (auto&& s : separators_) {
+        //    auto d = c.find(s.data());
+        //    if (d == string_view::npos) continue;
+        //    auto r = d + c.begin();
+        //    if (d == 0) return std::make_pair(r, s.size());
+        //    else if (d < std::distance(c.begin(), p)) p = r, msize = s.size();
+        //}
+        //return std::make_pair(p, msize);
+
+        auto retcond = [c](auto i, auto cnt, const auto& cur_ret) {
+            return (i - cnt + 1) <= std::distance(c.begin(), cur_ret.first) &&
+                cnt > cur_ret.second;
+        };
+
+        // メモリ確保を減らすため
+        thread_local std::vector<size_t> cnts;
+        auto retval = std::make_pair(c.end(), (size_t)0);
+        cnts.clear();
+        cnts.resize(separators_.size(), 0);
+        // cを1文字ずつ見ていき、cのi文字目を見ている時点でj番目のセパレータに一致している文字数をcntsに格納
+        // cntsがセパレータの文字数と等しくなったらリターン
+        for (auto i = 0ul; i < c.size(); ++i) {
+            auto l = c[i];
+            for (auto j = 0ul; j < separators_.size(); ++j) {
+                if (l == separators_[j][cnts[j]]) {
+                    auto cnt = ++(cnts[j]);
+                    if (cnt == separators_[j].size() && retcond(i, cnt, retval))
+                        retval = std::make_pair(c.begin() + (i - cnt + 1), cnt);
+                } else cnts[j] = 0;
+            }
         }
-        return std::make_pair(p, msize);
+        return retval;
     }
 private:
     std::vector<string> separators_;
