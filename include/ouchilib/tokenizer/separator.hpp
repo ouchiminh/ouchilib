@@ -93,17 +93,6 @@ public:
     [[nodiscard]]
     auto find_separator(string_view c) const noexcept
     {
-        //auto p = c.end();
-        //size_t msize = 0;
-        //for (auto&& s : separators_) {
-        //    auto d = c.find(s.data());
-        //    if (d == string_view::npos) continue;
-        //    auto r = d + c.begin();
-        //    if (d == 0) return std::make_pair(r, s.size());
-        //    else if (d < std::distance(c.begin(), p)) p = r, msize = s.size();
-        //}
-        //return std::make_pair(p, msize);
-
         auto retcond = [c](auto i, auto cnt, const auto& cur_ret) {
             return (i - cnt + 1) <= std::distance(c.begin(), cur_ret.first) &&
                 cnt > cur_ret.second;
