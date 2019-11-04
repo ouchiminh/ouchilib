@@ -13,6 +13,7 @@ template<class InputIterator,
     class Compare = std::equal_to<>>
 constexpr bool begin_with(InputIterator first, InputIterator last,
                           InputIterator2 value_first, InputIterator2 value_last)
+    noexcept(noexcept(Compare{}(*first, *value_first)))
 {
     Compare c;
     while (value_first != value_last && first != last) {
@@ -67,7 +68,7 @@ public:
     /// </summary>
     /// <returns>トークン, トークンの終わりの位置</returns>
     [[nodiscard]]
-    auto operator()(string_view str)  const
+    auto operator()(string_view str)  const noexcept
         ->std::pair<primitive_token, typename string_view::const_iterator>
     {
         std::pair<primitive_token, typename string_view::const_iterator> retval;
@@ -86,7 +87,7 @@ public:
 
     // cがseparatorで始まる場合マッチしたseparators_の要素を指すイテレータを返す
     [[nodiscard]]
-    auto is_separator(string_view c) const {
+    auto is_separator(string_view c) const noexcept {
         for (auto itr = separators_.begin();
              itr != separators_.end();
              ++itr) {
