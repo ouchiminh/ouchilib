@@ -71,18 +71,11 @@ public:
     auto operator()(string_view str)  const noexcept
         ->std::pair<primitive_token, typename string_view::const_iterator>
     {
-        std::pair<primitive_token, typename string_view::const_iterator> retval;
-        if (auto match = is_separator(str); match != separators_.end()) {
-            retval.first = primitive_token::separator;
-            retval.second = std::next(str.begin(), std::min(match->size(), str.size()));
-            return retval;
-        }
-
-        retval.first = primitive_token::word;
-        for (retval.second = ++str.begin();
-             retval.second != str.end() && is_separator(&*retval.second) == separators_.end();
-             ++retval.second);
-        return retval;
+        auto [p, s] = find_separator(str);
+        // if str begins with separator,
+        if (p == str.begin()) return std::make_pair(primitive_token::separator, p + s);
+        // else if str does not begins with separator, str begins with word.
+        else return std::make_pair(primitive_token::word, p);
     }
 
     // cがseparatorで始まる場合マッチしたseparators_の要素を指すイテレータを返す
@@ -95,6 +88,21 @@ public:
                 return itr;
         }
         return separators_.end();
+    }
+    // cで最初に現れるいずれかseparators_と一致する部分の最初のイテレータとマッチした文字数を返す
+    [[nodiscard]]
+    auto find_separator(string_view c) const noexcept
+    {
+        auto p = c.end();
+        size_t msize = 0;
+        for (auto&& s : separators_) {
+            auto d = c.find(s.data());
+            if (d == string_view::npos) continue;
+            auto r = d + c.begin();
+            if (d == 0) return std::make_pair(r, s.size());
+            else if (d < std::distance(c.begin(), p)) p = r, msize = s.size();
+        }
+        return std::make_pair(p, msize);
     }
 private:
     std::vector<string> separators_;
