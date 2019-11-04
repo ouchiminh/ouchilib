@@ -426,12 +426,10 @@ constexpr auto det(const basic_matrix<T, S>& m)
     T res = T{ 1 }, buf;
     basic_matrix<T, S> mat = m;
     for (auto i = 0ul; i<n; i++) {
-        for (auto j = 0ul; j<n; j++) {
-            if (i<j) {
-                buf = mat(j, i)/mat(i, i);
-                for (auto k = 0ul; k<n; k++) {
-                    mat(j, k) -= mat(i, k)*buf;
-                }
+        for (auto j = i + 1; j<n; j++) {
+            buf = mat(j, i)/mat(i, i);
+            for (auto k = 0ul; k<n; k++) {
+                mat(j, k) -= mat(i, k)*buf;
             }
         }
     }

@@ -159,7 +159,9 @@ DEFINE_TEST(test_det)
         }, 4, 4
     );
     auto d = slow_det(m2);
+    auto d2 = det(m2);
     CHECK_EQUAL(d, -22);
+    CHECK_TRUE(std::abs(d - d2) < 1e-8);
 }
 
 DEFINE_TEST(test_cofactor)
