@@ -99,8 +99,8 @@ public:
     [[nodiscard]]
     auto find_separator(string_view c) const
     {
-        auto retcond = [c](auto i, auto cnt, const auto& cur_ret) {
-            return (i - cnt + 1) <= std::distance(c.begin(), cur_ret.first) &&
+        auto retcond = [c](auto p, auto cnt, const auto& cur_ret) {
+            return p <= std::distance(c.begin(), cur_ret.first) &&
                 cnt > cur_ret.second;
         };
         constexpr size_t invalid = ~(size_t)0;
@@ -117,14 +117,15 @@ public:
             for (auto j = 0ul; j < separators_.size(); ++j) {
                 if (l == separators_[j][cnts[j]]) {
                     auto cnt = ++(cnts[j]);
-                    if (cnt == separators_[j].size() && retcond(i, cnt, retval)) {
-                        retval = std::make_pair(c.begin() + (i - cnt + 1), cnt);
+                    auto p = i - cnt + 1;
+                    if (cnt == separators_[j].size() && retcond(p, cnt, retval)) {
+                        retval = std::make_pair(c.begin() + p, cnt);
                         if (countdown == invalid) countdown = seplen_max_;
                     }
                 } else cnts[j] = 0;
             }
+            if (countdown != invalid) --countdown;
             if (countdown == 0) return retval;
-            else if (countdown != invalid) --countdown;
         }
         return retval;
     }
