@@ -107,7 +107,7 @@ public:
         // メモリ確保を減らすため
         thread_local std::vector<size_t> cnts;
         auto retval = std::make_pair(c.end(), (size_t)0);
-        size_t countdown = -1;
+        size_t countdown = invalid;
         cnts.clear();
         cnts.resize(separators_.size(), 0);
         // cを1文字ずつ見ていき、cのi文字目を見ている時点でj番目のセパレータに一致している文字数をcntsに格納
