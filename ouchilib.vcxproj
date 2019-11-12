@@ -104,7 +104,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(Boost_Dir)\include\boost-1_69;$(ProjectDir)\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
@@ -113,7 +113,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(Boost_Dir)\include\boost-1_69;$(ProjectDir)\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
@@ -124,14 +124,12 @@
     <ClInclude Include="include\ouchilib\crypto\algorithm\aes.hpp" />
     <ClInclude Include="include\ouchilib\crypto\algorithm\aes_ni.hpp" />
     <ClInclude Include="include\ouchilib\crypto\algorithm\mugi.hpp" />
-    <ClInclude Include="include\ouchilib\crypto\algorithm\oca.hpp" />
     <ClInclude Include="include\ouchilib\crypto\algorithm\sha.hpp" />
     <ClInclude Include="include\ouchilib\crypto\algorithm\secret_sharing.hpp" />
     <ClInclude Include="include\ouchilib\crypto\cipher_mode.hpp" />
     <ClInclude Include="include\ouchilib\crypto\common.hpp" />
     <ClInclude Include="include\ouchilib\crypto\block_encoder.hpp" />
     <ClInclude Include="include\ouchilib\data_structure\ring_buffer.hpp" />
-    <ClInclude Include="include\ouchilib\log.hpp" />
     <ClInclude Include="include\ouchilib\log\format.hpp" />
     <ClInclude Include="include\ouchilib\log\out.hpp" />
     <ClInclude Include="include\ouchilib\log\rule.hpp" />

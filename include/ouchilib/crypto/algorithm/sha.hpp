@@ -229,14 +229,14 @@ namespace ouchi {
 inline namespace literals {
 inline namespace crypto_literals {
 
-crypto::memory_entity<64> operator""_sha512(const char* str, size_t size)
+crypto::memory_entity<64> operator""_sha512(const char* str, [[maybe_unused]] size_t size)
 {
     crypto::sha512 hash;
     hash.update(str);
     return hash.finalize();
 }
 
-crypto::memory_entity<32> operator""_sha256(const char* str, size_t size)
+crypto::memory_entity<32> operator""_sha256(const char* str, [[maybe_unused]] size_t size)
 {
     crypto::sha256 hash;
     hash.update(str);

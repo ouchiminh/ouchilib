@@ -32,7 +32,7 @@ constexpr RanItr binary_find(RanItr first, RanItr last, T&& value, Pred&& less =
 template<class CharT, class F, std::enable_if_t<std::is_invocable_r_v<tokenizer<CharT>&, std::remove_reference_t<F>, tokenizer<CharT>&>>* = nullptr>
 tokenizer<CharT>& operator|(tokenizer<CharT>& t, F&& tokenize_algorithm)
 {
-    return tokenize_algorithm(t);
+    return std::invoke(std::forward<F>(tokenize_algorithm), t);
 }
 
 // 任意の文字と一致した字句を削除します。
@@ -72,9 +72,9 @@ template<class CharT, class Pred,
 [[nodiscard]] inline auto erase_if(Pred&& pred)
 {
     return
-        [pred](tokenizer<CharT> & t) -> tokenizer<CharT> & {
+        [pred = std::forward<Pred>(pred)](tokenizer<CharT> & t) -> tokenizer<CharT> & {
             for (auto i = t.begin(); i != t.end();)
-                i = pred(*i) ? t.erase(i) : std::next(i);
+                i = std::invoke(pred, *i) ? t.erase(i) : std::next(i);
             return t;
         };
 }

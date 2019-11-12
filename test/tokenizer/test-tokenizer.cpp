@@ -60,7 +60,7 @@ DEFINE_TEST(binary_find_test)
     }
 }
 
-#if 0
+#if 1
 
 DEFINE_TEST(csv_parser_parse_test)
 {
@@ -127,7 +127,7 @@ DEFINE_TEST(mass_csvfile_parse_test)
     csv.parse(filename, std::locale{ "" });
     std::cout << csv.at(u8"関東甲信地方", u8"2000") << '\n';
 }
-#   if 0
+#   if 1
 DEFINE_TEST(source_code_tokenize_test)
 {
     constexpr auto filename = "testsourcecode.c";
@@ -145,7 +145,8 @@ DEFINE_TEST(source_code_tokenize_test)
     }
 }
 #   endif
-#   if 1
+#endif
+#if 1
 DEFINE_TEST(merge_test)
 {
     std::string str = R"(aiu eo "aiu eo" 'aiue o' "")";
@@ -176,5 +177,4 @@ DEFINE_TEST(token_type_test)
         REQUIRE_EQUAL(token.first, ouchi::tokenizer::token_type::primitive_word);
     }
 }
-#   endif
 #endif

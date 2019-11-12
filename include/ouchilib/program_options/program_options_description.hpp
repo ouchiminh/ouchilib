@@ -28,7 +28,7 @@ public:
     using iterator = typename container_type::iterator;
 
     template<class ...R>
-    basic_options_description& add(string_view key, string_view description, R&& ...restrictions)
+    basic_options_description& add(string_view key, string_view description, [[maybe_unused]] R&& ...restrictions)
     {
         typedef detail::option_info<CharT, detail::value_type_policy_t<std::remove_cv_t<std::remove_reference_t<R>>...>, Traits> option_t;
         std::unique_ptr<option_t> p;

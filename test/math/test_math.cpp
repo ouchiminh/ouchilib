@@ -1,6 +1,5 @@
 ﻿#include "../test.hpp"
 #include "ouchilib/math/gf.hpp"
-#include "ouchilib/math/matrix.hpp"
 #include "ouchilib/utl/step.hpp"
 
 DEFINE_TEST(test_gf)
@@ -25,22 +24,10 @@ DEFINE_TEST(test_gf)
         0xfb,0xf9,0xff,0xfd,0xf3,0xf1,0xf7,0xf5,0xeb,0xe9,0xef,0xed,0xe3,0xe1,0xe7,0xe5
     };
     for (auto i : ouchi::step(256)) {
-        CHECK_EQUAL(gf256::mul(0x02, i), mul2[i]);
+        CHECK_EQUAL(gf256::mul(0x02, (std::uint8_t)i), mul2[i]);
     }
     for (auto i : ouchi::step(256)) {
-        CHECK_EQUAL(gf256::mul(0x03, i), i ^ mul2[i]);
-    }
-}
-
-DEFINE_TEST(test_mat)
-{
-    ouchi::math::matrix<int, 3, 2> a{ 2,3,1,4,2,1 };
-    ouchi::math::matrix<int, 2, 3> b{ 3,1,2,2,4,2 };
-    auto r(a * b);
-    auto ans = { 12,14,10,11,17,10,8,6,6 };
-
-    for (auto [a, r] : ouchi::multiitr{ ans, r }) {
-        CHECK_EQUAL(a, r);
+        CHECK_EQUAL(gf256::mul(0x03, (std::uint8_t)i), i ^ mul2[i]);
     }
 }
 
@@ -48,8 +35,8 @@ DEFINE_TEST(test_pow)
 {
     using gf256 = ouchi::math::gf<unsigned char, 0x1b>;
     for (auto i : ouchi::step(1, 255)) {
-        gf256 a(i);
-        CHECK_EQUAL((gf256{ gf256::power(i, 254) } * a).value, 1);
+        gf256 a((std::uint8_t)i);
+        CHECK_EQUAL((gf256{ gf256::power((std::uint8_t)i, 254) } * a).value, 1);
     }
 }
 
@@ -67,12 +54,12 @@ DEFINE_TEST(test_gfinv)
 {
     using namespace ouchi::math;
     for (auto i : ouchi::step(1, 256)) {
-        CHECK_EQUAL(gf256<>::mul(gf256<>::inv(i), i), 1);
+        CHECK_EQUAL(gf256<>::mul(gf256<>::inv((std::uint8_t)i), (std::uint8_t)i), 1);
     }
     for (auto i : ouchi::step(1, 5)) {
-        CHECK_EQUAL(gf2_16<>::mul(gf2_16<>::inv(i), i), 1);
+        CHECK_EQUAL(gf2_16<>::mul(gf2_16<>::inv((std::uint8_t)i), (std::uint8_t)i), 1);
     }
     for (auto i : ouchi::step(1, 25)) {
-        CHECK_EQUAL(gf2_32<>::mul(gf2_32<>::inv(i), i), 1);
+        CHECK_EQUAL(gf2_32<>::mul(gf2_32<>::inv((std::uint8_t)i), (std::uint8_t)i), 1);
     }
 }

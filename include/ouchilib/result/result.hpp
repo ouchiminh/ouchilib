@@ -125,16 +125,27 @@ public:
         return std::get<1>(data_);
     }
 
-    constexpr const T& unwrap_or(const ok_type& ok_val) const noexcept
+    constexpr const T& unwrap_or(const T& ok_val) const noexcept
     {
         if (is_err()) return ok_val;
         return unwrap();
     }
-    template<class F, std::enable_if_t<std::is_invocable_r_v<T, F, Err>>* = nullptr>
-    T unwrap_or_else(F&& closure) const noexcept(noexcept(std::declval<F&>()(std::declval<err_type&>())))
+    constexpr const Err& unwrap_err_or(const Err& err_val) const noexcept
     {
-        if (is_err()) return closure(unwrap_err());
+        if (is_ok()) return err_val;
+        return unwrap_err();
+    }
+    template<class F, std::enable_if_t<std::is_invocable_r_v<T, F, Err>>* = nullptr>
+    T unwrap_or_else(F&& closure) const noexcept(noexcept(std::invoke(std::declval<F&>(), std::declval<Err&>())))
+    {
+        if (is_err()) return std::invoke(std::forward<F>(closure), unwrap_err());
         return unwrap();
+    }
+    template<class F, std::enable_if_t<std::is_invocable_r_v<Err, F, T>>* = nullptr>
+    Err unwrap_err_or_else(F&& closure) const noexcept(noexcept(std::invoke(std::declval<F&>(), std::declval<T&>())))
+    {
+        if (is_ok()) return std::invoke(std::forward<F>(closure), unwrap());
+        return unwrap_err();
     }
 
     template<class Exc = std::logic_error>
@@ -146,25 +157,25 @@ public:
     template<class Exc = std::logic_error>
     const Err& expect_err(std::string exception_msg) const
     {
-        if (is_err()) return unwrap();
+        if (is_err()) return unwrap_err();
         throw Exc(exception_msg);
     }
 
     template<class Op>
-    auto map(Op&& op) const noexcept(noexcept(std::declval<Op&>()(std::declval<ok_type&>())))
+    auto map(Op&& op) const noexcept(noexcept(std::declval<Op&>()(std::declval<T&>())))
         -> std::enable_if_t<
-            std::is_invocable_v<Op, ok_type>,
-            result<std::invoke_result_t<Op, ok_type>, Err>
+            std::is_invocable_v<Op, T>,
+            result<std::invoke_result_t<Op, T>, Err>
         >
     {
-        if (is_err()) return ::ouchi::result::err((Err)unwrap_err());
+        if (is_err()) return ::ouchi::result::err(unwrap_err());
         return ::ouchi::result::ok(op(unwrap()));
     }
     template<class Op>
-    auto map_err(Op&& op) const noexcept(noexcept(std::declval<Op&>()(std::declval<err_type&>())))
+    auto map_err(Op&& op) const noexcept(noexcept(std::declval<Op&>()(std::declval<Err&>())))
         -> std::enable_if_t<
-            std::is_invocable_v<Op, err_type>,
-            result<ok_type, std::invoke_result_t<Op, err_type>>
+            std::is_invocable_v<Op, Err>,
+            result<T, std::invoke_result_t<Op, Err>>
         >
     {
         if (is_ok()) return ::ouchi::result::ok(unwrap());

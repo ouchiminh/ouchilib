@@ -67,7 +67,7 @@ struct default_value<void> {
 };
 } // namespace detail
 
-constexpr detail::default_value<void> default_value;
+constexpr detail::default_value<void> default_value{};
 
 // value restriction policy
 
@@ -77,10 +77,10 @@ template<class R, class B>
 inline constexpr R find_derived_value_impl() { return std::monostate{}; }
 
 template<class R, class B, class Head, class ...D>
-inline R find_derived_value_impl(Head&& h, D&& ...d) 
+inline R find_derived_value_impl([[maybe_unused]] Head&& h, D&& ...d) 
 {
     if constexpr (std::is_base_of_v<B, std::remove_reference_t<Head>>) return h;
-    return find_derived_value_impl<R, B>(std::forward<D>(d)...);
+    else return find_derived_value_impl<R, B>(std::forward<D>(d)...);
 }
 
 template<class B, class ...D>

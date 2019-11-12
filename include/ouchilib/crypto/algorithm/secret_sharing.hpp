@@ -202,7 +202,7 @@ private:
             }
             ++xit;
         }
-        for (auto [idx, y] : ouchi::indexed_iterator(y)) at(idx, x.size()) = y;
+        for (auto [idx, yval] : ouchi::indexed_iterator(y)) at(idx, x.size()) = yval;
         // solve
         // mul ~[i, i] for each row
         for (auto i : ouchi::step(x.size())) {

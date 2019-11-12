@@ -121,7 +121,7 @@ public:
 
     friend memory_entity<SizeInByte> operator^(memory_view<SizeInByte> l, memory_view<SizeInByte> r) noexcept
     {
-        memory_entity<SizeInByte> me;
+        memory_entity<SizeInByte> me{};
         for (auto i : ouchi::step(SizeInByte)) {
             me[i] = l[i] ^ r[i];
         }
@@ -131,7 +131,7 @@ public:
     friend memory_entity<SizeInByte> operator^(memory_view<SizeInByte> l, Int r) noexcept
     {
         std::make_unsigned_t<Int> u = r;
-        memory_entity<SizeInByte> me;
+        memory_entity<SizeInByte> me{};
         for (auto i : ouchi::step(SizeInByte)) {
             me[i] = l[i] ^ (std::uint8_t)u;
             u = u >> 8;
@@ -200,7 +200,6 @@ inline constexpr Int pack(const void* src) noexcept
 template<size_t SizeInByte>
 inline void add(memory_view<SizeInByte> operand1, memory_view<SizeInByte> operand2, void* dest) noexcept
 {
-    auto res = static_cast<std::uint8_t*>(dest);
     detail::add_impl(operand1.data, operand2.data, reinterpret_cast<std::uint8_t*>(dest),
                      std::make_index_sequence<SizeInByte>{});
 }
