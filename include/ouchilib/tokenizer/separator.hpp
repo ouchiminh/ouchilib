@@ -118,7 +118,7 @@ public:
                 if (l == separators_[j][cnts[j]]) {
                     auto cnt = ++(cnts[j]);
                     auto p = i - cnt + 1;
-                    if (cnt == separators_[j].size() && retcond(p, cnt, retval)) {
+                    if (cnt == separators_[j].size() && retcond((rsize_t)p, cnt, retval)) {
                         retval = std::make_pair(c.begin() + p, cnt);
                         if (countdown == invalid) countdown = seplen_max_;
                     }
