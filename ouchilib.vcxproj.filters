@@ -135,5 +135,8 @@
     <ClInclude Include="include\ouchilib\geometry\point_traits.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\ouchilib\geometry\triangulation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
