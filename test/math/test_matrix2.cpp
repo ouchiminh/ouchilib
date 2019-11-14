@@ -209,3 +209,26 @@ DEFINE_TEST(test_scalar_production)
         CHECK_EQUAL(r3(i), i * 2);
     }
 }
+
+DEFINE_TEST(test_transpose)
+{
+    using namespace ouchi::math;
+    constexpr fl_matrix<int, 2, 1> m1{
+        1,
+        2
+    };
+    vl_matrix<int> m2{
+        {
+            1,
+            2
+        }, 2, 1
+    };
+    auto t1 = m1.transpose();
+    auto t2 = m2.transpose();
+    for (auto i = 0ul; i < 1; ++i) {
+        for (auto j = 0ul; j < 2; ++j) {
+            CHECK_EQUAL(t1(i, j), m1(j, i));
+            CHECK_EQUAL(t2(i, j), m2(j, i));
+        }
+    }
+}

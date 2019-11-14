@@ -277,6 +277,25 @@ public:
         values_.resize(total_size(), v);
     }
 
+    // 転置
+    template<class S = Size>
+    [[nodiscard]]
+    constexpr auto transpose() const noexcept(is_fixed_length_v<S>)
+        -> basic_matrix<T, std::conditional_t<is_fixed_length_v<S>, fixed_length<mat_size_c<Size>, mat_size_r<Size>>, variable_length>>
+    {
+        using ret_t = basic_matrix<T, std::conditional_t<is_fixed_length_v<S>, fixed_length<mat_size_c<Size>, mat_size_r<Size>>, variable_length>>;
+        ret_t ret;
+        if constexpr (is_variable_length_v<S>) {
+            ret.resize(size().second, size().first);
+        }
+        for (auto i = 0ul; i < size().first; ++i) {
+            for (auto j = 0ul; j < size().second; ++j) {
+                ret(j, i) = (*this)(i, j);
+            }
+        }
+        return std::move(ret);
+    }
+
     // 余因子
     template<class S = Size>
     [[nodiscard]]
