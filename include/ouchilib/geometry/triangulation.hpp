@@ -21,12 +21,12 @@ struct triangulation {
     static constexpr return_as_idx_tag return_as_idx{};
     
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    std::vector<simplex> operator()(Itr first, Itr last, return_as_idx_tag) const
+    std::vector<simplex> operator()(const Itr first, const Itr last, return_as_idx_tag) const
     {
 
     }
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    std::vector<et_simplex>  operator()(Itr first, Itr last) const;
+    std::vector<et_simplex>  operator()(const Itr first, const Itr last) const;
 
     void set_initial_state(et_simplex space) { space_ = space; }
 
@@ -41,10 +41,9 @@ struct triangulation {
     }
 
     template<class Itr>
-    constexpr et_simplex calc_space(Itr first, Itr last) noexcept
+    static constexpr et_simplex calc_space(Itr first, Itr last) noexcept
     {
         using std::sqrt;
-        if (space_) return space_.value();
         // N次元の点群について各次元の最大値と最小値を求める : min_i, max_i
         Pt max(*first);
         Pt min(*first);
@@ -96,7 +95,6 @@ struct triangulation {
         }
         
         for (auto& lp : space) lp = pt::add(lp, offset);
-        space_ = space;
         return space;
     }
     
