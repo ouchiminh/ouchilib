@@ -21,7 +21,10 @@ struct triangulation {
     static constexpr return_as_idx_tag return_as_idx{};
     
     template<class Itr, std::enable_if_t<std::is_same_v<std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    std::vector<simplex> operator()(Itr first, Itr last, return_as_idx_tag) const;
+    std::vector<simplex> operator()(Itr first, Itr last, return_as_idx_tag) const
+    {
+
+    }
     template<class Itr, std::enable_if_t<std::is_same_v<std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
     std::vector<et_simplex>  operator()(Itr first, Itr last) const;
 
@@ -30,6 +33,11 @@ private:
     std::optional<et_simplex> space_;
 
     using pt = point_traits<Pt>;
+
+    static constexpr std::pair<Pt, coord_type> get_circumscribed_circle(const et_simplex& s) noexcept
+    {
+        
+    }
 
     template<class Itr>
     static constexpr et_simplex calc_space(Itr first, Itr last) noexcept
@@ -67,12 +75,20 @@ private:
             pt::set(p, i, f);
             space[i] = p;
         }
+        // 最後の頂点
         Pt p{};
-        const coord = (1-sqrt(dim+1)) / dim;
+        // 正単体の重心
+        Pt offset{};
+        const auto coord = (1-sqrt(dim+1)) / dim;
+        auto g = (coord + 1) / (coord_type)(dim + 1);
         for (auto i = 0u; i < dim; ++i) {
             pt::set(p, i, coord);
+            pt::set(offset, i, g);
         }
         space[dim] = p;
+        // 原点からのずれ
+        offset = pt::add(o, offset);
+        for (auto& p : space) p = pt::add(p, offset);
         space_ = space;
         return space;
     }
