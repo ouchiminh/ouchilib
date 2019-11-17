@@ -68,5 +68,8 @@
     <ClCompile Include="..\math\test_matrix2.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="..\geometry\test_triangulation.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
