@@ -26,14 +26,14 @@ template<class Pt>
 struct triangulation {
     static constexpr size_t dim = point_traits<Pt>::dim;
     using coord_type = typename point_traits<Pt>::coord_type;
-    using simplex = std::array<size_t, dim + 1>;
+    using id_simplex = std::array<size_t, dim + 1>;
     using et_simplex = std::array<Pt, dim + 1>;
 
     struct return_as_idx_tag {};
     static constexpr return_as_idx_tag return_as_idx{};
     
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    std::vector<simplex> operator()(const Itr first, const Itr last, return_as_idx_tag) const;
+    std::vector<id_simplex> operator()(const Itr first, const Itr last, return_as_idx_tag) const;
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
     std::vector<et_simplex>  operator()(const Itr first, const Itr last) const;
 
@@ -45,6 +45,7 @@ struct triangulation {
     using pt = point_traits<Pt>;
 
     // N次元単体に外接する球の中心と半径の二乗を求める
+    // https://img.atwikiimg.com/www7.atwiki.jp/neetubot/pub/neetubot-1.0.pdf
     static constexpr std::pair<Pt, coord_type> get_circumscribed_circle(const et_simplex& s) noexcept
     {
         using namespace ouchi::math;
