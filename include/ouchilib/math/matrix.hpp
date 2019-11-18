@@ -277,6 +277,35 @@ public:
         values_.resize(total_size(), v);
     }
 
+    template<class S = Size>
+    constexpr auto row(size_t i) const noexcept(is_fixed_length_v<S>)
+        -> basic_matrix<T, std::conditional_t<is_fixed_length_v<S>, fixed_length<1, mat_size_c<S>>, variable_length>>
+    {
+        using ret_t = basic_matrix<T, std::conditional_t<is_fixed_length_v<S>, fixed_length<1, mat_size_c<S>>, variable_length>>;
+        ret_t ret{};
+        if constexpr (is_variable_length_v<S>) {
+            ret.resize(1, size().second);
+        }
+        for (auto j = 0ul; j < size().second; ++j) {
+            ret(j) = (*this)(i, j);
+        }
+        return std::move(ret);
+    }
+    template<class S = Size>
+    constexpr auto column(size_t i) const noexcept(is_fixed_length_v<S>)
+        -> basic_matrix<T, std::conditional_t<is_fixed_length_v<S>, fixed_length<mat_size_r<S>, 1>, variable_length>>
+    {
+        using ret_t = basic_matrix<T, std::conditional_t<is_fixed_length_v<S>, fixed_length<mat_size_r<S>, 1>, variable_length>>;
+        ret_t ret{};
+        if constexpr (is_variable_length_v<S>) {
+            ret.resize(size().first, 1);
+        }
+        for (auto j = 0ul; j < size().first; ++j) {
+            ret(j) = (*this)(j, i);
+        }
+        return std::move(ret);
+    }
+
     // 転置
     template<class S = Size>
     [[nodiscard]]
@@ -284,7 +313,7 @@ public:
         -> basic_matrix<T, std::conditional_t<is_fixed_length_v<S>, fixed_length<mat_size_c<Size>, mat_size_r<Size>>, variable_length>>
     {
         using ret_t = basic_matrix<T, std::conditional_t<is_fixed_length_v<S>, fixed_length<mat_size_c<Size>, mat_size_r<Size>>, variable_length>>;
-        ret_t ret;
+        ret_t ret{};
         if constexpr (is_variable_length_v<S>) {
             ret.resize(size().second, size().first);
         }
@@ -323,7 +352,7 @@ public:
         }
         return std::move(ret);
     }
-
+    // 余因子行列
     template<class S = Size>
     [[nodiscard]]
     constexpr auto cofactor() const noexcept(is_fixed_length_v<S>)
@@ -449,6 +478,20 @@ public:
         -> basic_matrix<T, Size>
     {
         return a * scalar;
+    }
+    [[nodiscard]]
+    friend constexpr auto operator/(const basic_matrix& a, const T& scalar)
+        noexcept(is_fixed_length_v<Size> && noexcept(std::declval<T>() * std::declval<T>()))
+        -> basic_matrix<T, Size>
+    {
+        basic_matrix<T, Size> ret;
+        if constexpr (is_variable_length_v<Size>) {
+            ret.resize(a.size().first, a.size().second);
+        }
+        for (auto i = 0ul; i < a.total_size(); ++i) {
+            ret(i) = a(i) / scalar;
+        }
+        return std::move(ret);
     }
 
     // 比較演算

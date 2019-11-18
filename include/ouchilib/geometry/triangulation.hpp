@@ -10,6 +10,18 @@
 
 namespace ouchi::geometry {
 
+namespace detail {
+
+template<class T, size_t D>
+constexpr ouchi::math::fl_matrix<T, D, 1> one() noexcept
+{
+    ouchi::math::fl_matrix<T, D, 1> ret{};
+    for (auto i = 0ul; i < D; ++i) ret(i) = T{ 1 };
+    return ret;
+}
+
+}
+
 template<class Pt>
 struct triangulation {
     static constexpr size_t dim = point_traits<Pt>::dim;
@@ -21,10 +33,7 @@ struct triangulation {
     static constexpr return_as_idx_tag return_as_idx{};
     
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    std::vector<simplex> operator()(const Itr first, const Itr last, return_as_idx_tag) const
-    {
-
-    }
+    std::vector<simplex> operator()(const Itr first, const Itr last, return_as_idx_tag) const;
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
     std::vector<et_simplex>  operator()(const Itr first, const Itr last) const;
 
@@ -35,9 +44,58 @@ struct triangulation {
 
     using pt = point_traits<Pt>;
 
+    // N次元単体に外接する球の中心と半径の二乗を求める
     static constexpr std::pair<Pt, coord_type> get_circumscribed_circle(const et_simplex& s) noexcept
     {
-        return {};
+        using namespace ouchi::math;
+        static constexpr fl_matrix<coord_type, dim, 1> one = detail::one<coord_type, dim>();
+        static constexpr fl_matrix<coord_type, dim + 1, 1> onep = detail::one<coord_type, dim+1>();
+        auto PtoL = [](const fl_matrix<coord_type, dim, dim + 1>& P)
+            ->fl_matrix<coord_type, dim, dim>
+        {
+            fl_matrix<coord_type, dim, dim> L{};
+            for (auto i = 0ul; i < dim; ++i) {
+                for (auto j = 0ul; j < dim; ++j) {
+                    L(i, j) = P(i, j+1) - P(i, 0);
+                }
+            }
+            return L;
+        };
+        auto cofactor_sum_mat = [PtoL](const fl_matrix<coord_type, dim, dim + 1>& P) {
+            auto L = PtoL(P);
+            fl_matrix<coord_type, dim + 1, dim + 1> ret{};
+            auto co = (L.transpose() * L).cofactor();
+            ret(0, 0) = (one.transpose() * co * one)(0);
+            auto ru = (-one).transpose() * co;
+            auto lb = -co * one;
+            for (auto i = 1ul; i < dim+1; ++i) ret(0, i) = ru(0, i - 1);
+            for (auto i = 1ul; i < dim+1; ++i) ret(i, 0) = lb(i - 1, 0);
+            for (auto i = 1ul; i < dim+1; ++i) {
+                for (auto j = 1ul; j < dim+1; ++j) {
+                    ret(i, j) = co(i - 1, j - 1);
+                }
+            }
+            return ret;
+        };
+        fl_matrix<coord_type, dim, dim + 1> P;
+        for (auto i = 0ul; i < dim; ++i) {
+            for (auto j = 0ul; j < dim+1; ++j) {
+                P(i, j) = pt::get(s[j], i);
+            }
+        }
+        const auto PTP = P.transpose() * P;
+        const auto co = PTP.cofactor();
+        const auto den = (onep.transpose() * co * onep)(0);
+        auto rvec = fl_matrix<coord_type, dim + 1, 1>{};
+        for (auto i = 0ul; i < dim + 1; ++i) {
+            rvec(i) = (P.column(i).transpose() * P.column(i))(0) / (coord_type)2;
+        }
+        auto p0 = (P * co * onep) / den + ((P * cofactor_sum_mat(P)) / den) * rvec;
+        Pt o;
+        for (auto i = 0ul; i < dim; ++i) {
+            pt::set(o, i, p0(i));
+        }
+        return { o, pt::sqdistance(o, s[0]) };
     }
 
     template<class Itr>
@@ -54,7 +112,7 @@ struct triangulation {
             }
         }
         // 求めた各次元の最大値と最小値を球面に含むN次元の球
-        // N次元空間上の点(min_0, ..., min_n)から点(max_0, ..., max_n)に引いた線の長さを求める=N次元正単体の内接超球面の半径
+        // N次元空間上の点(min_0, ..., min_n)から点(max_0, ..., max_n)に引いた線の長さを求める=N次元正単体の内接超球面の直径
         coord_type r{};
         for (auto d = 0u; d < dim; ++d) {
             auto diff = pt::get(max, d) - pt::get(min, d);
