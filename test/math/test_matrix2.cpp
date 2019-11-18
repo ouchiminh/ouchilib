@@ -164,14 +164,14 @@ DEFINE_TEST(test_det)
     CHECK_TRUE(std::abs(d - d2) < 1e-8);
 }
 
-DEFINE_TEST(test_cofactor)
+DEFINE_TEST(test_minor)
 {
     using namespace ouchi::math;
     constexpr fl_matrix<double, 2, 2> m1{
         1, 2,
         3, 4
     };
-    constexpr auto co = m1.cofactor(1, 1);
+    constexpr auto co = m1.minor(1, 1);
     CHECK_EQUAL(co(0, 0), 1);
     CHECK_EQUAL(co.total_size(), 1);
 
@@ -181,10 +181,28 @@ DEFINE_TEST(test_cofactor)
             3, 4
         }, 2, 2
     );
-    auto co2 = m2.cofactor(1, 0);
+    auto co2 = m2.minor(1, 0);
 
     CHECK_EQUAL(co2(0, 0), 2);
     CHECK_EQUAL(co2.total_size(), 1);
+}
+
+DEFINE_TEST(test_cofactor)
+{
+    using namespace ouchi::math;
+    constexpr fl_matrix<double, 3, 3> m1{
+        7,2,3,
+        4,1,9,
+        1,3,5
+    };
+    constexpr fl_matrix<double, 3, 3> mc{
+        -22, -1, 15,
+        -11, 32,-51,
+        11, -19, -1
+    };
+    auto c = m1.cofactor();
+
+    CHECK_EQUAL(c, mc);
 }
 
 DEFINE_TEST(test_scalar_production)
