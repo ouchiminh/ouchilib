@@ -138,5 +138,8 @@
     <ClInclude Include="include\ouchilib\geometry\triangulation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\ouchilib\data_structure\tree.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

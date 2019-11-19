@@ -2,6 +2,8 @@
 #include "ouchilib/geometry/triangulation.hpp"
 #include "ouchilib/math/matrix.hpp"
 
+#if 1
+
 DEFINE_TEST(test_tri_init)
 {
     using namespace ouchi::geometry;
@@ -101,3 +103,21 @@ DEFINE_TEST(test_t_gcc)
         CHECK_EQUAL(o.second, 1);
     }
 }
+
+DEFINE_TEST(test_tri_volume)
+{
+    using namespace ouchi::geometry;
+    using namespace ouchi::math;
+    using pt = point_traits<fl_matrix<double, 2, 1>>;
+    triangulation<fl_matrix<double, 2, 1>> t;
+    // 面積2の三角形
+    std::array<fl_matrix<double, 2, 1>, 3> pts = {
+        fl_matrix<double, 2, 1>{ 0, 0 },
+        fl_matrix<double, 2, 1>{ 2, 0 },
+        fl_matrix<double, 2, 1>{ 0, 2 }
+    };
+    auto s = t.volume(pts);
+    CHECK_EQUAL(s, 2);
+}
+
+#endif

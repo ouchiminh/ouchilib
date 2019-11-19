@@ -5,6 +5,11 @@
 #include <array>
 #include <vector>
 #include <optional>
+#include <unordered_map>
+
+#include "ouchilib/crypto/common.hpp" // for hash
+
+#include "ouchilib/data_structure/tree.hpp"
 #include "ouchilib/math/matrix.hpp"
 #include "point_traits.hpp"
 
@@ -20,6 +25,29 @@ constexpr ouchi::math::fl_matrix<T, D, 1> one() noexcept
     return ret;
 }
 
+template<size_t Dim>
+struct hash_id_simplex {
+    using argument_type = std::array<size_t, Dim + 1>;
+    using result_type = size_t;
+
+    size_t operator()(const argument_type& key) const noexcept
+    {
+        constexpr auto width = std::max(sizeof(result_type) * 8 / (Dim + 1), 1);
+        result_type res{};
+        for (auto i = 0ul; i < key.size(); ++i) {
+            res ^= ouchi::crypto::rotl(key[i], (width * i) & (sizeof(size_t) * 8 - 1));
+        }
+        return res;
+    }
+};
+
+constexpr size_t fact(size_t i)
+{
+    size_t ret = 1;
+    while (i > 1) ret *= i--;
+    return ret;
+}
+
 }
 
 template<class Pt>
@@ -28,14 +56,78 @@ struct triangulation {
     using coord_type = typename point_traits<Pt>::coord_type;
     using id_simplex = std::array<size_t, dim + 1>;
     using et_simplex = std::array<Pt, dim + 1>;
+    using duplicate_map = std::unordered_map<id_simplex, bool, detail::hash_id_simplex<dim>>;
+    using triangulation_tree = ouchi::tree<id_simplex>;
 
     struct return_as_idx_tag {};
     static constexpr return_as_idx_tag return_as_idx{};
     
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    std::vector<id_simplex> operator()(const Itr first, const Itr last, return_as_idx_tag) const;
+    std::vector<id_simplex> operator()(const Itr first, const Itr last, return_as_idx_tag)
+    {
+        static constexpr id_simplex rootid{ -1 };
+        et_simplex root = calc_space(first, last);
+        tree<std::pair<id_simplex, std::pair<Pt, coord_type>>> triangulation({ rootid, get_circumscribed_circle(root) });
+        auto contains = [this, &first, &last](const std::pair<id_simplex, std::pair<Pt, coord_type>>& s, const Pt& p) {
+            return pt::distance(s.second.first, id_to_et(p)) < s.second.second;
+        };
+
+        auto itr = first;
+        
+        for (auto itr = first; itr != last; ++itr) {
+            duplicate_map m;
+            // *itrを内部に含む最も分割された外接球を求める
+            auto c = triangulation.find_child([itr, contains](auto&& p) {return contains(p, *itr); });
+            auto* parent = &triangulation;
+            auto container = c;
+            while (!c->is_leaf()) {
+                parent = &*c;
+                c = c->find_child([itr, contains](auto&& p) {return contains(p, *itr); });
+            }
+            for (auto i = std::distance(parent->children.begin(), c); i < parent->children.size(); i = std::distance(parent->children.begin(), c)) {
+                if (retriangulate(c->data.first, std::distance(first, itr), m, first, last))
+                    container = c;
+                c = parent->find_child([itr, contains](auto&& parent) {return contains(parent, *itr); });
+            }
+            // もとめた外接球が外接する単体を再分割する
+            // 重複する単体を除いて追加
+            for (auto& i : m) {
+                if (!i.second)
+                    container->child.push_back(i.first);
+            }
+        }
+        std::vector<id_simplex> ret;
+        [&ret, &triangulation,
+        rec = [](const tree<std::pair<id_simplex, std::pair<Pt, coord_type>>>& t, auto& vec, auto&& f){
+            if (t.is_leaf()) {
+                vec.push_back(t.first);
+                return;
+            }
+            for (auto& i : t.children) f(i);
+        }
+        ]() mutable {
+            rec(triangulation, ret, rec);
+        }();
+        return ret;
+    }
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    std::vector<et_simplex>  operator()(const Itr first, const Itr last) const;
+    std::vector<et_simplex> operator()(const Itr first, const Itr last);
+
+    template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
+    static constexpr et_simplex id_to_et(const id_simplex& s, const Itr first, const Itr last = {})
+    {
+        et_simplex ret{};
+        if (s[0] & (1 << (sizeof(s[0]) * 8 - 1))) return space_.value();
+        for (auto i = 0ul; i < s.size(); ++i) {
+            ret[i] = *std::next(first, s[i]);
+        }
+        return ret;
+    }
+    template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
+    static constexpr Pt id_to_et(size_t id, const Itr first, const Itr last = {})
+    {
+        return *std::next(first, id);
+    }
 
     void set_initial_state(et_simplex space) { space_ = space; }
 
@@ -43,6 +135,46 @@ struct triangulation {
     std::optional<et_simplex> space_;
 
     using pt = point_traits<Pt>;
+
+    // newptがsの内部にあるときtrue
+    template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
+    bool retriangulate(const id_simplex& s, size_t newpt, duplicate_map& m, Itr first, Itr last = {}) const
+    {
+        // newptとsの任意の頂点をd個取り新しい分割としてmに登録する
+        // id_simplexの中身は常にソートしておく(ハッシュがバグるので)
+        using std::abs;
+        id_simplex nt;
+        coord_type v{ 0 };
+        for (auto j = 1ul; j < dim + 1; ++j) {
+            for (auto i = 0ul; i < dim; ++i) {
+                nt[j] = (j == i ? newpt : s[j]);
+            }
+            std::sort(nt.begin(), nt.end());
+            v += volume(id_to_et(nt, first));
+            // m[nt] = (m.count(nt) ? true : false); operator=が右結合なのでいけそうだが不安。
+            if (m.count(nt)) m[nt] = true;  // 重複している
+            else m[nt] = false;
+        }
+        // 分割後の和と分割前の単体の超体積が等しければsはnewptを含む。
+        auto b = volume(id_to_et(s), last);
+        return abs(v - b) < 1e-10;
+    }
+
+    static constexpr coord_type volume(const et_simplex& s) noexcept
+    {
+        using namespace ouchi::math;
+        using std::abs;
+        fl_matrix<coord_type, dim + 1, dim + 1> a;
+        constexpr auto den = detail::fact(dim);
+        // 列ベクトルがsの各頂点の座標  .append(1)
+        for (auto i = 0ul; i < dim + 1; ++i) {
+            // 行ベクトル
+            for (auto j = 0ul; j < dim + 1; ++j) {
+                a(i, j) = (i != dim ? pt::get(s[j], i) : 1);
+            }
+        }
+        return abs(slow_det(a)) / den;
+    }
 
     // N次元単体に外接する球の中心と半径の二乗を求める
     // https://img.atwikiimg.com/www7.atwiki.jp/neetubot/pub/neetubot-1.0.pdf
@@ -62,6 +194,7 @@ struct triangulation {
             }
             return L;
         };
+        // 余因子総和行列
         auto cofactor_sum_mat = [PtoL](const fl_matrix<coord_type, dim, dim + 1>& P) {
             auto L = PtoL(P);
             fl_matrix<coord_type, dim + 1, dim + 1> ret{};
