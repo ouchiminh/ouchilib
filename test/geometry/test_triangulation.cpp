@@ -109,15 +109,45 @@ DEFINE_TEST(test_tri_volume)
     using namespace ouchi::geometry;
     using namespace ouchi::math;
     using pt = point_traits<fl_matrix<double, 2, 1>>;
+    {
+        triangulation<fl_matrix<double, 2, 1>> t;
+        // 面積2の三角形
+        std::array<fl_matrix<double, 2, 1>, 3> pts = {
+            fl_matrix<double, 2, 1>{ 0, 0 },
+            fl_matrix<double, 2, 1>{ 2, 0 },
+            fl_matrix<double, 2, 1>{ 0, 2 }
+        };
+        auto s = t.volume(pts);
+        CHECK_EQUAL(s, 2);
+    }
+    {
+        triangulation<fl_matrix<double, 2, 1>> t;
+        // 面積2の三角形
+        std::array<fl_matrix<double, 2, 1>, 3> pts = {
+            fl_matrix<double, 2, 1>{ 1, 1 },
+            fl_matrix<double, 2, 1>{ 3, 1 },
+            fl_matrix<double, 2, 1>{ 1, 3 }
+        };
+        auto s = t.volume(pts);
+        CHECK_EQUAL(s, 2);
+    }
+}
+
+DEFINE_TEST(test_tri)
+{
+    using namespace ouchi::geometry;
+    using namespace ouchi::math;
+    using pt = point_traits<fl_matrix<double, 2, 1>>;
     triangulation<fl_matrix<double, 2, 1>> t;
     // 面積2の三角形
-    std::array<fl_matrix<double, 2, 1>, 3> pts = {
+    std::array<fl_matrix<double, 2, 1>, 4> pts = {
         fl_matrix<double, 2, 1>{ 0, 0 },
-        fl_matrix<double, 2, 1>{ 2, 0 },
-        fl_matrix<double, 2, 1>{ 0, 2 }
+        fl_matrix<double, 2, 1>{ 3, 0 },
+        fl_matrix<double, 2, 1>{ 1, 1 },
+        fl_matrix<double, 2, 1>{ 0, 3 }
     };
-    auto s = t.volume(pts);
-    CHECK_EQUAL(s, 2);
+    auto r = t(pts.begin(), pts.end(), t.return_as_idx);
+    r;
 }
 
 #endif

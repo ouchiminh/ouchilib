@@ -21,13 +21,22 @@ struct tree {
     tree& operator=(const T& val) { data = val; return *this; }
 
     template<class F, std::enable_if_t<std::is_invocable_r_v<bool, F, T>, int> = 0>
-    const auto find_child(F&& pred, size_t first = 0, size_t last = -1) const
+    auto find_child(F&& pred, size_t first = 0, size_t last = -1) const
     {
-        auto adopter = [&pred, this](const tree& t) {return std::invoke(pred, t.data); };
-        return std::find_if(std::next(children.begin(),std::clamp(first, 0, children.size())),
+        auto adopter = [&pred](const tree& t) {return std::invoke(pred, t.data); };
+        return std::find_if(std::next(children.begin(),std::clamp(first, (size_t)0, children.size())),
                             std::next(children.begin(), std::clamp(last, first, children.size())),
                             adopter);
     }
+    template<class F, std::enable_if_t<std::is_invocable_r_v<bool, F, T>, int> = 0>
+    auto find_child(F&& pred, size_t first = 0, size_t last = -1)
+    {
+        auto adopter = [&pred](const tree& t) {return std::invoke(pred, t.data); };
+        return std::find_if(std::next(children.begin(),std::clamp(first, (size_t)0, children.size())),
+                            std::next(children.begin(), std::clamp(last, first, children.size())),
+                            adopter);
+    }
+    void add_child(const T& val) { children.push_back(tree{ val }); }
     bool is_leaf() const noexcept { return children.empty(); }
 };
 }
