@@ -147,7 +147,7 @@ DEFINE_TEST(test_tri)
         fl_matrix<double, 2, 1>{ 0, 3 }
     };
     auto r = t(pts.begin(), pts.end(), t.return_as_idx);
-    r;
+    CHECK_EQUAL(r.size(), 3);
 }
 
 #endif

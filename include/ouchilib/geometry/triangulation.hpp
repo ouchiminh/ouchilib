@@ -82,7 +82,8 @@ struct triangulation {
     {
         static const id_simplex rootid=detail::root_id<dim+1>();
         et_simplex root = calc_space(first, last);
-        tree<std::pair<id_simplex, std::pair<Pt, coord_type>>> triangulation({ rootid, get_circumscribed_circle(root) });
+        //tree<std::pair<id_simplex, std::pair<Pt, coord_type>>> triangulation({ rootid, get_circumscribed_circle(root) });
+        std::vector<std::pair<id_simplex, std::pair<Pt, coord_type>>> triangulation{ {rootid, get_circumscribed_circle(root)} };
         space_ = root;
         auto contains = [this, &first, &last](const std::pair<id_simplex, std::pair<Pt, coord_type>>& s, const Pt& p) {
             return pt::distance(s.second.first, p) < s.second.second;
@@ -92,27 +93,15 @@ struct triangulation {
         for (auto itr = first; itr != last; ++itr) {
             duplicate_map m;
             // *itrを内部に含む最も分割された外接球を求める
-            auto c = triangulation.find_child([itr, contains](auto&& p) {return contains(p, *itr); });
-            auto* parent = &triangulation;
-            auto container = parent; // *itrを含む単体
-            int cnt = 0;
-            while (c != parent->children.end() && !c->is_leaf()) {
-                parent = &*c;
-                c = c->find_child([itr, contains](auto&& p) {return contains(p, *itr); });
+            for (auto tri_it = triangulation.begin(); tri_it != triangulation.end();) {
+                if (tri_it->second.second > pt::distance(tri_it->second.first, *itr)) {
+                    retriangulate(tri_it->first, std::distance(first, itr), m, first, last);
+                    tri_it = triangulation.erase(tri_it);
+                }
+                else ++tri_it;
             }
-            if (c == parent->children.end()) {
-                retriangulate(parent->data.first, std::distance(first, itr), m, first, last);
-            }
-            else for (auto i = (size_t)std::distance(parent->children.begin(), c); i < parent->children.size(); i = std::distance(parent->children.begin(), c)) {
-                if (retriangulate(c->data.first, std::distance(first, itr), m, first, last))
-                    container = &*c;
-                c = parent->find_child([itr, contains](auto&& parent) {return contains(parent, *itr); }, i + 1);
-            }
-            // もとめた外接球が外接する単体を再分割する
-            // 重複する単体を除いて追加
             for (auto& i : m) {
-                if (!i.second)
-                    container->add_child({ i.first, get_circumscribed_circle(id_to_et(i.first, first, last))});
+                triangulation.push_back({ i.first, get_circumscribed_circle(id_to_et(i.first, first, last)) });
             }
         }
         std::vector<id_simplex> ret;
@@ -128,7 +117,14 @@ struct triangulation {
         //]() mutable -> void{
         //    rec(triangulation, ret, rec);
         //}();
-        tree_to_vector(triangulation, ret);
+        for (auto& i : triangulation) {
+            bool f = true;
+            for (auto p : i.first) {
+                if (p & 1ull<<63) f = false;
+            }
+            if (f) ret.push_back(i.first);
+        }
+        //tree_to_vector(triangulation, ret);
         return ret;
     }
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
