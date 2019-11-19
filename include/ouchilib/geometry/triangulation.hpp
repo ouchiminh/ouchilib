@@ -32,7 +32,7 @@ struct hash_id_simplex {
 
     size_t operator()(const argument_type& key) const noexcept
     {
-        constexpr auto width = std::max(sizeof(result_type) * 8 / (Dim + 1), 1);
+        constexpr auto width = std::max(sizeof(result_type) * 8 / (Dim + 1), (size_t)1);
         result_type res{};
         for (auto i = 0ul; i < key.size(); ++i) {
             res ^= ouchi::crypto::rotl(key[i], (width * i) & (sizeof(size_t) * 8 - 1));
@@ -46,6 +46,21 @@ constexpr size_t fact(size_t i)
     size_t ret = 1;
     while (i > 1) ret *= i--;
     return ret;
+}
+
+template<size_t C, size_t ...I>
+constexpr std::array<size_t, C> root_id_impl(std::index_sequence<I...>)
+{
+    constexpr size_t ff = ~(size_t)0;
+    std::array<size_t, C> ret;
+    ((ret[I] = ff - I), ...);
+    return ret;
+}
+
+template<size_t C>
+constexpr std::array<size_t, C> root_id()
+{
+    return root_id_impl<C>(std::make_index_sequence<C>{});
 }
 
 }
@@ -65,68 +80,75 @@ struct triangulation {
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
     std::vector<id_simplex> operator()(const Itr first, const Itr last, return_as_idx_tag)
     {
-        static constexpr id_simplex rootid{ -1 };
+        static const id_simplex rootid=detail::root_id<dim+1>();
         et_simplex root = calc_space(first, last);
         tree<std::pair<id_simplex, std::pair<Pt, coord_type>>> triangulation({ rootid, get_circumscribed_circle(root) });
+        space_ = root;
         auto contains = [this, &first, &last](const std::pair<id_simplex, std::pair<Pt, coord_type>>& s, const Pt& p) {
-            return pt::distance(s.second.first, id_to_et(p)) < s.second.second;
+            return pt::distance(s.second.first, p) < s.second.second;
         };
+        if (std::distance(first, last) < dim + 1) return {};
 
-        auto itr = first;
-        
         for (auto itr = first; itr != last; ++itr) {
             duplicate_map m;
             // *itrを内部に含む最も分割された外接球を求める
             auto c = triangulation.find_child([itr, contains](auto&& p) {return contains(p, *itr); });
             auto* parent = &triangulation;
-            auto container = c;
-            while (!c->is_leaf()) {
+            auto container = parent; // *itrを含む単体
+            int cnt = 0;
+            while (c != parent->children.end() && !c->is_leaf()) {
                 parent = &*c;
                 c = c->find_child([itr, contains](auto&& p) {return contains(p, *itr); });
             }
-            for (auto i = std::distance(parent->children.begin(), c); i < parent->children.size(); i = std::distance(parent->children.begin(), c)) {
+            if (c == parent->children.end()) {
+                retriangulate(parent->data.first, std::distance(first, itr), m, first, last);
+            }
+            else for (auto i = (size_t)std::distance(parent->children.begin(), c); i < parent->children.size(); i = std::distance(parent->children.begin(), c)) {
                 if (retriangulate(c->data.first, std::distance(first, itr), m, first, last))
-                    container = c;
-                c = parent->find_child([itr, contains](auto&& parent) {return contains(parent, *itr); });
+                    container = &*c;
+                c = parent->find_child([itr, contains](auto&& parent) {return contains(parent, *itr); }, i + 1);
             }
             // もとめた外接球が外接する単体を再分割する
             // 重複する単体を除いて追加
             for (auto& i : m) {
                 if (!i.second)
-                    container->child.push_back(i.first);
+                    container->add_child({ i.first, get_circumscribed_circle(id_to_et(i.first, first, last))});
             }
         }
         std::vector<id_simplex> ret;
-        [&ret, &triangulation,
-        rec = [](const tree<std::pair<id_simplex, std::pair<Pt, coord_type>>>& t, auto& vec, auto&& f){
-            if (t.is_leaf()) {
-                vec.push_back(t.first);
-                return;
-            }
-            for (auto& i : t.children) f(i);
-        }
-        ]() mutable {
-            rec(triangulation, ret, rec);
-        }();
+        //[&ret, &triangulation,
+        //rec = [](const tree<std::pair<id_simplex, std::pair<Pt, coord_type>>>& t,
+        //         std::vector<id_simplex>& vec, auto f)->void{
+        //    if (t.is_leaf()) {
+        //        vec.push_back(t.first);
+        //        return;
+        //    }
+        //    for (auto& i : t.children) f(i);
+        //}
+        //]() mutable -> void{
+        //    rec(triangulation, ret, rec);
+        //}();
+        tree_to_vector(triangulation, ret);
         return ret;
     }
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
     std::vector<et_simplex> operator()(const Itr first, const Itr last);
 
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    static constexpr et_simplex id_to_et(const id_simplex& s, const Itr first, const Itr last = {})
+    constexpr et_simplex id_to_et(const id_simplex& s, const Itr first, [[maybe_unused]] const Itr last = {}) const
     {
         et_simplex ret{};
-        if (s[0] & (1 << (sizeof(s[0]) * 8 - 1))) return space_.value();
         for (auto i = 0ul; i < s.size(); ++i) {
-            ret[i] = *std::next(first, s[i]);
+            ret[i] = id_to_et(s[i], first, last);
         }
         return ret;
     }
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    static constexpr Pt id_to_et(size_t id, const Itr first, const Itr last = {})
+    constexpr Pt id_to_et(size_t id, const Itr first, [[maybe_unused]] const Itr last = {}) const
     {
-        return *std::next(first, id);
+        return id& (1ull << (sizeof(id) * 8 - 1))
+            ? space_.value()[~(size_t)0 - id]
+            : *std::next(first, id);
     }
 
     void set_initial_state(et_simplex space) { space_ = space; }
@@ -145,19 +167,19 @@ struct triangulation {
         using std::abs;
         id_simplex nt;
         coord_type v{ 0 };
-        for (auto j = 1ul; j < dim + 1; ++j) {
-            for (auto i = 0ul; i < dim; ++i) {
-                nt[j] = (j == i ? newpt : s[j]);
+        for (auto j = 0ul; j < dim + 1; ++j) {
+            for (auto i = 0ul; i < dim + 1; ++i) {
+                nt[i] = (j == i ? newpt : s[i]);
             }
-            std::sort(nt.begin(), nt.end());
             v += volume(id_to_et(nt, first));
+            std::sort(nt.begin(), nt.end());
             // m[nt] = (m.count(nt) ? true : false); operator=が右結合なのでいけそうだが不安。
             if (m.count(nt)) m[nt] = true;  // 重複している
             else m[nt] = false;
         }
         // 分割後の和と分割前の単体の超体積が等しければsはnewptを含む。
-        auto b = volume(id_to_et(s), last);
-        return abs(v - b) < 1e-10;
+        auto b = volume(id_to_et(s, first, last));
+        return abs(v - b) < 1e-5;
     }
 
     static constexpr coord_type volume(const et_simplex& s) noexcept
@@ -279,7 +301,6 @@ struct triangulation {
         }
         space[dim] = p;
         // 原点からのずれ
-        offset = pt::add(o, offset);
         for (auto i = 0ul; i < dim + 1; ++i) {
             space[i] = pt::sub(space[i], offset);
             space[i] = pt::mul(space[i], (coord_type)f);
@@ -289,7 +310,19 @@ struct triangulation {
         for (auto& lp : space) lp = pt::add(lp, offset);
         return space;
     }
-    
+    void tree_to_vector(const tree<std::pair<id_simplex, std::pair<Pt, coord_type>>>& t,
+                        std::vector<id_simplex>& vec)
+    {
+        if (t.is_leaf()) {
+            for (auto i : t.data.first) {
+                if (i & (1ull << (sizeof(i) * 8 - 1))) return;
+            }
+            vec.push_back(t.data.first);
+            return;
+        }
+        for (auto& i : t.children) tree_to_vector(i, vec);
+    }
+
 };
 
 }
