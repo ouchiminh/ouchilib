@@ -2,6 +2,8 @@
 #include "ouchilib/geometry/triangulation.hpp"
 #include "ouchilib/math/matrix.hpp"
 
+#include <chrono>
+
 #include <random>
 
 #if 1
@@ -152,13 +154,14 @@ DEFINE_TEST(test_tri)
         auto r = t(pts.begin(), pts.end(), t.return_as_idx);
         CHECK_EQUAL(r.size(), 3);
     }
+    auto beg = std::chrono::high_resolution_clock::now();
     {
         triangulation<fl_matrix<double, 2, 1>> t;
         // 面積2の三角形
         std::vector<fl_matrix<double, 2, 1>> pts;
         std::mt19937 mt;
         std::normal_distribution<> di(0, 1.0);
-        for (auto i = 0; i < 10; ++i) {
+        for (auto i = 0; i < 800; ++i) {
             pts.push_back(
                 {
                    di(mt) * 10,
@@ -166,8 +169,10 @@ DEFINE_TEST(test_tri)
                 });
         }
         auto r = t(pts.begin(), pts.end(), t.return_as_idx);
-        CHECK_EQUAL(r.size(), pts.size() - 1);
+
     }
+    auto d = std::chrono::high_resolution_clock::now() - beg;
+    std::cout << d.count() / (double)std::chrono::high_resolution_clock::period::den << std::endl;
 }
 
 
