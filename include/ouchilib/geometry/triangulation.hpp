@@ -83,10 +83,10 @@ struct triangulation {
         static const id_simplex rootid=detail::root_id<dim+1>();
         et_simplex root = calc_space(first, last);
         //tree<std::pair<id_simplex, std::pair<Pt, coord_type>>> triangulation({ rootid, get_circumscribed_circle(root) });
-        std::vector<std::pair<id_simplex, std::pair<Pt, coord_type>>> triangulation{ {rootid, get_circumscribed_circle(root)} };
+        std::list<std::pair<id_simplex, std::pair<Pt, coord_type>>> triangulation{ {rootid, get_circumscribed_circle(root)} };
         space_ = root;
         auto contains = [this, &first, &last](const std::pair<id_simplex, std::pair<Pt, coord_type>>& s, const Pt& p) {
-            return pt::distance(s.second.first, p) < s.second.second;
+            return pt::sqdistance(s.second.first, p) < s.second.second;
         };
         if (std::distance(first, last) < dim + 1) return {};
 
@@ -94,14 +94,15 @@ struct triangulation {
             duplicate_map m;
             // *itrを内部に含む最も分割された外接球を求める
             for (auto tri_it = triangulation.begin(); tri_it != triangulation.end();) {
-                if (tri_it->second.second > pt::distance(tri_it->second.first, *itr)) {
+                if (contains(*tri_it, *itr)) {
                     retriangulate(tri_it->first, std::distance(first, itr), m, first, last);
                     tri_it = triangulation.erase(tri_it);
                 }
                 else ++tri_it;
             }
             for (auto& i : m) {
-                triangulation.push_back({ i.first, get_circumscribed_circle(id_to_et(i.first, first, last)) });
+                if(!i.second)
+                    triangulation.push_back({ i.first, get_circumscribed_circle(id_to_et(i.first, first, last)) });
             }
         }
         std::vector<id_simplex> ret;
@@ -167,15 +168,16 @@ struct triangulation {
             for (auto i = 0ul; i < dim + 1; ++i) {
                 nt[i] = (j == i ? newpt : s[i]);
             }
-            v += volume(id_to_et(nt, first));
+            //v += volume(id_to_et(nt, first));
             std::sort(nt.begin(), nt.end());
             // m[nt] = (m.count(nt) ? true : false); operator=が右結合なのでいけそうだが不安。
             if (m.count(nt)) m[nt] = true;  // 重複している
             else m[nt] = false;
         }
         // 分割後の和と分割前の単体の超体積が等しければsはnewptを含む。
-        auto b = volume(id_to_et(s, first, last));
-        return abs(v - b) < 1e-5;
+        //auto b = volume(id_to_et(s, first, last));
+        //return abs(v - b) < 1e-5;
+        return true;
     }
 
     static constexpr coord_type volume(const et_simplex& s) noexcept

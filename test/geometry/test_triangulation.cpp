@@ -2,6 +2,8 @@
 #include "ouchilib/geometry/triangulation.hpp"
 #include "ouchilib/math/matrix.hpp"
 
+#include <random>
+
 #if 1
 
 DEFINE_TEST(test_tri_init)
@@ -138,16 +140,35 @@ DEFINE_TEST(test_tri)
     using namespace ouchi::geometry;
     using namespace ouchi::math;
     using pt = point_traits<fl_matrix<double, 2, 1>>;
-    triangulation<fl_matrix<double, 2, 1>> t;
-    // 面積2の三角形
-    std::array<fl_matrix<double, 2, 1>, 4> pts = {
-        fl_matrix<double, 2, 1>{ 0, 0 },
-        fl_matrix<double, 2, 1>{ 3, 0 },
-        fl_matrix<double, 2, 1>{ 1, 1 },
-        fl_matrix<double, 2, 1>{ 0, 3 }
-    };
-    auto r = t(pts.begin(), pts.end(), t.return_as_idx);
-    CHECK_EQUAL(r.size(), 3);
+    {
+        triangulation<fl_matrix<double, 2, 1>> t;
+        // 面積2の三角形
+        std::array<fl_matrix<double, 2, 1>, 4> pts = {
+            fl_matrix<double, 2, 1>{ 0, 0 },
+            fl_matrix<double, 2, 1>{ 3, 0 },
+            fl_matrix<double, 2, 1>{ 1, 1 },
+            fl_matrix<double, 2, 1>{ 0, 3 }
+        };
+        auto r = t(pts.begin(), pts.end(), t.return_as_idx);
+        CHECK_EQUAL(r.size(), 3);
+    }
+    {
+        triangulation<fl_matrix<double, 2, 1>> t;
+        // 面積2の三角形
+        std::vector<fl_matrix<double, 2, 1>> pts;
+        std::mt19937 mt;
+        std::normal_distribution<> di(0, 1.0);
+        for (auto i = 0; i < 10; ++i) {
+            pts.push_back(
+                {
+                   di(mt) * 10,
+                   di(mt) * 10
+                });
+        }
+        auto r = t(pts.begin(), pts.end(), t.return_as_idx);
+        CHECK_EQUAL(r.size(), pts.size() - 1);
+    }
 }
+
 
 #endif
