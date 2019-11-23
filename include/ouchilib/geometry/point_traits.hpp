@@ -5,6 +5,9 @@
 
 namespace ouchi::geometry {
 
+template<class T, size_t Dim>
+using point = ouchi::math::fl_matrix<T, Dim, 1>;
+
 template<class P>
 struct point_traits;
 

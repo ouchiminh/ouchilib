@@ -1,11 +1,13 @@
 ﻿#pragma once
 
 #include <cmath>
+#include <cassert>
 #include <iterator>
 #include <array>
 #include <vector>
 #include <optional>
 #include <unordered_map>
+#include <numeric>
 
 #include "ouchilib/crypto/common.hpp" // for hash
 
@@ -16,6 +18,19 @@
 namespace ouchi::geometry {
 
 namespace detail {
+
+template<class Int>
+constexpr Int bits_msb(Int v)
+{
+    using uint = std::make_unsigned_t<Int>;
+    constexpr uint t = ~((~(uint)0) >> 1);
+    uint buf = v;
+    for (auto i = 0ul; i < sizeof(uint) * 8; ++i) {
+        auto msb = buf & (t >> i);
+        if (msb) return msb;
+    }
+    return 0;
+}
 
 template<class T, size_t D>
 constexpr ouchi::math::fl_matrix<T, D, 1> one() noexcept
@@ -71,62 +86,30 @@ struct triangulation {
     using coord_type = typename point_traits<Pt>::coord_type;
     using id_simplex = std::array<size_t, dim + 1>;
     using et_simplex = std::array<Pt, dim + 1>;
-    using duplicate_map = std::unordered_map<id_simplex, bool, detail::hash_id_simplex<dim>>;
-    using triangulation_tree = ouchi::tree<id_simplex>;
+    using id_face = std::array<size_t, dim>;
+    using et_face = std::array<Pt, dim>;
+private:
+    using pt = point_traits<Pt>;
 
+    using alpha_t = std::pair<size_t, coord_type>;
+    using id_point_set = std::vector<size_t>;
+    using id_face_set = std::vector<id_face>;
+    using id_simplex_set = std::vector<id_simplex>;
+    using id_spatial_index = std::unordered_map<size_t, id_point_set>;
+public:
     struct return_as_idx_tag {};
     static constexpr return_as_idx_tag return_as_idx{};
     
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
     std::vector<id_simplex> operator()(const Itr first, const Itr last, return_as_idx_tag)
     {
-        static const id_simplex rootid=detail::root_id<dim+1>();
-        et_simplex root = calc_space(first, last);
-        //tree<std::pair<id_simplex, std::pair<Pt, coord_type>>> triangulation({ rootid, get_circumscribed_circle(root) });
-        std::list<std::pair<id_simplex, std::pair<Pt, coord_type>>> triangulation{ {rootid, get_circumscribed_circle(root)} };
-        space_ = root;
-        auto contains = [this, &first, &last](const std::pair<id_simplex, std::pair<Pt, coord_type>>& s, const Pt& p) {
-            return pt::sqdistance(s.second.first, p) < s.second.second;
-        };
-        if (std::distance(first, last) < dim + 1) return {};
+        id_point_set P(std::distance(first, last));
+        id_face_set dummy;
+        id_simplex_set sigma;
+        std::iota(P.begin(), P.end(), 0);
+        index(first, last, max, min);
 
-        for (auto itr = first; itr != last; ++itr) {
-            duplicate_map m;
-            // *itrを内部に含む最も分割された外接球を求める
-            for (auto tri_it = triangulation.begin(); tri_it != triangulation.end();) {
-                if (contains(*tri_it, *itr)) {
-                    retriangulate(tri_it->first, std::distance(first, itr), m, first, last);
-                    tri_it = triangulation.erase(tri_it);
-                }
-                else ++tri_it;
-            }
-            for (auto& i : m) {
-                if(!i.second)
-                    triangulation.push_back({ i.first, get_circumscribed_circle(id_to_et(i.first, first, last)) });
-            }
-        }
-        std::vector<id_simplex> ret;
-        //[&ret, &triangulation,
-        //rec = [](const tree<std::pair<id_simplex, std::pair<Pt, coord_type>>>& t,
-        //         std::vector<id_simplex>& vec, auto f)->void{
-        //    if (t.is_leaf()) {
-        //        vec.push_back(t.first);
-        //        return;
-        //    }
-        //    for (auto& i : t.children) f(i);
-        //}
-        //]() mutable -> void{
-        //    rec(triangulation, ret, rec);
-        //}();
-        for (auto& i : triangulation) {
-            bool f = true;
-            for (auto p : i.first) {
-                if (p & 1ull<<63) f = false;
-            }
-            if (f) ret.push_back(i.first);
-        }
-        //tree_to_vector(triangulation, ret);
-        return ret;
+        return {};
     }
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
     std::vector<et_simplex> operator()(const Itr first, const Itr last);
@@ -143,43 +126,103 @@ struct triangulation {
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
     constexpr Pt id_to_et(size_t id, const Itr first, [[maybe_unused]] const Itr last = {}) const
     {
-        return id& (1ull << (sizeof(id) * 8 - 1))
-            ? space_.value()[~(size_t)0 - id]
-            : *std::next(first, id);
+            return *std::next(first, id);
     }
 
-    void set_initial_state(et_simplex space) { space_ = space; }
 
-//private:
-    std::optional<et_simplex> space_;
+private:
+    Pt cell_width_;
+    Pt cell_min_, cell_max_;
+    id_spatial_index spatial_index_;
 
-    using pt = point_traits<Pt>;
-
-    // newptがsの内部にあるときtrue
-    template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    bool retriangulate(const id_simplex& s, size_t newpt, duplicate_map& m, Itr first, Itr last = {}) const
+    std::array<unsigned, dim> get_cell(const Pt& p) const noexcept
     {
-        // newptとsの任意の頂点をd個取り新しい分割としてmに登録する
-        // id_simplexの中身は常にソートしておく(ハッシュがバグるので)
-        using std::abs;
-        id_simplex nt;
-        coord_type v{ 0 };
-        for (auto j = 0ul; j < dim + 1; ++j) {
-            for (auto i = 0ul; i < dim + 1; ++i) {
-                nt[i] = (j == i ? newpt : s[i]);
-            }
-            //v += volume(id_to_et(nt, first));
-            std::sort(nt.begin(), nt.end());
-            // m[nt] = (m.count(nt) ? true : false); operator=が右結合なのでいけそうだが不安。
-            if (m.count(nt)) m[nt] = true;  // 重複している
-            else m[nt] = false;
+        auto diff = pt::sub(p, cell_min_);
+        std::array<unsigned, dim> rawidx{};
+        for (auto d = 0ul; d < dim; ++d) {
+            rawidx[d] = (unsigned)std::floor(pt::get(diff, d) / pt::get(cell_width_, d));
         }
-        // 分割後の和と分割前の単体の超体積が等しければsはnewptを含む。
-        //auto b = volume(id_to_et(s, first, last));
-        //return abs(v - b) < 1e-5;
-        return true;
+        return rawidx;
+    }
+    size_t hash_index(const std::array<unsigned, dim>& index)
+    {
+        size_t hash{};
+        constexpr auto d_bit_width = (sizeof(size_t)*8 / dim);
+        constexpr auto d_limit = (size_t)1 << d_bit_width;
+        for (auto d = 0ul; d < dim; ++d) {
+            hash |= (index[d] & (d_limit - 1)) << (d_bit_width * d);
+        }
+        return hash;
     }
 
+    template<class Itr>
+    void dewall(Itr first, Itr last, id_point_set& P, id_face_set& afl, id_simplex_set& sigma)
+    {
+        std::vector<id_face> afl_alpha, afl_1, afl_2;
+        std::pair<size_t, coord_type> alpha; // .first次元について.secondを閾値として区切る
+        id_point_set id_p_1, id_p_2;
+        id_simplex t;
+        id_face f;
+
+        auto alpha = pointset_partition(first, last, id_p_1, id_p_2);
+
+        if(afl.size() == 0){
+
+        }
+    }
+    template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
+    id_simplex make_first_simplex(Itr first, Itr last, const id_point_set& P, const alpha_t& alpha) const
+    {
+
+    }
+    template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
+    alpha_t pointset_partition(Itr first, Itr last, id_point_set& p1, id_point_set& p2){
+        // define alpha
+        auto size = std::distance(first, last);
+        Pt max{*first};
+        Pt min{*first};
+        for (auto itr = first; itr != last; ++itr) {
+            auto& p = *itr;
+            for (auto d = 0ul; d < dim; ++d) {
+                auto c = pt::get(p, d);
+                if (pt::get(max, d) < c) pt::set(max, d, c);
+                else if (pt::get(min, d) > c) pt::set(min, d, c);
+            }
+        }
+        coord_type diff = 0;
+        size_t ret = 0;
+        for (auto d = 0ul; d < dim; ++d) {
+            auto db = pt::get(max, d) - pt::get(min, d);
+            if (diff < db) {
+                diff = db;
+                ret = d;
+            }
+        }
+        auto t = pt::get(min, ret) + (diff / (coord_type)2);
+        size_t idx = 0;
+        // p1, p2に分ける
+        for (auto itr = first; itr != last; ++itr) {
+            (pt::get(*itr, ret) < t ? p1 : p2).push_back(idx++);
+        }
+        return { ret, t };
+    }
+    template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
+    void index(Itr first, Itr last, const Pt& max, const Pt& min)
+    {
+        Pt intmax, intmin;
+        const auto cell_cnt_d = std::min((size_t)1 << (sizeof(size_t)*8 / dim),
+                                         std::max<size_t>(detail::bits_msb(std::distance(first, last) >> std::min<size_t>(dim, 63)), 1));
+        for (auto d = 0ul; d < dim; ++d) {
+            pt::set(cell_max_, d, std::ceil(pt::get(max, d)));
+            pt::set(cell_min_, d, std::floor(pt::get(min, d)));
+            pt::set(cell_width_, d, (pt::get(cell_max_, d) - pt::get(cell_min_, d)) / cell_cnt_d);
+        }
+        for (auto itr = first; itr != last; ++itr) {
+            spatial_index_[hash_index(get_cell(*itr))].push_back(std::distance(itr, first));
+        }
+    }
+
+    // d次元単体の体積
     static constexpr coord_type volume(const et_simplex& s) noexcept
     {
         using namespace ouchi::math;
@@ -308,19 +351,6 @@ struct triangulation {
         for (auto& lp : space) lp = pt::add(lp, offset);
         return space;
     }
-    void tree_to_vector(const tree<std::pair<id_simplex, std::pair<Pt, coord_type>>>& t,
-                        std::vector<id_simplex>& vec)
-    {
-        if (t.is_leaf()) {
-            for (auto i : t.data.first) {
-                if (i & (1ull << (sizeof(i) * 8 - 1))) return;
-            }
-            vec.push_back(t.data.first);
-            return;
-        }
-        for (auto& i : t.children) tree_to_vector(i, vec);
-    }
-
 };
 
 }

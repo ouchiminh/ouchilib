@@ -6,40 +6,7 @@
 
 #include <random>
 
-#if 1
-
-DEFINE_TEST(test_tri_init)
-{
-    using namespace ouchi::geometry;
-    using namespace ouchi::math;
-    {
-        using pt = point_traits<fl_matrix<double, 2, 1>>;
-        triangulation<fl_matrix<double, 2, 1>> t;
-        fl_matrix<double, 2, 1> pts[] = {
-            { 0, 0 }, { 1, 0 }, { 0, 1 }
-        };
-        auto simplex = t.calc_space(pts, pts+3);
-
-        for (auto i = 0ul; i < 3; ++i) {
-            auto j = (i + 1) % 3;
-            CHECK_TRUE(std::abs(pt::sqdistance(simplex[i], simplex[j]) - 8) < 1e-5);
-        }
-    }
-    {
-        using pt = point_traits<fl_matrix<double, 3, 1>>;
-        triangulation<fl_matrix<double, 3, 1>> t;
-        fl_matrix<double, 3, 1> pts[] = {
-            { 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 }
-        };
-        auto simplex = t.calc_space(pts, pts+4);
-
-        for (auto i = 0ul; i < 4; ++i) {
-            auto j = (i + 1) % 3;
-            CHECK_TRUE(std::abs(pt::sqdistance(simplex[i], simplex[j]) - 27) < 1e-5);
-        }
-    }
-}
-
+#if 0
 DEFINE_TEST(test_t_gcc)
 {
     {
@@ -136,6 +103,7 @@ DEFINE_TEST(test_tri_volume)
         CHECK_EQUAL(s, 2);
     }
 }
+#endif
 
 DEFINE_TEST(test_tri)
 {
@@ -154,26 +122,36 @@ DEFINE_TEST(test_tri)
         auto r = t(pts.begin(), pts.end(), t.return_as_idx);
         CHECK_EQUAL(r.size(), 3);
     }
-    auto beg = std::chrono::high_resolution_clock::now();
+    {
+        triangulation<fl_matrix<double, 2, 1>> t;
+        // 面積2の三角形
+        std::array<fl_matrix<double, 2, 1>, 4> pts = {
+            fl_matrix<double, 2, 1>{ 0, 0 },
+            fl_matrix<double, 2, 1>{ 3, 0 },
+            fl_matrix<double, 2, 1>{ 3, 3 },
+            fl_matrix<double, 2, 1>{ 0, 3 }
+        };
+        auto r = t(pts.begin(), pts.end(), t.return_as_idx);
+        CHECK_EQUAL(r.size(), 2);
+    }
     {
         triangulation<fl_matrix<double, 2, 1>> t;
         // 面積2の三角形
         std::vector<fl_matrix<double, 2, 1>> pts;
         std::mt19937 mt;
         std::normal_distribution<> di(0, 1.0);
-        for (auto i = 0; i < 800; ++i) {
+        for (auto i = 0; i < 10000; ++i) {
             pts.push_back(
                 {
                    di(mt) * 10,
                    di(mt) * 10
                 });
         }
+        auto beg = std::chrono::high_resolution_clock::now();
         auto r = t(pts.begin(), pts.end(), t.return_as_idx);
-
+        auto d = std::chrono::high_resolution_clock::now() - beg;
+        std::cout << d.count() / (double)std::chrono::high_resolution_clock::period::den << std::endl;
     }
-    auto d = std::chrono::high_resolution_clock::now() - beg;
-    std::cout << d.count() / (double)std::chrono::high_resolution_clock::period::den << std::endl;
 }
 
 
-#endif
