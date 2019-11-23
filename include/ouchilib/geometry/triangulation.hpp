@@ -173,6 +173,15 @@ private:
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
     id_simplex make_first_simplex(Itr first, Itr last, const id_point_set& P, const alpha_t& alpha) const
     {
+        coord_type min_dist = std::numeric_limits<coord_type>::max();
+        size_t min_idx = 0;
+        for (auto p : P) {
+            auto d = std::abs(pt::get(id_to_et(p, first), alpha.first) - alpha.second);
+            if (min_dist > d) {
+                min_dist = d;
+                min_idx = p;
+            }
+        }
 
     }
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
