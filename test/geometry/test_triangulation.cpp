@@ -6,7 +6,7 @@
 
 #include <random>
 
-#if 0
+#if 1
 DEFINE_TEST(test_t_gcc)
 {
     {
@@ -66,6 +66,22 @@ DEFINE_TEST(test_t_gcc)
             fl_matrix<double, 3, 1>{ 1, 2, 1 },
             fl_matrix<double, 3, 1>{ 2, 1, 1 },
             fl_matrix<double, 3, 1>{ 0, 1, 1 }
+        };
+        auto o = t.get_circumscribed_circle(pts);
+        CHECK_EQUAL(o.first(0), 1);
+        CHECK_EQUAL(o.first(1), 1);
+        CHECK_EQUAL(o.first(2), 1);
+        CHECK_EQUAL(o.second, 1);
+    }
+    {
+        using namespace ouchi::geometry;
+        using namespace ouchi::math;
+        using pt = point_traits<fl_matrix<double, 3, 1>>;
+        triangulation<fl_matrix<double, 3, 1>> t;
+        std::array<fl_matrix<double, 3, 1>, 3> pts = {
+            fl_matrix<double, 3, 1>{ 1, 0, 1 },
+            fl_matrix<double, 3, 1>{ 2, 1, 1 },
+            fl_matrix<double, 3, 1>{ 0, 1, 1 },
         };
         auto o = t.get_circumscribed_circle(pts);
         CHECK_EQUAL(o.first(0), 1);
@@ -134,24 +150,24 @@ DEFINE_TEST(test_tri)
         auto r = t(pts.begin(), pts.end(), t.return_as_idx);
         CHECK_EQUAL(r.size(), 2);
     }
-    {
-        triangulation<fl_matrix<double, 2, 1>> t;
-        // 面積2の三角形
-        std::vector<fl_matrix<double, 2, 1>> pts;
-        std::mt19937 mt;
-        std::normal_distribution<> di(0, 1.0);
-        for (auto i = 0; i < 10000; ++i) {
-            pts.push_back(
-                {
-                   di(mt) * 10,
-                   di(mt) * 10
-                });
-        }
-        auto beg = std::chrono::high_resolution_clock::now();
-        auto r = t(pts.begin(), pts.end(), t.return_as_idx);
-        auto d = std::chrono::high_resolution_clock::now() - beg;
-        std::cout << d.count() / (double)std::chrono::high_resolution_clock::period::den << std::endl;
-    }
+    //{
+    //    triangulation<fl_matrix<double, 2, 1>> t;
+    //    // 面積2の三角形
+    //    std::vector<fl_matrix<double, 2, 1>> pts;
+    //    std::mt19937 mt;
+    //    std::normal_distribution<> di(0, 1.0);
+    //    for (auto i = 0; i < 10000; ++i) {
+    //        pts.push_back(
+    //            {
+    //               di(mt) * 10,
+    //               di(mt) * 10
+    //            });
+    //    }
+    //    auto beg = std::chrono::high_resolution_clock::now();
+    //    auto r = t(pts.begin(), pts.end(), t.return_as_idx);
+    //    auto d = std::chrono::high_resolution_clock::now() - beg;
+    //    std::cout << d.count() / (double)std::chrono::high_resolution_clock::period::den << std::endl;
+    //}
 }
 
 

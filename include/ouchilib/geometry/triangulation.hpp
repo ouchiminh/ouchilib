@@ -7,6 +7,7 @@
 #include <vector>
 #include <optional>
 #include <unordered_map>
+#include <unordered_set>
 #include <numeric>
 
 #include "ouchilib/crypto/common.hpp" // for hash
@@ -40,14 +41,14 @@ constexpr ouchi::math::fl_matrix<T, D, 1> one() noexcept
     return ret;
 }
 
-template<size_t Dim>
-struct hash_id_simplex {
-    using argument_type = std::array<size_t, Dim + 1>;
+template<size_t V>
+struct hash_ids {
+    using argument_type = std::array<size_t, V>;
     using result_type = size_t;
 
     size_t operator()(const argument_type& key) const noexcept
     {
-        constexpr auto width = std::max(sizeof(result_type) * 8 / (Dim + 1), (size_t)1);
+        constexpr auto width = std::max(sizeof(result_type) * 8 / (V), (size_t)1);
         result_type res{};
         for (auto i = 0ul; i < key.size(); ++i) {
             res ^= ouchi::crypto::rotl(key[i], (width * i) & (sizeof(size_t) * 8 - 1));
@@ -92,8 +93,8 @@ private:
     using pt = point_traits<Pt>;
 
     using alpha_t = std::pair<size_t, coord_type>;
-    using id_point_set = std::vector<size_t>;
-    using id_face_set = std::vector<id_face>;
+    using id_point_set = std::unordered_set<size_t>;
+    using id_face_set = std::unordered_set<id_face, detail::hash_ids<dim>>;
     using id_simplex_set = std::vector<id_simplex>;
     using id_spatial_index = std::unordered_map<size_t, id_point_set>;
 public:
@@ -103,13 +104,17 @@ public:
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
     std::vector<id_simplex> operator()(const Itr first, const Itr last, return_as_idx_tag)
     {
-        id_point_set P(std::distance(first, last));
+        id_point_set P;
         id_face_set dummy;
         id_simplex_set sigma;
-        std::iota(P.begin(), P.end(), 0);
-        index(first, last, max, min);
-
-        return {};
+        auto size = std::distance(first, last);
+        P.reserve(size);
+        for (auto i = 0ul; i < size; ++i) P.emplace(i);
+        if (P.empty()) return {};
+        progress_p_.clear();
+        progress_p_.resize(size, 0);
+        dewall(first, last, P, dummy, sigma);
+        return std::move(sigma);
     }
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
     std::vector<et_simplex> operator()(const Itr first, const Itr last);
@@ -130,10 +135,10 @@ public:
     }
 
 
-private:
     Pt cell_width_;
     Pt cell_min_, cell_max_;
     id_spatial_index spatial_index_;
+    std::vector<size_t> progress_p_;
 
     std::array<unsigned, dim> get_cell(const Pt& p) const noexcept
     {
@@ -158,20 +163,100 @@ private:
     template<class Itr>
     void dewall(Itr first, Itr last, id_point_set& P, id_face_set& afl, id_simplex_set& sigma)
     {
-        std::vector<id_face> afl_alpha, afl_1, afl_2;
-        std::pair<size_t, coord_type> alpha; // .first次元について.secondを閾値として区切る
+        id_face_set afl_alpha, afl_1, afl_2;
         id_point_set id_p_1, id_p_2;
-        id_simplex t;
-        id_face f;
 
-        auto alpha = pointset_partition(first, last, id_p_1, id_p_2);
+        auto alpha = pointset_partition(first, last, P, id_p_1, id_p_2);
 
-        if(afl.size() == 0){
+        if(afl.empty()){
+            auto t = make_first_simplex(first, last, P, alpha);
+            faces(t, afl);
+            sigma.push_back(t);
+            for (auto f : afl) {
+                for (auto i : f) { ++progress_p_[i]; }
+            }
+        }
+        for (auto& f : afl) {
+            auto [intersect1, intersect2] = is_intersected(first, last, f, alpha);
+            if (intersect1 && intersect2) afl_alpha.emplace(f);
+            else if (intersect1) afl_1.emplace(f);
+            else afl_2.emplace(f);
+            for (auto i : f) { ++progress_p_[i]; }
+        }
+        while (!afl_alpha.empty()) {
+            auto f = *afl_alpha.begin();
+            auto t = make_simplex(first, last, P, f);
 
+            afl_alpha.erase(afl_alpha.begin());
+            // t is not null
+            if (t[dim] != ~(size_t)0) {
+                sigma.push_back(t);
+                for (auto&& g : faces(t)) {
+                    if (f == g) continue;
+                    auto [i1, i2] = is_intersected(first, last, g, alpha);
+                    if (i1 && i2) update(g, afl_alpha);
+                    else if (i1) update(g, afl_1);
+                    else if (i2) update(g, afl_2);
+
+                }
+            }
+        }
+        if (!afl_1.empty() && !id_p_1.empty()) dewall(first, last, id_p_1, afl_1, sigma);
+        if (!afl_2.empty() && !id_p_2.empty()) dewall(first, last, id_p_2, afl_2, sigma);
+    }
+
+    void update(const id_face& f, id_face_set& l)
+    {
+        if (l.count(f)) l.erase(f);
+        else {
+            for (auto i : f) { ++progress_p_[i]; }
+            l.emplace(f);
         }
     }
+
+    template<class Itr>
+    std::pair<bool, bool> is_intersected(Itr first, Itr last, const id_face& f, const alpha_t& alpha) const
+    {
+        bool c1{}, c2{};
+        // fの任意の点についてalphaで区切られた半空間１，２のどちらにあるか判定し、
+        // c1 && c2の値を返す
+
+        for (auto idx : f) {
+            if (pt::get(id_to_et(idx, first, last), alpha.first) < alpha.second) c1 = true;
+            else c2 = true;
+        }
+        return { c1, c2 };
+    }
+
+    void faces(const id_simplex& s, id_face_set& dest) const
+    {
+        id_face buf;
+        for (auto i = 0ul; i < s.size(); ++i) {
+            unsigned d = 0;
+            for (auto j = 0ul; j < s.size(); ++j) {
+                if (i == j) continue;
+                buf[d++] = s[j];
+            }
+            dest.emplace(buf);
+        }
+    }
+    id_face_set faces(const id_simplex& s) const
+    {
+        id_face_set fs;
+        faces(s, fs);
+        return fs;
+    }
+
+    template<class Itr, size_t V>
+    id_simplex make_first_simplex_impl([[maybe_unused]] Itr first, [[maybe_unused]] Itr last, [[maybe_unused]] id_point_set& P,
+                                       [[maybe_unused]] const alpha_t& alpha, const std::array<size_t, V> c)
+    {
+        if constexpr (V == dim + 1) return c;
+        else return make_first_simplex_impl(first, last, P, alpha, make_simplex(first, last, P, c));
+    }
+
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    id_simplex make_first_simplex(Itr first, Itr last, const id_point_set& P, const alpha_t& alpha) const
+    id_simplex make_first_simplex(Itr first, Itr last, id_point_set& P, const alpha_t& alpha)
     {
         coord_type min_dist = std::numeric_limits<coord_type>::max();
         size_t min_idx = 0;
@@ -182,16 +267,68 @@ private:
                 min_idx = p;
             }
         }
-
+        std::array<size_t, 2> segment{
+            min_idx,
+            minimize_where(first, last, P,
+                           [pt = id_to_et(min_idx, first)](const Pt& p)
+                           {return pt::sqdistance(pt, p); },
+                           [&alpha, minus = pt::get(id_to_et(min_idx, first), alpha.first) < alpha.second](const Pt& p)->bool
+                           {return minus ? pt::get(p, alpha.first) > alpha.second:pt::get(p, alpha.first) < alpha.second; })
+        };
+        return make_first_simplex_impl(first, last, P, alpha, segment);
     }
+    template<class Pred, class Where, class Itr>
+    size_t minimize_where(Itr first, Itr last, const id_point_set& p, Pred&& pred, Where&& where) const
+    {
+        if (p.empty()) return ~(size_t)0;
+        auto min = std::numeric_limits<std::invoke_result_t<Pred, Pt>>::max();
+        size_t ret = 0;
+        for (auto i : p) {
+            auto pt = id_to_et(i, first, last);
+            if (!std::invoke(where, pt)) continue;
+            auto res = std::invoke(pred, pt);
+            if (res < min) {
+                min = res;
+                ret = i;
+            }
+        }
+        return ret;
+    }
+    template<size_t V, class Itr>
+    std::array<size_t, V+1> make_simplex(Itr first, Itr last, id_point_set& p, const std::array<size_t, V>& f) const
+    {
+        std::array<Pt, V + 1> pts;
+        std::array<size_t, V + 1> id_pts;
+        for (auto i = 0ul; i < V; ++i) {
+            pts[i] = id_to_et(f[i], first, last);
+            id_pts[i] = f[i];
+        }
+        id_pts[V] = minimize_where(first, last, p,
+                                   [&pts, this](const Pt& pt) mutable
+                                   { pts[V] = pt; return this->get_circumscribed_circle(pts).second; },
+                                   [](...) {return true; });
+        std::sort(id_pts.begin(), id_pts.end());
+        return id_pts;
+    }
+    template<size_t V, class Itr>
+    std::array<size_t, V+1> make_simplex(Itr first, Itr last, id_point_set& p, const std::array<size_t, V>& f)
+    {
+        auto id_pts = std::as_const(*this).make_simplex(first, last, p, f);
+        if constexpr (V == dim) {
+            for (auto i : id_pts) {
+                if (--progress_p_[i] == 0) p.erase(i);
+            }
+        }
+        return id_pts;
+    }
+
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    alpha_t pointset_partition(Itr first, Itr last, id_point_set& p1, id_point_set& p2){
+    alpha_t pointset_partition(Itr first, Itr last, id_point_set& P, id_point_set& p1, id_point_set& p2){
         // define alpha
-        auto size = std::distance(first, last);
-        Pt max{*first};
-        Pt min{*first};
-        for (auto itr = first; itr != last; ++itr) {
-            auto& p = *itr;
+        Pt max{id_to_et(*P.begin(), first)};
+        Pt min{id_to_et(*P.begin(), first)};
+        for (auto&& pid : P) {
+            auto&& p = id_to_et(pid, first, last);
             for (auto d = 0ul; d < dim; ++d) {
                 auto c = pt::get(p, d);
                 if (pt::get(max, d) < c) pt::set(max, d, c);
@@ -208,10 +345,9 @@ private:
             }
         }
         auto t = pt::get(min, ret) + (diff / (coord_type)2);
-        size_t idx = 0;
         // p1, p2に分ける
-        for (auto itr = first; itr != last; ++itr) {
-            (pt::get(*itr, ret) < t ? p1 : p2).push_back(idx++);
+        for (auto&& pid : P) {
+            (pt::get(id_to_et(pid, first, last), ret) < t ? p1 : p2).emplace(pid);
         }
         return { ret, t };
     }
@@ -250,50 +386,53 @@ private:
 
     // N次元単体に外接する球の中心と半径の二乗を求める
     // https://img.atwikiimg.com/www7.atwiki.jp/neetubot/pub/neetubot-1.0.pdf
-    static constexpr std::pair<Pt, coord_type> get_circumscribed_circle(const et_simplex& s) noexcept
+    template<size_t V>
+    static constexpr std::pair<Pt, coord_type> get_circumscribed_circle(const std::array<Pt, V>& s) noexcept
     {
         using namespace ouchi::math;
         static constexpr fl_matrix<coord_type, dim, 1> one = detail::one<coord_type, dim>();
-        static constexpr fl_matrix<coord_type, dim + 1, 1> onep = detail::one<coord_type, dim+1>();
-        auto PtoL = [](const fl_matrix<coord_type, dim, dim + 1>& P)
-            ->fl_matrix<coord_type, dim, dim>
+        static constexpr fl_matrix<coord_type, V, 1> onep = detail::one<coord_type, V>();
+        auto PtoL = [](const fl_matrix<coord_type, dim, V>& P)
+            ->fl_matrix<coord_type, dim, V-1>
         {
-            fl_matrix<coord_type, dim, dim> L{};
+            fl_matrix<coord_type, dim, V-1> L{};
             for (auto i = 0ul; i < dim; ++i) {
-                for (auto j = 0ul; j < dim; ++j) {
+                for (auto j = 0ul; j < V-1; ++j) {
                     L(i, j) = P(i, j+1) - P(i, 0);
                 }
             }
             return L;
         };
         // 余因子総和行列
-        auto cofactor_sum_mat = [PtoL](const fl_matrix<coord_type, dim, dim + 1>& P) {
+        auto cofactor_sum_mat = [PtoL](const fl_matrix<coord_type, dim, V>& P) 
+            ->fl_matrix<coord_type, V, V>
+        {
             auto L = PtoL(P);
-            fl_matrix<coord_type, dim + 1, dim + 1> ret{};
+            fl_matrix<coord_type, V, V> ret{};
             auto co = (L.transpose() * L).cofactor();
-            ret(0, 0) = (one.transpose() * co * one)(0);
-            auto ru = (-one).transpose() * co;
-            auto lb = -co * one;
-            for (auto i = 1ul; i < dim+1; ++i) ret(0, i) = ru(0, i - 1);
-            for (auto i = 1ul; i < dim+1; ++i) ret(i, 0) = lb(i - 1, 0);
-            for (auto i = 1ul; i < dim+1; ++i) {
-                for (auto j = 1ul; j < dim+1; ++j) {
+            ret(0, 0) = (detail::one<coord_type, V-1>().transpose() * co * detail::one<coord_type, V-1>())(0);
+            auto ru = (-detail::one<coord_type,V-1>()).transpose() * co;
+            auto lb = -co * detail::one<coord_type,V-1>();
+            for (auto i = 1ul; i < V; ++i) ret(0, i) = ru(0, i - 1);
+            for (auto i = 1ul; i < V; ++i) ret(i, 0) = lb(i - 1, 0);
+            for (auto i = 1ul; i < V; ++i) {
+                for (auto j = 1ul; j < V; ++j) {
                     ret(i, j) = co(i - 1, j - 1);
                 }
             }
             return ret;
         };
-        fl_matrix<coord_type, dim, dim + 1> P;
+        fl_matrix<coord_type, dim, V> P;
         for (auto i = 0ul; i < dim; ++i) {
-            for (auto j = 0ul; j < dim+1; ++j) {
+            for (auto j = 0ul; j < V; ++j) {
                 P(i, j) = pt::get(s[j], i);
             }
         }
         const auto PTP = P.transpose() * P;
         const auto co = PTP.cofactor();
         const auto den = (onep.transpose() * co * onep)(0);
-        auto rvec = fl_matrix<coord_type, dim + 1, 1>{};
-        for (auto i = 0ul; i < dim + 1; ++i) {
+        auto rvec = fl_matrix<coord_type, V, 1>{};
+        for (auto i = 0ul; i < V; ++i) {
             rvec(i) = (P.column(i).transpose() * P.column(i))(0) / (coord_type)2;
         }
         auto p0 = (P * co * onep) / den + ((P * cofactor_sum_mat(P)) / den) * rvec;
