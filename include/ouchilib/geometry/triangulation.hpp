@@ -111,8 +111,6 @@ public:
         P.reserve(size);
         for (auto i = 0ul; i < size; ++i) P.emplace(i);
         if (P.empty()) return {};
-        progress_p_.clear();
-        progress_p_.resize(size, 0);
         dewall(first, last, P, dummy, sigma);
         return std::move(sigma);
     }
@@ -138,7 +136,6 @@ public:
     Pt cell_width_;
     Pt cell_min_, cell_max_;
     id_spatial_index spatial_index_;
-    std::vector<size_t> progress_p_;
 
     std::array<unsigned, dim> get_cell(const Pt& p) const noexcept
     {
@@ -172,16 +169,12 @@ public:
             auto t = make_first_simplex(first, last, P, alpha);
             faces(t, afl);
             sigma.push_back(t);
-            for (auto f : afl) {
-                for (auto i : f) { ++progress_p_[i]; }
-            }
         }
         for (auto& f : afl) {
             auto [intersect1, intersect2] = is_intersected(first, last, f, alpha);
             if (intersect1 && intersect2) afl_alpha.emplace(f);
             else if (intersect1) afl_1.emplace(f);
             else afl_2.emplace(f);
-            for (auto i : f) { ++progress_p_[i]; }
         }
         while (!afl_alpha.empty()) {
             auto f = *afl_alpha.begin();
@@ -209,7 +202,6 @@ public:
     {
         if (l.count(f)) l.erase(f);
         else {
-            for (auto i : f) { ++progress_p_[i]; }
             l.emplace(f);
         }
     }
@@ -310,18 +302,6 @@ public:
         std::sort(id_pts.begin(), id_pts.end());
         return id_pts;
     }
-    template<size_t V, class Itr>
-    std::array<size_t, V+1> make_simplex(Itr first, Itr last, id_point_set& p, const std::array<size_t, V>& f)
-    {
-        auto id_pts = std::as_const(*this).make_simplex(first, last, p, f);
-        if constexpr (V == dim) {
-            for (auto i : id_pts) {
-                if (--progress_p_[i] == 0) p.erase(i);
-            }
-        }
-        return id_pts;
-    }
-
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
     alpha_t pointset_partition(Itr first, Itr last, id_point_set& P, id_point_set& p1, id_point_set& p2){
         // define alpha
