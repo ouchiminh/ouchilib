@@ -117,10 +117,10 @@ public:
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
     std::vector<et_simplex> operator()(const Itr first, const Itr last);
 
-    template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    constexpr et_simplex id_to_et(const id_simplex& s, const Itr first, [[maybe_unused]] const Itr last = {}) const
+    template<size_t V, class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
+    constexpr et_simplex id_to_et(const std::array<size_t, V>& s, const Itr first, [[maybe_unused]] const Itr last = {}) const
     {
-        et_simplex ret{};
+        std::array<Pt, V> ret{};
         for (auto i = 0ul; i < s.size(); ++i) {
             ret[i] = id_to_et(s[i], first, last);
         }
@@ -244,7 +244,7 @@ public:
                                        [[maybe_unused]] const alpha_t& alpha, const std::array<size_t, V> c)
     {
         if constexpr (V == dim + 1) return c;
-        else return make_first_simplex_impl(first, last, P, alpha, make_simplex(first, last, P, c));
+        else return make_first_simplex_impl(first, last, P, alpha, make_simplex<0>(first, last, P, c));
     }
 
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
@@ -270,11 +270,11 @@ public:
         return make_first_simplex_impl(first, last, P, alpha, segment);
     }
     template<class Pred, class Where, class Itr>
-    size_t minimize_where(Itr first, Itr last, const id_point_set& p, Pred&& pred, Where&& where) const
+    size_t minimize_where(Itr first, Itr last, const id_point_set& p, Pred&& pred, Where&& where, std::invoke_result_t<Pred, Pt> initial = std::numeric_limits<std::invoke_result_t<Pred, Pt>>::max()) const
     {
         if (p.empty()) return ~(size_t)0;
-        auto min = std::numeric_limits<std::invoke_result_t<Pred, Pt>>::max();
-        size_t ret = 0;
+        auto min = initial;
+        size_t ret = ~(size_t)0;
         for (auto i : p) {
             auto pt = id_to_et(i, first, last);
             if (!std::invoke(where, pt)) continue;
@@ -286,7 +286,7 @@ public:
         }
         return ret;
     }
-    template<size_t V, class Itr>
+    template<int DD = 1, size_t V, class Itr>
     std::array<size_t, V+1> make_simplex(Itr first, Itr last, id_point_set& p, const std::array<size_t, V>& f) const
     {
         std::array<Pt, V + 1> pts;
@@ -295,10 +295,29 @@ public:
             pts[i] = id_to_et(f[i], first, last);
             id_pts[i] = f[i];
         }
-        id_pts[V] = minimize_where(first, last, p,
-                                   [&pts, this](const Pt& pt) mutable
-                                   { pts[V] = pt; return this->get_circumscribed_circle(pts).second; },
-                                   [](...) {return true; });
+        if constexpr (V == dim && DD == 1) {
+            auto dd = [this, &first, &last, &pts](const Pt& pt) -> coord_type {
+                ouchi::math::fl_matrix<coord_type, dim, dim> planept;
+                ouchi::math::fl_matrix<coord_type, dim, dim> planect;
+                pts[V] = pt;
+                planect = planept = PtoL(atomat(pts));
+                auto [c, r] = get_circumscribed_circle(pts);
+                for (auto d = 0ul; d < dim; ++d) {
+                    planect(d, dim-1) = pt::get(c, d) - pt::get(pts[0], d);
+                }
+                bool lt0pt = ouchi::math::slow_det(planept) < 0;
+                bool lt0ct = ouchi::math::slow_det(planect) < 0;
+                if (lt0ct == lt0pt) return r;
+                else return -r;
+            };
+            id_pts[V] = minimize_where(first, last, p, dd, [](...) {return true; });
+        }
+        else {
+            id_pts[V] = minimize_where(first, last, p,
+                                       [&pts, this](const Pt& pt) mutable
+                                       { pts[V] = pt; return this->get_circumscribed_circle(pts).second; },
+                                       [](...) {return true; });
+        }
         std::sort(id_pts.begin(), id_pts.end());
         return id_pts;
     }
@@ -347,6 +366,30 @@ public:
         }
     }
 
+    template<size_t V>
+    static auto PtoL(const ouchi::math::fl_matrix<coord_type, dim, V>& P)
+        ->ouchi::math::fl_matrix<coord_type, dim, V-1>
+    {
+        ouchi::math::fl_matrix<coord_type, dim, V-1> L{};
+        for (auto i = 0ul; i < dim; ++i) {
+            for (auto j = 0ul; j < V-1; ++j) {
+                L(i, j) = P(i, j+1) - P(i, 0);
+            }
+        }
+        return L;
+    };
+    template<size_t V>
+    static auto atomat(const std::array<Pt, V>& a)
+        ->ouchi::math::fl_matrix<coord_type, dim, V>
+    {
+        ouchi::math::fl_matrix<coord_type, dim, V> ret;
+        for (auto i = 0ul; i < dim; ++i) {
+            for (auto j = 0ul; j < V; ++j) {
+                ret(i, j) = pt::get(a[j], i);
+            }
+        }
+        return std::move(ret);
+    }
     // d次元単体の体積
     static constexpr coord_type volume(const et_simplex& s) noexcept
     {
@@ -372,19 +415,8 @@ public:
         using namespace ouchi::math;
         static constexpr fl_matrix<coord_type, dim, 1> one = detail::one<coord_type, dim>();
         static constexpr fl_matrix<coord_type, V, 1> onep = detail::one<coord_type, V>();
-        auto PtoL = [](const fl_matrix<coord_type, dim, V>& P)
-            ->fl_matrix<coord_type, dim, V-1>
-        {
-            fl_matrix<coord_type, dim, V-1> L{};
-            for (auto i = 0ul; i < dim; ++i) {
-                for (auto j = 0ul; j < V-1; ++j) {
-                    L(i, j) = P(i, j+1) - P(i, 0);
-                }
-            }
-            return L;
-        };
         // 余因子総和行列
-        auto cofactor_sum_mat = [PtoL](const fl_matrix<coord_type, dim, V>& P) 
+        auto cofactor_sum_mat = [](const fl_matrix<coord_type, dim, V>& P) 
             ->fl_matrix<coord_type, V, V>
         {
             auto L = PtoL(P);
@@ -402,12 +434,7 @@ public:
             }
             return ret;
         };
-        fl_matrix<coord_type, dim, V> P;
-        for (auto i = 0ul; i < dim; ++i) {
-            for (auto j = 0ul; j < V; ++j) {
-                P(i, j) = pt::get(s[j], i);
-            }
-        }
+        fl_matrix<coord_type, dim, V> P = atomat(s);
         const auto PTP = P.transpose() * P;
         const auto co = PTP.cofactor();
         const auto den = (onep.transpose() * co * onep)(0);
