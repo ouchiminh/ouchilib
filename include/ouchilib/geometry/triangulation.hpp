@@ -190,7 +190,6 @@ public:
                     if (i1 && i2) update(g, afl_alpha);
                     else if (i1) update(g, afl_1);
                     else if (i2) update(g, afl_2);
-
                 }
             }
         }
