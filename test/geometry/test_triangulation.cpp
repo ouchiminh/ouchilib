@@ -150,13 +150,13 @@ DEFINE_TEST(test_tri)
         auto r = t(pts.begin(), pts.end(), t.return_as_idx);
         CHECK_EQUAL(r.size(), 2);
     }
-    for(auto cnt = 0ul; cnt < 40000; cnt += 1000) {
-        triangulation<fl_matrix<double, 2, 1>> t;
+    for(auto cnt = 0ul; cnt <= 20000ul; cnt += 1000) {
+        triangulation<fl_matrix<double, 2, 1>, 4000> t;
         // 面積2の三角形
         std::vector<fl_matrix<double, 2, 1>> pts;
         std::mt19937 mt;
         std::normal_distribution<> di(0, 1.0);
-        for (auto i = 0; i < cnt; ++i) {
+        for (auto i = 0ul; i < cnt; ++i) {
             pts.push_back(
                 {
                    di(mt) * 10,

@@ -9,6 +9,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <numeric>
+#include <future>
+#include <mutex>
 
 #include "ouchilib/crypto/common.hpp" // for hash
 
@@ -82,7 +84,8 @@ struct hash_ids {
         constexpr auto width = std::max(sizeof(result_type) * 8 / (V), (size_t)1);
         result_type res{};
         for (auto i = 0ul; i < key.size(); ++i) {
-            res ^= ouchi::crypto::rotl(key[i], (width * i) & (sizeof(size_t) * 8 - 1));
+            //res ^= ouchi::crypto::rotl(key[i], (width * i) & (sizeof(size_t) * 8 - 1));
+            res ^= ouchi::crypto::rotl(key[i], (i + 6) & (sizeof(size_t) * 8 - 1));
         }
         return res;
     }
@@ -112,7 +115,7 @@ constexpr std::array<size_t, C> root_id()
 
 }
 
-template<class Pt>
+template<class Pt, unsigned Parallel = 0>
 struct triangulation {
     static constexpr size_t dim = point_traits<Pt>::dim;
     using coord_type = typename point_traits<Pt>::coord_type;
@@ -141,7 +144,7 @@ public:
         auto size = std::distance(first, last);
         P.reserve(size);
         for (auto i = 0ul; i < size; ++i) P.emplace(i);
-        if (P.empty()) return {};
+        if (size < dim + 1) return {};
         dewall(first, last, P, dummy, sigma);
         return std::move(sigma);
     }
@@ -167,6 +170,7 @@ public:
     Pt cell_width_;
     Pt cell_min_, cell_max_;
     id_spatial_index spatial_index_;
+    std::mutex mt_sigma;
 
     std::array<unsigned, dim> get_cell(const Pt& p) const noexcept
     {
@@ -199,7 +203,9 @@ public:
         if(afl.empty()){
             auto t = make_first_simplex(first, last, P, alpha);
             faces(t, afl);
+            mt_sigma.lock();
             sigma.push_back(t);
+            mt_sigma.unlock();
         }
         for (auto& f : afl) {
             auto [intersect1, intersect2] = is_intersected(first, last, f, alpha);
@@ -214,7 +220,9 @@ public:
             afl_alpha.erase(afl_alpha.begin());
             // t is not null
             if (t[dim] != ~(size_t)0) {
+                mt_sigma.lock();
                 sigma.push_back(t);
+                mt_sigma.unlock();
                 for (auto&& g : faces(t)) {
                     if (f == g) continue;
                     auto [i1, i2] = is_intersected(first, last, g, alpha);
@@ -224,8 +232,24 @@ public:
                 }
             }
         }
-        if (!afl_1.empty() && !id_p_1.empty()) dewall(first, last, id_p_1, afl_1, sigma);
-        if (!afl_2.empty() && !id_p_2.empty()) dewall(first, last, id_p_2, afl_2, sigma);
+        if constexpr (Parallel > 0) {
+            constexpr auto normal = std::launch::async | std::launch::deferred;
+            std::future<void> t[2];
+            if (!afl_1.empty() && !id_p_1.empty())
+                t[0] = std::async((id_p_1.size() > Parallel ? normal : std::launch::deferred),
+                                  [this, &id_p_1, &afl_1, &sigma, &first, &last]()
+                                  {dewall(first, last, id_p_1, afl_1, sigma); });
+            if (!afl_2.empty() && !id_p_2.empty())
+                t[1] = std::async((id_p_2.size() > Parallel ? normal : std::launch::deferred),
+                                  [this, &id_p_2, &afl_2, &sigma, &first, &last]()
+                                  {dewall(first, last, id_p_2, afl_2, sigma); });
+            if (t[0].valid()) t[0].get();
+            if (t[1].valid()) t[1].get();
+        }
+        else {
+            if (!afl_1.empty() && !id_p_1.empty()) dewall(first, last, id_p_1, afl_1, sigma);
+            if (!afl_2.empty() && !id_p_2.empty()) dewall(first, last, id_p_2, afl_2, sigma);
+        }
     }
 
     void update(const id_face& f, id_face_set& l)
@@ -265,10 +289,21 @@ public:
             dest.emplace(buf);
         }
     }
-    id_face_set faces(const id_simplex& s) const
+    std::array<id_face, dim + 1> faces(const id_simplex& s) const
     {
-        id_face_set fs;
-        faces(s, fs);
+        std::array<id_face, dim + 1> fs;
+        id_face buf;
+        for (auto i = 0ul; i < s.size(); ++i) {
+            unsigned d = 0;
+            for (auto j = 0ul; j < s.size(); ++j) {
+                if (i == j) {
+                    buf.opposite = s[j];
+                    continue;
+                }
+                buf[d++] = s[j];
+            }
+            fs[i] = buf;
+        }
         return fs;
     }
 
@@ -449,14 +484,24 @@ public:
         using namespace ouchi::math;
         static constexpr fl_matrix<coord_type, dim, 1> one = detail::one<coord_type, dim>();
         static constexpr fl_matrix<coord_type, V, 1> onep = detail::one<coord_type, V>();
+        // 行列要素の総和
+        auto sum_mat = [](auto&& mat)->coord_type {
+            coord_type sum{};
+            for (auto i = 0ul; i < mat.size().first; ++i) {
+                for (auto j = 0ul; j < mat.size().second; ++j)
+                    sum += mat(i, j);
+            }
+            return sum;
+        };
         // 余因子総和行列
-        auto cofactor_sum_mat = [](const fl_matrix<coord_type, dim, V>& P) 
+        auto cofactor_sum_mat = [&sum_mat](const fl_matrix<coord_type, dim, V>& P) 
             ->fl_matrix<coord_type, V, V>
         {
             auto L = PtoL(P);
             fl_matrix<coord_type, V, V> ret{};
             auto co = (L.transpose() * L).cofactor();
-            ret(0, 0) = (detail::one<coord_type, V-1>().transpose() * co * detail::one<coord_type, V-1>())(0);
+            //ret(0, 0) = (detail::one<coord_type, V-1>().transpose() * co * detail::one<coord_type, V-1>())(0);
+            ret(0, 0) = sum_mat(co);
             auto ru = (-detail::one<coord_type,V-1>()).transpose() * co;
             auto lb = -co * detail::one<coord_type,V-1>();
             for (auto i = 1ul; i < V; ++i) ret(0, i) = ru(0, i - 1);
@@ -471,7 +516,8 @@ public:
         fl_matrix<coord_type, dim, V> P = atomat(s);
         const auto PTP = P.transpose() * P;
         const auto co = PTP.cofactor();
-        const auto den = (onep.transpose() * co * onep)(0);
+        //const auto den = (onep.transpose() * co * onep)(0);
+        const auto den = sum_mat(co);
         auto rvec = fl_matrix<coord_type, V, 1>{};
         for (auto i = 0ul; i < V; ++i) {
             rvec(i) = (P.column(i).transpose() * P.column(i))(0) / (coord_type)2;
