@@ -150,13 +150,13 @@ DEFINE_TEST(test_tri)
         auto r = t(pts.begin(), pts.end(), t.return_as_idx);
         CHECK_EQUAL(r.size(), 2);
     }
-    {
+    for(auto cnt = 0ul; cnt < 40000; cnt += 1000) {
         triangulation<fl_matrix<double, 2, 1>> t;
         // 面積2の三角形
         std::vector<fl_matrix<double, 2, 1>> pts;
         std::mt19937 mt;
         std::normal_distribution<> di(0, 1.0);
-        for (auto i = 0; i < 100; ++i) {
+        for (auto i = 0; i < cnt; ++i) {
             pts.push_back(
                 {
                    di(mt) * 10,
@@ -166,7 +166,7 @@ DEFINE_TEST(test_tri)
         auto beg = std::chrono::high_resolution_clock::now();
         auto r = t(pts.begin(), pts.end(), t.return_as_idx);
         auto d = std::chrono::high_resolution_clock::now() - beg;
-        std::cout << d.count() / (double)std::chrono::high_resolution_clock::period::den << std::endl;
+        std::cout << cnt << ' ' << d.count() / (double)std::chrono::high_resolution_clock::period::den << std::endl;
     }
 }
 
