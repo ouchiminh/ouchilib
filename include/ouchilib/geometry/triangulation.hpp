@@ -41,6 +41,37 @@ constexpr ouchi::math::fl_matrix<T, D, 1> one() noexcept
     return ret;
 }
 
+template<class T, size_t V>
+struct facet {
+    std::array<T, V> vertexes;
+    std::optional<T> opposite;
+
+    facet() : vertexes{}, opposite{ std::nullopt } {}
+    facet(const std::array<T, V>& v)
+        : vertexes{}
+        , opposite(std::nullopt)
+    {
+        for (auto i = 0ul; i < v.size(); ++i) vertexes[i] = v[i];
+    }
+    facet(const std::array<T, V>& v, T o)
+        : facet(v)
+    {
+        opposite = o;
+    }
+    operator std::array<T, V>& () { return vertexes; }
+    operator const std::array<T, V>& () const { return vertexes; }
+    auto begin() const { return vertexes.cbegin(); }
+    auto begin() { return vertexes.begin(); }
+    auto end() const { return vertexes.cend(); }
+    auto end() { return vertexes.end(); }
+    decltype(auto) operator[](size_t i) { return vertexes[i]; }
+    decltype(auto) operator[](size_t i) const { return vertexes[i]; }
+    friend bool operator<(const facet& a, const facet& b) { return a.vertexes < b.vertexes; }
+    friend bool operator>(const facet& a, const facet& b) { return b < a; }
+    friend bool operator==(const facet& a, const facet& b) { return !(a < b) && !(a > b); }
+    friend bool operator!=(const facet& a, const facet& b) { return !(a == b); }
+};
+
 template<size_t V>
 struct hash_ids {
     using argument_type = std::array<size_t, V>;
@@ -87,8 +118,8 @@ struct triangulation {
     using coord_type = typename point_traits<Pt>::coord_type;
     using id_simplex = std::array<size_t, dim + 1>;
     using et_simplex = std::array<Pt, dim + 1>;
-    using id_face = std::array<size_t, dim>;
-    using et_face = std::array<Pt, dim>;
+    using id_face = detail::facet<size_t, dim>;
+    using et_face = detail::facet<Pt, dim>;
 private:
     using pt = point_traits<Pt>;
 
@@ -225,7 +256,10 @@ public:
         for (auto i = 0ul; i < s.size(); ++i) {
             unsigned d = 0;
             for (auto j = 0ul; j < s.size(); ++j) {
-                if (i == j) continue;
+                if (i == j) {
+                    buf.opposite = s[j];
+                    continue;
+                }
                 buf[d++] = s[j];
             }
             dest.emplace(buf);
@@ -243,7 +277,7 @@ public:
                                        [[maybe_unused]] const alpha_t& alpha, const std::array<size_t, V> c)
     {
         if constexpr (V == dim + 1) return c;
-        else return make_first_simplex_impl(first, last, P, alpha, make_simplex<0>(first, last, P, c));
+        else return make_first_simplex_impl(first, last, P, alpha, make_simplex<1>(first, last, P, detail::facet<size_t, V>(c)));
     }
 
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
@@ -286,7 +320,7 @@ public:
         return ret;
     }
     template<int DD = 1, size_t V, class Itr>
-    std::array<size_t, V+1> make_simplex(Itr first, Itr last, id_point_set& p, const std::array<size_t, V>& f) const
+    std::array<size_t, V+1> make_simplex(Itr first, Itr last, id_point_set& p, const detail::facet<size_t, V>& f) const
     {
         std::array<Pt, V + 1> pts;
         std::array<size_t, V + 1> id_pts;
@@ -295,21 +329,22 @@ public:
             id_pts[i] = f[i];
         }
         if constexpr (V == dim && DD == 1) {
-            auto dd = [this, &first, &last, &pts](const Pt& pt) -> coord_type {
-                ouchi::math::fl_matrix<coord_type, dim, dim> planept;
-                ouchi::math::fl_matrix<coord_type, dim, dim> planect;
+            auto halfspace = [this, &first, &last, &pts](const Pt& pt) -> bool {
                 pts[V] = pt;
-                planect = planept = PtoL(atomat(pts));
+                return ouchi::math::slow_det(PtoL(atomat(pts))) < 0;
+            };
+            auto dd = [this, &halfspace, &pts](const Pt& pt) -> coord_type {
+                pts[V] = pt;
                 auto [c, r] = get_circumscribed_circle(pts);
-                for (auto d = 0ul; d < dim; ++d) {
-                    planect(d, dim-1) = pt::get(c, d) - pt::get(pts[0], d);
-                }
-                bool lt0pt = ouchi::math::slow_det(planept) < 0;
-                bool lt0ct = ouchi::math::slow_det(planect) < 0;
+                bool lt0pt = halfspace(pt);
+                bool lt0ct = halfspace(c);
                 if (lt0ct == lt0pt) return r;
                 else return -r;
             };
-            id_pts[V] = minimize_where(first, last, p, dd, [](...) {return true; });
+            id_pts[V] = minimize_where(first, last, p, dd,
+                                       [this, &f, &halfspace, &first](const Pt& pt)
+                                       {if (!f.opposite) return true;
+                                       else return halfspace(id_to_et(f.opposite.value(), first)) != halfspace(pt); });
         }
         else {
             id_pts[V] = minimize_where(first, last, p,

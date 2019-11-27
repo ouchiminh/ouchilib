@@ -165,7 +165,7 @@ public:
         , values_{}
     {}
     template<class S = Size, std::enable_if_t<is_fixed_length_v<S>>* = nullptr>
-    constexpr basic_matrix(const T& fill_value)
+    explicit constexpr basic_matrix(const T& fill_value)
         : row_size_{S::row_size}
         , column_size_{S::column_size}
         , values_{}
