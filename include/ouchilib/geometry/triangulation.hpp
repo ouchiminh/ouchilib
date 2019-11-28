@@ -238,14 +238,14 @@ public:
                                bool is_edge = false) const
         -> std::pair<size_t, std::optional<std::invoke_result_t<F, size_t>>> 
     {
+        constexpr auto invalid = ~(size_t)0;
         auto [f, l] = std::make_pair(cell[D] - r, cell[D] + r);
         if constexpr (D == dim - 1) {
             auto in = [&P, this](size_t id) {
                 return !!P.count(id);
             };
             std::optional<std::invoke_result_t<F, size_t>> res;
-            size_t idx = ~(size_t)0;
-            constexpr size_t invalid = ~(size_t)0;
+            size_t idx = invalid;
             for (cell[D] = f; cell[D] <= l; ++cell[D]) {
                 if (!(is_edge || cell[D] == f || cell[D] == l) || !spatial_index_.count(cell)) continue;
                 auto tmpidx = minimize_where(first, last,
@@ -261,7 +261,7 @@ public:
         }
         else {
             std::optional<std::invoke_result_t<F, size_t>> res;
-            size_t idx;
+            size_t idx = invalid;
             for (cell[D] = f; cell[D] <= l; ++cell[D]) {
                 auto [i, rr] = for_cell_minimum_impl<D + 1>(cell, r, first, last, P, pred, w,
                                                            is_edge || cell[D] == f || cell[D] == l);
@@ -272,18 +272,33 @@ public:
         }
     }
     template<class Itr, class F, class Where>
-    size_t for_cell_minimize(const Pt& c, Itr first, Itr last, const id_point_set& P,
+    size_t for_cell_minimize(const Pt& c, coord_type radius, Itr first, Itr last, const id_point_set& P,
                              F&& pred, Where&& where) const
     {
         constexpr size_t invalid = ~(size_t)0;
         auto cell = get_cell(c);
-        const auto dcell_cnt = (pt::get(cell_max_,0) - pt::get(cell_min_,0)) / pt::get(cell_width_, 0);
+        const auto dcell_cnt = (pt::get(cell_max_, 0) - pt::get(cell_min_, 0)) / pt::get(cell_width_, 0);
         size_t idx = invalid;
+        std::optional<std::invoke_result_t<F, size_t>> result;
+        unsigned radii = 0;
+        for (auto d = 0ul; d < dim; ++d) {
+            auto b = c;
+            pt::set(b, d, pt::get(c, d) + radius);
+            auto rb = get_cell(b)[d] - cell[d];
+            if (rb > radii) radii = rb;
+            pt::set(b, d, pt::get(c, d) - radius);
+            rb = cell[d] - get_cell(b)[d];
+            if (rb > radii) radii = rb;
+        }
         for (auto r = 0l; ; ++r) {
-
-            idx = for_cell_minimum_impl<0>(cell, r, first, last, P,
-                                           pred, where).first;
-            if (idx != invalid || r > dcell_cnt) break;
+            auto [id, res] = for_cell_minimum_impl<0>(cell, r, first, last, P,
+                                                      pred, where);
+            if (idx == invalid && id != invalid) { idx = id; result = res; }
+            else if (id != invalid && res.value() < result.value()) {
+                idx = id;
+                result = res;
+            }
+            if ((r >= radii && idx != invalid) || r > dcell_cnt) break;
         }
         return idx;
     }
@@ -348,7 +363,7 @@ public:
         }
     }
 
-    void update(const id_face& f, id_face_set& l)
+    void update(const id_face& f, id_face_set& l) const
     {
         if (l.count(f)) l.erase(f);
         else {
@@ -405,14 +420,14 @@ public:
 
     template<class Itr, size_t V>
     id_simplex make_first_simplex_impl([[maybe_unused]] Itr first, [[maybe_unused]] Itr last, [[maybe_unused]] id_point_set& P,
-                                       [[maybe_unused]] const alpha_t& alpha, const std::array<size_t, V> c)
+                                       [[maybe_unused]] const alpha_t& alpha, const std::array<size_t, V> c) const
     {
         if constexpr (V == dim + 1) return c;
         else return make_first_simplex_impl(first, last, P, alpha, make_simplex<>(first, last, P, detail::facet<size_t, V>(c)));
     }
 
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    id_simplex make_first_simplex(Itr first, Itr last, id_point_set& P, const alpha_t& alpha)
+    id_simplex make_first_simplex(Itr first, Itr last, id_point_set& P, const alpha_t& alpha) const
     {
         coord_type min_dist = std::numeric_limits<coord_type>::max();
         size_t min_idx = 0;
@@ -481,13 +496,11 @@ public:
                 if (!f.opposite) return true;
                 else return halfspace_id(f.opposite.value()) != halfspace_id(id);
             };
+            using std::sqrt;
             auto [c, r] = get_circumscribed_circle(id_to_et(f.vertexes, first));
-            id_pts[V] = for_cell_minimize(c, first, last, p, dd, where);
+            id_pts[V] = for_cell_minimize(c, sqrt(r), first, last, p, dd, where);
 
-            //id_pts[V] = minimize_where(first, last, p, dd,
-            //                           [this, &f, &halfspace_id, &first](size_t pt)
-            //                           {if (!f.opposite) return true;
-            //                           else return halfspace_id(f.opposite.value()) != halfspace_id(pt); });
+            //id_pts[V] = minimize_where(first, last, p, dd, where);
         }
         else {
             id_pts[V] = minimize_where(first, last, p,
@@ -499,7 +512,8 @@ public:
         return id_pts;
     }
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    alpha_t pointset_partition(Itr first, Itr last, id_point_set& P, id_point_set& p1, id_point_set& p2){
+    alpha_t pointset_partition(Itr first, Itr last, id_point_set& P, id_point_set& p1, id_point_set& p2) const
+    {
         // define alpha
         Pt max{id_to_et(*P.begin(), first)};
         Pt min{id_to_et(*P.begin(), first)};
@@ -530,22 +544,6 @@ public:
         }
         return { ret, t };
     }
-    template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    void index(Itr first, Itr last, const Pt& max, const Pt& min)
-    {
-        Pt intmax, intmin;
-        const auto cell_cnt_d = std::min((size_t)1 << (sizeof(size_t)*8 / dim),
-                                         std::max<size_t>(detail::bits_msb(std::distance(first, last) >> std::min<size_t>(dim, 63)), 1));
-        for (auto d = 0ul; d < dim; ++d) {
-            pt::set(cell_max_, d, std::ceil(pt::get(max, d)));
-            pt::set(cell_min_, d, std::floor(pt::get(min, d)));
-            pt::set(cell_width_, d, (pt::get(cell_max_, d) - pt::get(cell_min_, d)) / cell_cnt_d);
-        }
-        for (auto itr = first; itr != last; ++itr) {
-            spatial_index_[hash_index(get_cell(*itr))].push_back(std::distance(itr, first));
-        }
-    }
-
     template<size_t V>
     static auto PtoL(const ouchi::math::fl_matrix<coord_type, dim, V>& P)
         ->ouchi::math::fl_matrix<coord_type, dim, V-1>
@@ -647,62 +645,6 @@ public:
         }
     }
 
-    template<class Itr>
-    static constexpr et_simplex calc_space(Itr first, Itr last) noexcept
-    {
-        using std::sqrt;
-        // N次元の点群について各次元の最大値と最小値を求める : min_i, max_i
-        Pt max(*first);
-        Pt min(*first);
-        for (auto it = first; it != last; ++it) {
-            for (auto d = 0u; d < dim; ++d) {
-                if (pt::get(*it, d) > pt::get(max, d)) pt::set(max, d, pt::get(*it, d));
-                if (pt::get(min, d) > pt::get(*it, d)) pt::set(min, d, pt::get(*it, d));
-            }
-        }
-        // 求めた各次元の最大値と最小値を球面に含むN次元の球
-        // N次元空間上の点(min_0, ..., min_n)から点(max_0, ..., max_n)に引いた線の長さを求める=N次元正単体の内接超球面の直径
-        coord_type r{};
-        for (auto d = 0u; d < dim; ++d) {
-            auto diff = pt::get(max, d) - pt::get(min, d);
-            r += diff * diff;
-        }
-        // N次元の正単体に外接する超球面は内接するもののN倍の半径
-        r = sqrt(r) * dim;
-        // 球の中心を求める。
-        Pt o{};
-        for (auto d = 0u; d < dim; ++d) {
-            pt::set(o, d, (pt::get(max, d) - pt::get(min, d)) / 2);
-        }
-        // 辺の長さがsqrt(2)の正単体をf倍して初期正単体を作成する
-        auto f = r / sqrt(2);
-        et_simplex space;
-        for (auto i = 0u; i < dim; ++i) {
-            Pt p = pt::zero();
-            pt::set(p, i, 1);
-            space[i] = p;
-        }
-        // 最後の頂点
-        Pt p{};
-        // 正単体の重心
-        Pt offset{};
-        const auto coord = (1-sqrt(dim+1)) / dim;
-        auto g = (coord + 1) / (coord_type)(dim + 1);
-        for (auto i = 0u; i < dim; ++i) {
-            pt::set(p, i, coord);
-            pt::set(offset, i, g);
-        }
-        space[dim] = p;
-        // 原点からのずれ
-        for (auto i = 0ul; i < dim + 1; ++i) {
-            space[i] = pt::sub(space[i], offset);
-            space[i] = pt::mul(space[i], (coord_type)f);
-            space[i] = pt::add(space[i], o);
-        }
-        
-        for (auto& lp : space) lp = pt::add(lp, offset);
-        return space;
-    }
 };
 
 }

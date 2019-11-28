@@ -212,18 +212,16 @@ DEFINE_TEST(tri_plot)
     using namespace ouchi::geometry;
     using namespace ouchi::math;
     using pt = point_traits<fl_matrix<double, 2, 1>>;
-    constexpr auto cnt = 50;
+    constexpr auto cnt = 19;
     triangulation<fl_matrix<double, 2, 1>, 0> t;
     std::vector<fl_matrix<double, 2, 1>> pts;
     std::mt19937 mt;
     std::uniform_real_distribution<> di(0, 1.0);
     for (auto i = 0ul; i < cnt; ++i) {
-        pts.push_back(
-            {
-               di(mt) * 10,
-               di(mt) * 10
-            });
+        for (auto j = 0ul; j < cnt; ++j)
+            pts.push_back({ 1.0 * i, 1.0 * j });
     }
+    //for (auto i = 0ul; i < cnt * cnt; ++i) pts.push_back({ di(mt)*10, di(mt)*10 });
     auto r = t(pts.begin(), pts.end(), t.return_as_idx);
     //std::ofstream ofs_p("p.txt");
     //for (auto& p : pts) {
@@ -232,16 +230,14 @@ DEFINE_TEST(tri_plot)
 
     std::ofstream ofs("tri.dat");
     ofs <<
-R"(
+        R"(
 set terminal svg size 400,300 enhanced fname 'arial'  fsize 10 butt solid
 set output 'out.svg'
 
 # Key means label...
 set key outside bottom right
-set xrange[-0:10]
-set yrange[-0:10]
-
-)";
+set xrange[0:)" << cnt << "]\n"
+<<"set yrange[0:" << cnt <<"]\n";
     ofs << R"(plot "-" w l lw 0.5)" "\n\n";
     for (auto& s : r) {
         std::array<fl_matrix<double, 2, 1>, 2 + 1> buf;
