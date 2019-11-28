@@ -408,7 +408,7 @@ public:
                                        [[maybe_unused]] const alpha_t& alpha, const std::array<size_t, V> c)
     {
         if constexpr (V == dim + 1) return c;
-        else return make_first_simplex_impl(first, last, P, alpha, make_simplex<1>(first, last, P, detail::facet<size_t, V>(c)));
+        else return make_first_simplex_impl(first, last, P, alpha, make_simplex<>(first, last, P, detail::facet<size_t, V>(c)));
     }
 
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
@@ -460,7 +460,7 @@ public:
             id_pts[i] = f[i];
         }
         if constexpr (V == dim && DD == 1) {
-            bool pt_halfspace;
+            short pth = 0;
             auto halfspace_id = [this, &first, &last, &pts](size_t id) -> bool {
                 pts[V] = id_to_et(id, first);
                 return ouchi::math::slow_det(PtoL(atomat(pts))) < 0;
@@ -469,23 +469,27 @@ public:
                 pts[V] = p;
                 return ouchi::math::slow_det(PtoL(atomat(pts))) < 0;
             };
-            auto dd = [this, &halfspace_pt, &pt_halfspace, &first, &pts](size_t id) -> coord_type {
+            auto dd = [this, &halfspace_pt,&halfspace_id, &first, &pts, &pth](size_t id) -> coord_type {
                 pts[V] = id_to_et(id, first);
                 auto [c, r] = get_circumscribed_circle(pts);
-                bool lt0pt = pt_halfspace;
+                bool lt0pt = !!(pth & 0xFF00) ? !!(pth & 0xFF) : halfspace_id(id);
                 bool lt0ct = halfspace_pt(c);
+                pth ^= pth;
                 if (lt0ct == lt0pt) return r;
                 else return -r;
             };
+            auto where = [this, &f, &halfspace_id, &first, &pth](size_t id) -> bool
+            {
+                if (!f.opposite) return true;
+                else return halfspace_id(f.opposite.value()) != !!(0xFF & (pth = 0xFF00 | (halfspace_id(id) ? 1 : 0)));
+            };
             auto [c, r] = get_circumscribed_circle(id_to_et(f.vertexes, first));
-            id_pts[V] = for_cell_minimize(c, first, last, p, dd,
-                                          [this, &f, &halfspace_id, &first, &pt_halfspace](size_t id) -> bool
-                                          {if (!f.opposite) return true;
-                                          else return halfspace_id(f.opposite.value()) != (pt_halfspace = halfspace_id(id)); });
+            id_pts[V] = for_cell_minimize(c, first, last, p, dd, where);
+
             //id_pts[V] = minimize_where(first, last, p, dd,
-            //                           [this, &f, &halfspace_id, &first, &pt_halfspace](size_t pt)
+            //                           [this, &f, &halfspace_id, &first](size_t pt)
             //                           {if (!f.opposite) return true;
-            //                           else return halfspace_id(f.opposite.value()) != (pt_halfspace = halfspace_id(pt)); });
+            //                           else return halfspace_id(f.opposite.value()) != halfspace_id(pt); });
         }
         else {
             id_pts[V] = minimize_where(first, last, p,
