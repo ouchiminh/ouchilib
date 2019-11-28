@@ -168,6 +168,7 @@ public:
         if (size < dim + 1) return {};
         make_spatial_index(first, last);
         dewall(first, last, P, dummy, sigma);
+        spatial_index_.clear();
         return std::move(sigma);
     }
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
@@ -276,12 +277,13 @@ public:
     {
         constexpr size_t invalid = ~(size_t)0;
         auto cell = get_cell(c);
+        const auto dcell_cnt = (pt::get(cell_max_,0) - pt::get(cell_min_,0)) / pt::get(cell_width_, 0);
         size_t idx = invalid;
         for (auto r = 0l; ; ++r) {
 
             idx = for_cell_minimum_impl<0>(cell, r, first, last, P,
                                            pred, where).first;
-            if (idx != invalid || (1 + 2*r) * (1 + 2*r) > spatial_index_.size()) break;
+            if (idx != invalid || r > dcell_cnt) break;
         }
         return idx;
     }
@@ -329,11 +331,11 @@ public:
         if constexpr (Parallel > 0) {
             constexpr auto normal = std::launch::async | std::launch::deferred;
             std::future<void> t[2];
-            if (!afl_1.empty() && !id_p_1.empty())
+            if (!afl_1.empty())
                 t[0] = std::async((id_p_1.size() > Parallel ? normal : std::launch::deferred),
                                   [this, &id_p_1, &afl_1, &sigma, &first, &last]()
                                   {dewall(first, last, id_p_1, afl_1, sigma); });
-            if (!afl_2.empty() && !id_p_2.empty())
+            if (!afl_2.empty())
                 t[1] = std::async((id_p_2.size() > Parallel ? normal : std::launch::deferred),
                                   [this, &id_p_2, &afl_2, &sigma, &first, &last]()
                                   {dewall(first, last, id_p_2, afl_2, sigma); });
@@ -341,8 +343,8 @@ public:
             if (t[1].valid()) t[1].get();
         }
         else {
-            if (!afl_1.empty() && !id_p_1.empty()) dewall(first, last, id_p_1, afl_1, sigma);
-            if (!afl_2.empty() && !id_p_2.empty()) dewall(first, last, id_p_2, afl_2, sigma);
+            if (!afl_1.empty()) dewall(first, last, id_p_1, afl_1, sigma);
+            if (!afl_2.empty()) dewall(first, last, id_p_2, afl_2, sigma);
         }
     }
 
