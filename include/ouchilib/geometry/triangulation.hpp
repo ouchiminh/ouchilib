@@ -460,7 +460,6 @@ public:
             id_pts[i] = f[i];
         }
         if constexpr (V == dim && DD == 1) {
-            short pth = 0;
             auto halfspace_id = [this, &first, &last, &pts](size_t id) -> bool {
                 pts[V] = id_to_et(id, first);
                 return ouchi::math::slow_det(PtoL(atomat(pts))) < 0;
@@ -469,19 +468,18 @@ public:
                 pts[V] = p;
                 return ouchi::math::slow_det(PtoL(atomat(pts))) < 0;
             };
-            auto dd = [this, &halfspace_pt,&halfspace_id, &first, &pts, &pth](size_t id) -> coord_type {
+            auto dd = [this, &halfspace_pt,&halfspace_id, &first, &pts](size_t id) -> coord_type {
                 pts[V] = id_to_et(id, first);
                 auto [c, r] = get_circumscribed_circle(pts);
-                bool lt0pt = !!(pth & 0xFF00) ? !!(pth & 0xFF) : halfspace_id(id);
+                bool lt0pt = halfspace_id(id);
                 bool lt0ct = halfspace_pt(c);
-                pth ^= pth;
                 if (lt0ct == lt0pt) return r;
                 else return -r;
             };
-            auto where = [this, &f, &halfspace_id, &first, &pth](size_t id) -> bool
+            auto where = [this, &f, &halfspace_id, &first](size_t id) -> bool
             {
                 if (!f.opposite) return true;
-                else return halfspace_id(f.opposite.value()) != !!(0xFF & (pth = 0xFF00 | (halfspace_id(id) ? 1 : 0)));
+                else return halfspace_id(f.opposite.value()) != halfspace_id(id);
             };
             auto [c, r] = get_circumscribed_circle(id_to_et(f.vertexes, first));
             id_pts[V] = for_cell_minimize(c, first, last, p, dd, where);
