@@ -150,24 +150,24 @@ DEFINE_TEST(test_tri)
         auto r = t(pts.begin(), pts.end(), t.return_as_idx);
         CHECK_EQUAL(r.size(), 2);
     }
-    for(auto cnt = 0ul; cnt <= 20000ul; cnt += 1000) {
-        triangulation<fl_matrix<double, 2, 1>, 0> t;
-        // 面積2の三角形
-        std::vector<fl_matrix<double, 2, 1>> pts;
-        std::mt19937 mt;
-        std::normal_distribution<> di(0, 1.0);
-        for (auto i = 0ul; i < cnt; ++i) {
-            pts.push_back(
-                {
-                   di(mt) * 10,
-                   di(mt) * 10
-                });
-        }
-        auto beg = std::chrono::high_resolution_clock::now();
-        auto r = t(pts.begin(), pts.end(), t.return_as_idx);
-        auto d = std::chrono::high_resolution_clock::now() - beg;
-        std::cout << cnt << ' ' << d.count() / (double)std::chrono::high_resolution_clock::period::den << std::endl;
-    }
+    //for(auto cnt = 0ul; cnt <= 20000ul; cnt += 1000) {
+    //    triangulation<fl_matrix<double, 2, 1>, 0> t;
+    //    // 面積2の三角形
+    //    std::vector<fl_matrix<double, 2, 1>> pts;
+    //    std::mt19937 mt;
+    //    std::normal_distribution<> di(0, 1.0);
+    //    for (auto i = 0ul; i < cnt; ++i) {
+    //        pts.push_back(
+    //            {
+    //               di(mt) * 10,
+    //               di(mt) * 10
+    //            });
+    //    }
+    //    auto beg = std::chrono::high_resolution_clock::now();
+    //    auto r = t(pts.begin(), pts.end(), t.return_as_idx);
+    //    auto d = std::chrono::high_resolution_clock::now() - beg;
+    //    std::cout << cnt << ' ' << d.count() / (double)std::chrono::high_resolution_clock::period::den << std::endl;
+    //}
     //{
     //    constexpr auto cnt = 50000;
     //    triangulation<fl_matrix<double, 2, 1>, 0> t;
