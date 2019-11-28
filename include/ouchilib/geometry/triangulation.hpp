@@ -13,6 +13,7 @@
 #include <mutex>
 
 #include "ouchilib/crypto/common.hpp" // for hash
+#include "ouchilib/crypto/algorithm/aes.hpp" // for hash
 
 #include "ouchilib/data_structure/tree.hpp"
 #include "ouchilib/math/matrix.hpp"
@@ -41,6 +42,17 @@ constexpr ouchi::math::fl_matrix<T, D, 1> one() noexcept
     ouchi::math::fl_matrix<T, D, 1> ret{};
     for (auto i = 0ul; i < D; ++i) ret(i) = T{ 1 };
     return ret;
+}
+
+template<class Pt>
+constexpr Pt one_pt()
+{
+    using pt = point_traits<Pt>;
+    Pt p{};
+    for (auto d = 0ul; d < pt::dim; ++d) {
+        pt::set(p, d, pt::coord_type(1));
+    }
+    return p;
 }
 
 template<class T, size_t V>
@@ -74,20 +86,30 @@ struct facet {
     friend bool operator!=(const facet& a, const facet& b) { return !(a == b); }
 };
 
-template<size_t V>
+template<class Int, size_t V>
 struct hash_ids {
-    using argument_type = std::array<size_t, V>;
+    using argument_type = std::array<Int, V>;
     using result_type = size_t;
 
     size_t operator()(const argument_type& key) const noexcept
     {
+        using namespace ouchi::crypto;
         constexpr auto width = std::max(sizeof(result_type) * 8 / (V), (size_t)1);
         result_type res{};
         for (auto i = 0ul; i < key.size(); ++i) {
             //res ^= ouchi::crypto::rotl(key[i], (width * i) & (sizeof(size_t) * 8 - 1));
-            res ^= ouchi::crypto::rotl(key[i], (i + 6) & (sizeof(size_t) * 8 - 1));
+            res ^= rotl((size_t)cvt(key[i]), (i + 6) & (sizeof(Int) * 8 - 1));
+            res ^= rotr(res, std::max<unsigned>(sizeof(Int) * 4 / V, 1));
         }
         return res;
+    }
+    template<class Int>
+    static constexpr Int cvt(Int v) noexcept
+    {
+        unsigned char m[sizeof(Int)]{};
+        ouchi::crypto::detail::unpack(v, m);
+        for (auto& i : m) i = ouchi::crypto::aes128::subchar(i);
+        return ouchi::crypto::detail::pack<Int>(m);
     }
 };
 
@@ -128,9 +150,9 @@ private:
 
     using alpha_t = std::pair<size_t, coord_type>;
     using id_point_set = std::unordered_set<size_t>;
-    using id_face_set = std::unordered_set<id_face, detail::hash_ids<dim>>;
+    using id_face_set = std::unordered_set<id_face, detail::hash_ids<size_t, dim>>;
     using id_simplex_set = std::vector<id_simplex>;
-    using id_spatial_index = std::unordered_map<size_t, id_point_set>;
+    using id_spatial_index = std::unordered_map<std::array<long, dim>, id_point_set, detail::hash_ids<long, dim>>;
 public:
     struct return_as_idx_tag {};
     static constexpr return_as_idx_tag return_as_idx{};
@@ -142,9 +164,9 @@ public:
         id_face_set dummy;
         id_simplex_set sigma;
         auto size = std::distance(first, last);
-        P.reserve(size);
         for (auto i = 0ul; i < size; ++i) P.emplace(i);
         if (size < dim + 1) return {};
+        make_spatial_index(first, last);
         dewall(first, last, P, dummy, sigma);
         return std::move(sigma);
     }
@@ -152,7 +174,7 @@ public:
     std::vector<et_simplex> operator()(const Itr first, const Itr last);
 
     template<size_t V, class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    constexpr et_simplex id_to_et(const std::array<size_t, V>& s, const Itr first, [[maybe_unused]] const Itr last = {}) const
+    constexpr std::array<Pt, V> id_to_et(const std::array<size_t, V>& s, const Itr first, [[maybe_unused]] const Itr last = {}) const
     {
         std::array<Pt, V> ret{};
         for (auto i = 0ul; i < s.size(); ++i) {
@@ -172,24 +194,96 @@ public:
     id_spatial_index spatial_index_;
     std::mutex mt_sigma;
 
-    std::array<unsigned, dim> get_cell(const Pt& p) const noexcept
+    std::array<long, dim> get_cell(const Pt& p) const noexcept
     {
         auto diff = pt::sub(p, cell_min_);
-        std::array<unsigned, dim> rawidx{};
+        std::array<long, dim> rawidx{};
         for (auto d = 0ul; d < dim; ++d) {
-            rawidx[d] = (unsigned)std::floor(pt::get(diff, d) / pt::get(cell_width_, d));
+            rawidx[d] = (long)std::floor(pt::get(diff, d) / pt::get(cell_width_, d));
         }
         return rawidx;
     }
-    size_t hash_index(const std::array<unsigned, dim>& index)
+    template<class Itr>
+    void make_spatial_index(Itr first, Itr last)
     {
-        size_t hash{};
-        constexpr auto d_bit_width = (sizeof(size_t)*8 / dim);
-        constexpr auto d_limit = (size_t)1 << d_bit_width;
-        for (auto d = 0ul; d < dim; ++d) {
-            hash |= (index[d] & (d_limit - 1)) << (d_bit_width * d);
+        Pt min = *first;
+        Pt max = *first;
+        for (auto itr = first; itr != last; ++itr) {
+            auto& p = *itr;
+            for (auto d = 0ul; d < dim; ++d) {
+                auto c = pt::get(p, d);
+                if (pt::get(max, d) < c) pt::set(max, d, std::ceil(c));
+                else if (pt::get(min, d) > c) pt::set(min, d, std::floor(c));
+            }
         }
-        return hash;
+        Pt diff = pt::sub(max, min);
+        auto den = std::max<size_t>(detail::bits_msb((long)std::pow(std::distance(first, last), 1.0 / dim)) >> 2, 1ul);
+        for (auto d = 0ul; d < dim; ++d) {
+            pt::set(diff, d, pt::get(diff, d) / den);
+        }
+        cell_min_ = min;
+        cell_max_ = max;
+        cell_width_ = diff;
+        
+        size_t i{};
+        for (auto itr = first; itr != last; ++itr) {
+            spatial_index_[get_cell(*itr)].emplace(i++);
+        }
+        spatial_index_.rehash(spatial_index_.size());
+    }
+    template<size_t D, class Itr, class F, class Where>
+    auto for_cell_minimum_impl(std::array<long, dim> cell, long r,
+                               Itr first, Itr last, const id_point_set& P, F&& pred, Where&& w,
+                               bool is_edge = false) const
+        -> std::pair<size_t, std::optional<std::invoke_result_t<F, size_t>>> 
+    {
+        auto [f, l] = std::make_pair(cell[D] - r, cell[D] + r);
+        if constexpr (D == dim - 1) {
+            auto in = [&P, this](size_t id) {
+                return !!P.count(id);
+            };
+            std::optional<std::invoke_result_t<F, size_t>> res;
+            size_t idx = ~(size_t)0;
+            constexpr size_t invalid = ~(size_t)0;
+            for (cell[D] = f; cell[D] <= l; ++cell[D]) {
+                if (!(is_edge || cell[D] == f || cell[D] == l) || !spatial_index_.count(cell)) continue;
+                auto tmpidx = minimize_where(first, last,
+                                             spatial_index_.at(cell),
+                                             pred, [&w, &in](size_t id) {return in(id) && w(id); });
+                if (tmpidx != invalid) {
+                    auto tmpr = pred(tmpidx);
+                    if (!res) { res = tmpr; idx = tmpidx; }
+                    else if (res.value() > tmpr) { res = tmpr; idx = tmpidx; }
+                }
+            }
+            return { idx, res };
+        }
+        else {
+            std::optional<std::invoke_result_t<F, size_t>> res;
+            size_t idx;
+            for (cell[D] = f; cell[D] <= l; ++cell[D]) {
+                auto [i, rr] = for_cell_minimum_impl<D + 1>(cell, r, first, last, P, pred, w,
+                                                           is_edge || cell[D] == f || cell[D] == l);
+                if (!res) { res = rr; idx = i; }
+                else if (rr && res.value() > rr) { res = rr; idx = i; }
+            }
+            return { idx, res };
+        }
+    }
+    template<class Itr, class F, class Where>
+    size_t for_cell_minimize(const Pt& c, Itr first, Itr last, const id_point_set& P,
+                             F&& pred, Where&& where) const
+    {
+        constexpr size_t invalid = ~(size_t)0;
+        auto cell = get_cell(c);
+        size_t idx = invalid;
+        for (auto r = 0l; ; ++r) {
+
+            idx = for_cell_minimum_impl<0>(cell, r, first, last, P,
+                                           pred, where).first;
+            if (idx != invalid || (1 + 2*r) * (1 + 2*r) > spatial_index_.size()) break;
+        }
+        return idx;
     }
 
     template<class Itr>
@@ -330,23 +424,23 @@ public:
         std::array<size_t, 2> segment{
             min_idx,
             minimize_where(first, last, P,
-                           [pt = id_to_et(min_idx, first)](const Pt& p)
-                           {return pt::sqdistance(pt, p); },
-                           [&alpha, minus = pt::get(id_to_et(min_idx, first), alpha.first) < alpha.second](const Pt& p)->bool
-                           {return minus ? pt::get(p, alpha.first) > alpha.second:pt::get(p, alpha.first) < alpha.second; })
+                           [pt = id_to_et(min_idx, first), &first, this](size_t pid)
+                           {return pt::sqdistance(pt, id_to_et(pid, first)); },
+                           [this, &first, &alpha, minus = pt::get(id_to_et(min_idx, first), alpha.first) < alpha.second](size_t pid)->bool
+                           {auto p = id_to_et(pid, first); return minus ? pt::get(p, alpha.first) > alpha.second:pt::get(p, alpha.first) < alpha.second; })
         };
         return make_first_simplex_impl(first, last, P, alpha, segment);
     }
     template<class Pred, class Where, class Itr>
-    size_t minimize_where(Itr first, Itr last, const id_point_set& p, Pred&& pred, Where&& where, std::invoke_result_t<Pred, Pt> initial = std::numeric_limits<std::invoke_result_t<Pred, Pt>>::max()) const
+    size_t minimize_where(Itr first, Itr last, const id_point_set& p, Pred&& pred, Where&& where, std::invoke_result_t<Pred, size_t> initial = std::numeric_limits<std::invoke_result_t<Pred, size_t>>::max()) const
     {
         if (p.empty()) return ~(size_t)0;
         auto min = initial;
         size_t ret = ~(size_t)0;
         for (auto i : p) {
             auto pt = id_to_et(i, first, last);
-            if (!std::invoke(where, pt)) continue;
-            auto res = std::invoke(pred, pt);
+            if (!std::invoke(where, i)) continue;
+            auto res = std::invoke(pred, i);
             if (res < min) {
                 min = res;
                 ret = i;
@@ -364,27 +458,37 @@ public:
             id_pts[i] = f[i];
         }
         if constexpr (V == dim && DD == 1) {
-            auto halfspace = [this, &first, &last, &pts](const Pt& pt) -> bool {
-                pts[V] = pt;
+            bool pt_halfspace;
+            auto halfspace_id = [this, &first, &last, &pts](size_t id) -> bool {
+                pts[V] = id_to_et(id, first);
                 return ouchi::math::slow_det(PtoL(atomat(pts))) < 0;
             };
-            auto dd = [this, &halfspace, &pts](const Pt& pt) -> coord_type {
-                pts[V] = pt;
+            auto halfspace_pt = [this, &first, &last, &pts](const Pt& p) -> bool {
+                pts[V] = p;
+                return ouchi::math::slow_det(PtoL(atomat(pts))) < 0;
+            };
+            auto dd = [this, &halfspace_pt, &pt_halfspace, &first, &pts](size_t id) -> coord_type {
+                pts[V] = id_to_et(id, first);
                 auto [c, r] = get_circumscribed_circle(pts);
-                bool lt0pt = halfspace(pt);
-                bool lt0ct = halfspace(c);
+                bool lt0pt = pt_halfspace;
+                bool lt0ct = halfspace_pt(c);
                 if (lt0ct == lt0pt) return r;
                 else return -r;
             };
-            id_pts[V] = minimize_where(first, last, p, dd,
-                                       [this, &f, &halfspace, &first](const Pt& pt)
-                                       {if (!f.opposite) return true;
-                                       else return halfspace(id_to_et(f.opposite.value(), first)) != halfspace(pt); });
+            auto [c, r] = get_circumscribed_circle(id_to_et(f.vertexes, first));
+            id_pts[V] = for_cell_minimize(c, first, last, p, dd,
+                                          [this, &f, &halfspace_id, &first, &pt_halfspace](size_t id) -> bool
+                                          {if (!f.opposite) return true;
+                                          else return halfspace_id(f.opposite.value()) != (pt_halfspace = halfspace_id(id)); });
+            //id_pts[V] = minimize_where(first, last, p, dd,
+            //                           [this, &f, &halfspace_id, &first, &pt_halfspace](size_t pt)
+            //                           {if (!f.opposite) return true;
+            //                           else return halfspace_id(f.opposite.value()) != (pt_halfspace = halfspace_id(pt)); });
         }
         else {
             id_pts[V] = minimize_where(first, last, p,
-                                       [&pts, this](const Pt& pt) mutable
-                                       { pts[V] = pt; return this->get_circumscribed_circle(pts).second; },
+                                       [&pts, &first, this](size_t id) mutable
+                                       { pts[V] = id_to_et(id); return get_circumscribed_circle(pts).second; },
                                        [](...) {return true; });
         }
         std::sort(id_pts.begin(), id_pts.end());
@@ -395,7 +499,8 @@ public:
         // define alpha
         Pt max{id_to_et(*P.begin(), first)};
         Pt min{id_to_et(*P.begin(), first)};
-        for (auto&& pid : P) {
+
+        for (auto pid : P) {
             auto&& p = id_to_et(pid, first, last);
             for (auto d = 0ul; d < dim; ++d) {
                 auto c = pt::get(p, d);
@@ -414,6 +519,8 @@ public:
         }
         auto t = pt::get(min, ret) + (diff / (coord_type)2);
         // p1, p2に分ける
+        p1.reserve(P.size() / 2);
+        p2.reserve(P.size() / 2);
         for (auto&& pid : P) {
             (pt::get(id_to_et(pid, first, last), ret) < t ? p1 : p2).emplace(pid);
         }
@@ -484,50 +591,56 @@ public:
         using namespace ouchi::math;
         static constexpr fl_matrix<coord_type, dim, 1> one = detail::one<coord_type, dim>();
         static constexpr fl_matrix<coord_type, V, 1> onep = detail::one<coord_type, V>();
+        if constexpr (V == 2) {
+            auto sum = pt::add(s[0], s[1]);
+            auto c = pt::mul(sum, (coord_type)0.5);
+            return { c, pt::sqdistance(s[0], s[1]) };
+        } else {
         // 行列要素の総和
-        auto sum_mat = [](auto&& mat)->coord_type {
-            coord_type sum{};
-            for (auto i = 0ul; i < mat.size().first; ++i) {
-                for (auto j = 0ul; j < mat.size().second; ++j)
-                    sum += mat(i, j);
-            }
-            return sum;
-        };
-        // 余因子総和行列
-        auto cofactor_sum_mat = [&sum_mat](const fl_matrix<coord_type, dim, V>& P) 
-            ->fl_matrix<coord_type, V, V>
-        {
-            auto L = PtoL(P);
-            fl_matrix<coord_type, V, V> ret{};
-            auto co = (L.transpose() * L).cofactor();
-            //ret(0, 0) = (detail::one<coord_type, V-1>().transpose() * co * detail::one<coord_type, V-1>())(0);
-            ret(0, 0) = sum_mat(co);
-            auto ru = (-detail::one<coord_type,V-1>()).transpose() * co;
-            auto lb = -co * detail::one<coord_type,V-1>();
-            for (auto i = 1ul; i < V; ++i) ret(0, i) = ru(0, i - 1);
-            for (auto i = 1ul; i < V; ++i) ret(i, 0) = lb(i - 1, 0);
-            for (auto i = 1ul; i < V; ++i) {
-                for (auto j = 1ul; j < V; ++j) {
-                    ret(i, j) = co(i - 1, j - 1);
+            auto sum_mat = [](auto&& mat)->coord_type {
+                coord_type sum{};
+                for (auto i = 0ul; i < mat.size().first; ++i) {
+                    for (auto j = 0ul; j < mat.size().second; ++j)
+                        sum += mat(i, j);
                 }
+                return sum;
+            };
+            // 余因子総和行列
+            auto cofactor_sum_mat = [&sum_mat](const fl_matrix<coord_type, dim, V>& P)
+                ->fl_matrix<coord_type, V, V>
+            {
+                auto L = PtoL(P);
+                fl_matrix<coord_type, V, V> ret{};
+                auto co = (L.transpose() * L).cofactor();
+                //ret(0, 0) = (detail::one<coord_type, V-1>().transpose() * co * detail::one<coord_type, V-1>())(0);
+                ret(0, 0) = sum_mat(co);
+                auto ru = (-detail::one<coord_type, V-1>()).transpose() * co;
+                auto lb = -co * detail::one<coord_type, V-1>();
+                for (auto i = 1ul; i < V; ++i) ret(0, i) = ru(0, i - 1);
+                for (auto i = 1ul; i < V; ++i) ret(i, 0) = lb(i - 1, 0);
+                for (auto i = 1ul; i < V; ++i) {
+                    for (auto j = 1ul; j < V; ++j) {
+                        ret(i, j) = co(i - 1, j - 1);
+                    }
+                }
+                return ret;
+            };
+            fl_matrix<coord_type, dim, V> P = atomat(s);
+            const auto PTP = P.transpose() * P;
+            const auto co = PTP.cofactor();
+            //const auto den = (onep.transpose() * co * onep)(0);
+            const auto den = sum_mat(co);
+            auto rvec = fl_matrix<coord_type, V, 1>{};
+            for (auto i = 0ul; i < V; ++i) {
+                rvec(i) = (P.column(i).transpose() * P.column(i))(0) / (coord_type)2;
             }
-            return ret;
-        };
-        fl_matrix<coord_type, dim, V> P = atomat(s);
-        const auto PTP = P.transpose() * P;
-        const auto co = PTP.cofactor();
-        //const auto den = (onep.transpose() * co * onep)(0);
-        const auto den = sum_mat(co);
-        auto rvec = fl_matrix<coord_type, V, 1>{};
-        for (auto i = 0ul; i < V; ++i) {
-            rvec(i) = (P.column(i).transpose() * P.column(i))(0) / (coord_type)2;
+            auto p0 = (P * co * onep) / den + ((P * cofactor_sum_mat(P)) / den) * rvec;
+            Pt o;
+            for (auto i = 0ul; i < dim; ++i) {
+                pt::set(o, i, p0(i));
+            }
+            return { o, pt::sqdistance(o, s[0]) };
         }
-        auto p0 = (P * co * onep) / den + ((P * cofactor_sum_mat(P)) / den) * rvec;
-        Pt o;
-        for (auto i = 0ul; i < dim; ++i) {
-            pt::set(o, i, p0(i));
-        }
-        return { o, pt::sqdistance(o, s[0]) };
     }
 
     template<class Itr>
