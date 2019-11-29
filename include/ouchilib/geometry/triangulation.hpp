@@ -207,14 +207,19 @@ public:
     template<class Itr>
     void make_spatial_index(Itr first, Itr last)
     {
+        using std::ceil, std::floor;
         Pt min = *first;
         Pt max = *first;
+        for (auto d = 0u; d < dim; ++d) {
+            pt::set(min, d, floor(pt::get(min, d)));
+            pt::set(max, d, ceil(pt::get(max, d)));
+        }
         for (auto itr = first; itr != last; ++itr) {
             auto& p = *itr;
             for (auto d = 0ul; d < dim; ++d) {
                 auto c = pt::get(p, d);
-                if (pt::get(max, d) < c) pt::set(max, d, std::ceil(c));
-                else if (pt::get(min, d) > c) pt::set(min, d, std::floor(c));
+                if (pt::get(max, d) < c) pt::set(max, d, ceil(c));
+                else if (pt::get(min, d) > c) pt::set(min, d, floor(c));
             }
         }
         Pt diff = pt::sub(max, min);
@@ -248,11 +253,12 @@ public:
             size_t idx = invalid;
             for (cell[D] = f; cell[D] <= l; ++cell[D]) {
                 if (!(is_edge || cell[D] == f || cell[D] == l) || !spatial_index_.count(cell)) continue;
+                std::invoke_result_t<F, size_t> tmpr;
                 auto tmpidx = minimize_where(first, last,
                                              spatial_index_.at(cell),
-                                             pred, [&w, &in](size_t id) {return in(id) && w(id); });
+                                             [&tmpr, &pred](auto&& v) { return tmpr = pred(v); },
+                                             [&w, &in](size_t id) {return in(id) && w(id); });
                 if (tmpidx != invalid) {
-                    auto tmpr = pred(tmpidx);
                     if (!res) { res = tmpr; idx = tmpidx; }
                     else if (res.value() > tmpr) { res = tmpr; idx = tmpidx; }
                 }
@@ -280,17 +286,17 @@ public:
         const auto dcell_cnt = (pt::get(cell_max_, 0) - pt::get(cell_min_, 0)) / pt::get(cell_width_, 0);
         size_t idx = invalid;
         std::optional<std::invoke_result_t<F, size_t>> result;
-        unsigned radii = 0;
+        unsigned radii = 0u;
         for (auto d = 0ul; d < dim; ++d) {
             auto b = c;
             pt::set(b, d, pt::get(c, d) + radius);
-            auto rb = get_cell(b)[d] - cell[d];
+            unsigned rb = get_cell(b)[d] - cell[d];
             if (rb > radii) radii = rb;
             pt::set(b, d, pt::get(c, d) - radius);
             rb = cell[d] - get_cell(b)[d];
             if (rb > radii) radii = rb;
         }
-        for (auto r = 0l; ; ++r) {
+        for (auto r = 0ul; ; ++r) {
             auto [id, res] = for_cell_minimum_impl<0>(cell, r, first, last, P,
                                                       pred, where);
             if (idx == invalid && id != invalid) { idx = id; result = res; }
@@ -423,7 +429,7 @@ public:
                                        [[maybe_unused]] const alpha_t& alpha, const std::array<size_t, V> c) const
     {
         if constexpr (V == dim + 1) return c;
-        else return make_first_simplex_impl(first, last, P, alpha, make_simplex<>(first, last, P, detail::facet<size_t, V>(c)));
+        else return make_first_simplex_impl(first, last, P, alpha, make_simplex<0>(first, last, P, detail::facet<size_t, V>(c)));
     }
 
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
@@ -475,13 +481,12 @@ public:
             id_pts[i] = f[i];
         }
         if constexpr (V == dim && DD == 1) {
-            auto halfspace_id = [this, &first, &last, &pts](size_t id) -> bool {
-                pts[V] = id_to_et(id, first);
-                return ouchi::math::slow_det(PtoL(atomat(pts))) < 0;
-            };
-            auto halfspace_pt = [this, &first, &last, &pts](const Pt& p) -> bool {
+            auto halfspace_pt = [&pts](const Pt& p) -> bool {
                 pts[V] = p;
                 return ouchi::math::slow_det(PtoL(atomat(pts))) < 0;
+            };
+            auto halfspace_id = [this, &first, &halfspace_pt](size_t id) -> bool {
+                return halfspace_pt(id_to_et(id, first));
             };
             auto dd = [this, &halfspace_pt,&halfspace_id, &first, &pts](size_t id) -> coord_type {
                 pts[V] = id_to_et(id, first);
@@ -499,13 +504,12 @@ public:
             using std::sqrt;
             auto [c, r] = get_circumscribed_circle(id_to_et(f.vertexes, first));
             id_pts[V] = for_cell_minimize(c, sqrt(r), first, last, p, dd, where);
-
             //id_pts[V] = minimize_where(first, last, p, dd, where);
         }
         else {
             id_pts[V] = minimize_where(first, last, p,
                                        [&pts, &first, this](size_t id) mutable
-                                       { pts[V] = id_to_et(id); return get_circumscribed_circle(pts).second; },
+                                       { pts[V] = id_to_et(id, first); return get_circumscribed_circle(pts).second; },
                                        [](...) {return true; });
         }
         std::sort(id_pts.begin(), id_pts.end());

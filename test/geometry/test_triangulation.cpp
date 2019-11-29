@@ -212,14 +212,15 @@ DEFINE_TEST(tri_plot)
     using namespace ouchi::geometry;
     using namespace ouchi::math;
     using pt = point_traits<fl_matrix<double, 2, 1>>;
-    constexpr auto cnt = 19;
+    constexpr auto cnt = 24;
     triangulation<fl_matrix<double, 2, 1>, 0> t;
     std::vector<fl_matrix<double, 2, 1>> pts;
     std::mt19937 mt;
-    std::uniform_real_distribution<> di(0, 1.0);
+    std::uniform_real_distribution<> di(-0.1, 0.1);
     for (auto i = 0ul; i < cnt; ++i) {
         for (auto j = 0ul; j < cnt; ++j)
-            pts.push_back({ 1.0 * i, 1.0 * j });
+            pts.push_back({ 1.0 * i + di(mt), 1.0 * j + di(mt)});
+            //pts.push_back({ di(mt)*cnt, di(mt)*cnt });
     }
     //for (auto i = 0ul; i < cnt * cnt; ++i) pts.push_back({ di(mt)*10, di(mt)*10 });
     auto r = t(pts.begin(), pts.end(), t.return_as_idx);
@@ -227,7 +228,8 @@ DEFINE_TEST(tri_plot)
     //for (auto& p : pts) {
     //    ofs_p << p(0) << ' ' << p(1) << '\n';
     //}
-
+    CHECK_EQUAL((cnt-1)*(cnt-1)*2, r.size());
+    std::cout << r.size() << std::endl;
     std::ofstream ofs("tri.dat");
     ofs <<
         R"(
