@@ -151,16 +151,16 @@ DEFINE_TEST(test_tri)
         CHECK_EQUAL(r.size(), 2);
     }
     //for(auto cnt = 0ul; cnt <= 20000ul; cnt += 1000) {
-    //    triangulation<fl_matrix<double, 2, 1>, 0> t;
-    //    // 面積2の三角形
+    //    triangulation<fl_matrix<double, 2, 1>, 1000> t;
+    //     //面積2の三角形
     //    std::vector<fl_matrix<double, 2, 1>> pts;
     //    std::mt19937 mt;
     //    std::normal_distribution<> di(0, 1.0);
     //    for (auto i = 0ul; i < cnt; ++i) {
     //        pts.push_back(
     //            {
-    //               di(mt) * 10,
-    //               di(mt) * 10
+    //               di(mt) * cnt,
+    //               di(mt) * cnt
     //            });
     //    }
     //    auto beg = std::chrono::high_resolution_clock::now();
@@ -187,7 +187,7 @@ DEFINE_TEST(test_tri)
     //    std::cout << cnt << ' ' << d.count() / (double)std::chrono::high_resolution_clock::period::den << std::endl;
     //}
     //{
-    //    constexpr auto cnt = 500000;
+    //    constexpr auto cnt = 360000;
     //    triangulation<fl_matrix<double, 2, 1>, 1000> t;
     //    std::vector<fl_matrix<double, 2, 1>> pts;
     //    std::mt19937 mt;
@@ -212,15 +212,15 @@ DEFINE_TEST(tri_plot)
     using namespace ouchi::geometry;
     using namespace ouchi::math;
     using pt = point_traits<fl_matrix<double, 2, 1>>;
-    constexpr auto cnt = 24;
-    triangulation<fl_matrix<double, 2, 1>, 1> t;
+    constexpr auto cnt = 3;
+    triangulation<fl_matrix<double, 2, 1>, 0> t;
     std::vector<fl_matrix<double, 2, 1>> pts;
     std::mt19937 mt;
-    std::uniform_real_distribution<> di(-0.1, 0.1);
+    std::uniform_real_distribution<> di(-.1, .1);
     for (auto i = 0ul; i < cnt; ++i) {
         for (auto j = 0ul; j < cnt; ++j)
             //if((i + j) % 3)
-            pts.push_back({ 1.0 * i + 0.1, 1.0 * j + 0.2});
+            pts.push_back({i * 1. + 0.1, j * 1. + 0.2});
             //pts.push_back({ di(mt)*cnt, di(mt)*cnt });
     }
     //for (auto i = 0ul; i < cnt * cnt; ++i) pts.push_back({ di(mt)*10, di(mt)*10 });
@@ -229,7 +229,11 @@ DEFINE_TEST(tri_plot)
     //for (auto& p : pts) {
     //    ofs_p << p(0) << ' ' << p(1) << '\n';
     //}
+    std::cout << r.size() << std::endl;
     CHECK_EQUAL((cnt-1)*(cnt-1)*2, r.size());
+    std::sort(r.begin(), r.end());
+    auto e = std::unique(r.begin(), r.end());
+    r.erase(e, r.end());
     std::cout << r.size() << std::endl;
     std::ofstream ofs("tri.dat");
     ofs <<

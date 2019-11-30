@@ -150,7 +150,7 @@ private:
 
     using alpha_t = std::pair<size_t, coord_type>;
     using id_point_set = std::unordered_set<size_t>;
-    using id_face_set = std::unordered_set<id_face, detail::hash_ids<size_t, dim>>;
+    using id_face_set = std::vector<id_face>;
     using id_simplex_set = std::vector<id_simplex>;
     using id_spatial_index = std::unordered_map<std::array<long, dim>, id_point_set, detail::hash_ids<long, dim>>;
 public:
@@ -314,15 +314,15 @@ public:
         }
         for (auto& f : afl) {
             auto [intersect1, intersect2] = is_intersected(first, last, f, alpha);
-            if (intersect1 && intersect2) afl_alpha.emplace(f);
-            else if (intersect1) afl_1.emplace(f);
-            else afl_2.emplace(f);
+            if (intersect1 && intersect2) afl_alpha.push_back(f);
+            else if (intersect1) afl_1.push_back(f);
+            else afl_2.push_back(f);
         }
         while (!afl_alpha.empty()) {
-            auto f = *afl_alpha.begin();
+            auto f = afl_alpha.back();
             auto t = make_simplex(first, last, P, f);
 
-            afl_alpha.erase(afl_alpha.begin());
+            afl_alpha.pop_back();
             // t is not null
             if (t[dim] != ~(size_t)0) {
                 mt_sigma.lock();
@@ -359,9 +359,9 @@ public:
 
     void update(const id_face& f, id_face_set& l) const
     {
-        if (l.count(f)) l.erase(f);
+        if (auto itr = std::find(l.begin(), l.end(), f); itr != l.end()) l.erase(itr);
         else {
-            l.emplace(f);
+            l.push_back(f);
         }
     }
 
@@ -391,7 +391,7 @@ public:
                 }
                 buf[d++] = s[j];
             }
-            dest.emplace(buf);
+            dest.push_back(buf);
         }
     }
     std::array<id_face, dim + 1> faces(const id_simplex& s) const
@@ -473,10 +473,11 @@ public:
         if constexpr (V == dim && DD == 1) {
             int pth;
             auto halfspace_pt = [&pts](const Pt& p) {
+                using std::abs;
                 pts[V] = p;
                 auto r = ouchi::math::slow_det(PtoL(atomat(pts)));
-                return r < 0 ? -1 
-                    : r == 0 ? 0
+                return abs(r) < 1.0e-14 ? 0 
+                    : r < 0 ? -1
                     : 1;
             };
             auto halfspace_id = [this, &first, &halfspace_pt](size_t id) {
@@ -495,7 +496,7 @@ public:
                 pth = halfspace_id(id);
                 if (!f.opposite.has_value()) return true;
                 auto foh = halfspace_id(f.opposite.value());
-                return foh != pth;
+                return foh != pth && pth != 0;
             };
             using std::sqrt;
             auto [c, r] = get_circumscribed_circle(id_to_et(f.vertexes, first));
