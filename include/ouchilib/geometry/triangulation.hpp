@@ -476,7 +476,7 @@ public:
                 using std::abs;
                 pts[V] = p;
                 auto r = ouchi::math::slow_det(PtoL(atomat(pts)));
-                return abs(r) < std::numeric_limits<coord_type>::epsilon() ? 0 
+                return abs(r) < std::numeric_limits<coord_type>::epsilon() * 100 ? 0 
                     : r < 0 ? -1
                     : 1;
             };
