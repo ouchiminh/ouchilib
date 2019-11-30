@@ -216,12 +216,12 @@ DEFINE_TEST(tri_plot)
     triangulation<fl_matrix<double, 2, 1>, 0> t;
     std::vector<fl_matrix<double, 2, 1>> pts;
     std::mt19937 mt;
-    std::uniform_real_distribution<> di(-.1, .1);
+    std::uniform_real_distribution<> di(0., 1.);
     for (auto i = 0ul; i < cnt; ++i) {
         for (auto j = 0ul; j < cnt; ++j)
             //if((i + j) % 3)
-            pts.push_back({i * 1. + 0.1, j * 1. + 0.2});
-            //pts.push_back({ di(mt)*cnt, di(mt)*cnt });
+            //pts.push_back({i * 1., j * 1.});
+            pts.push_back({ di(mt)*cnt, di(mt)*cnt });
     }
     //for (auto i = 0ul; i < cnt * cnt; ++i) pts.push_back({ di(mt)*10, di(mt)*10 });
     auto r = t(pts.begin(), pts.end(), t.return_as_idx);
@@ -229,12 +229,10 @@ DEFINE_TEST(tri_plot)
     //for (auto& p : pts) {
     //    ofs_p << p(0) << ' ' << p(1) << '\n';
     //}
-    std::cout << r.size() << std::endl;
-    CHECK_EQUAL((cnt-1)*(cnt-1)*2, r.size());
+    auto bf = r.size();
     std::sort(r.begin(), r.end());
-    auto e = std::unique(r.begin(), r.end());
-    r.erase(e, r.end());
-    std::cout << r.size() << std::endl;
+    r.erase(std::unique(r.begin(), r.end()), r.end());
+    CHECK_EQUAL(bf, r.size());
     std::ofstream ofs("tri.dat");
     ofs <<
         R"(
