@@ -219,7 +219,8 @@ DEFINE_TEST(tri_plot)
     std::uniform_real_distribution<> di(-0.1, 0.1);
     for (auto i = 0ul; i < cnt; ++i) {
         for (auto j = 0ul; j < cnt; ++j)
-            pts.push_back({ 1.0 * i + di(mt), 1.0 * j + di(mt)});
+            //if((i + j) % 3)
+            pts.push_back({ 1.0 * i, 1.0 * j});
             //pts.push_back({ di(mt)*cnt, di(mt)*cnt });
     }
     //for (auto i = 0ul; i < cnt * cnt; ++i) pts.push_back({ di(mt)*10, di(mt)*10 });
