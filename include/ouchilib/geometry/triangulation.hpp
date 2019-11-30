@@ -294,9 +294,6 @@ public:
                                      pred, where);
             if ((r >= radii && idx != invalid) || r >= cell_cnt_for_d_) break;
         }
-        //for (auto& c : spatial_index_) {
-        //    for_cell_minimum_impl<0>(c.first, 0, idx, result, first, last, P, pred, where);
-        //}
         return idx;
     }
 
@@ -441,7 +438,7 @@ public:
                            [pt = id_to_et(min_idx, first), &first, this](size_t pid)
                            {return pt::sqdistance(pt, id_to_et(pid, first)); },
                            [this, &first, &alpha, minus = pt::get(id_to_et(min_idx, first), alpha.first) < alpha.second](size_t pid)->bool
-                           {auto p = id_to_et(pid, first); return minus ? pt::get(p, alpha.first) > alpha.second:pt::get(p, alpha.first) < alpha.second; })
+                           {auto p = id_to_et(pid, first); return minus ? !(pt::get(p, alpha.first) < alpha.second) : pt::get(p, alpha.first) < alpha.second; })
             .first
         };
         return make_first_simplex_impl(first, last, P, alpha, segment);
@@ -474,19 +471,22 @@ public:
             id_pts[i] = f[i];
         }
         if constexpr (V == dim && DD == 1) {
-            bool pth;
-            auto halfspace_pt = [&pts](const Pt& p) -> bool {
+            int pth;
+            auto halfspace_pt = [&pts](const Pt& p) {
                 pts[V] = p;
-                return ouchi::math::slow_det(PtoL(atomat(pts))) < 0;
+                auto r = ouchi::math::slow_det(PtoL(atomat(pts)));
+                return r < 0 ? -1 
+                    : r == 0 ? 0
+                    : 1;
             };
-            auto halfspace_id = [this, &first, &halfspace_pt](size_t id) -> bool {
+            auto halfspace_id = [this, &first, &halfspace_pt](size_t id) {
                 return halfspace_pt(id_to_et(id, first));
             };
             auto dd = [this, &halfspace_pt,&halfspace_id, &first, &pts, &pth](size_t id) -> coord_type {
                 pts[V] = id_to_et(id, first);
                 auto [c, r] = get_circumscribed_circle(pts);
-                bool lt0pt = pth;
-                bool lt0ct = halfspace_pt(c);
+                auto lt0pt = pth;
+                auto lt0ct = halfspace_pt(c);
                 if (lt0ct == lt0pt) return r;
                 else return -r;
             };
@@ -494,12 +494,13 @@ public:
             {
                 pth = halfspace_id(id);
                 if (!f.opposite.has_value()) return true;
-                else return halfspace_id(f.opposite.value()) != pth;
+                auto foh = halfspace_id(f.opposite.value());
+                return foh != pth;
             };
             using std::sqrt;
             auto [c, r] = get_circumscribed_circle(id_to_et(f.vertexes, first));
             id_pts[V] = for_cell_minimize(c, sqrt(r), first, last, p, dd, where);
-            //id_pts[V] = minimize_where(first, last, p, dd, where);
+            //id_pts[V] = minimize_where(first, last, p, dd, where).first;
         }
         else {
             id_pts[V] = minimize_where(first, last, p,

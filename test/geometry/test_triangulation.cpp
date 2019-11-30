@@ -213,14 +213,14 @@ DEFINE_TEST(tri_plot)
     using namespace ouchi::math;
     using pt = point_traits<fl_matrix<double, 2, 1>>;
     constexpr auto cnt = 24;
-    triangulation<fl_matrix<double, 2, 1>, 0> t;
+    triangulation<fl_matrix<double, 2, 1>, 1> t;
     std::vector<fl_matrix<double, 2, 1>> pts;
     std::mt19937 mt;
     std::uniform_real_distribution<> di(-0.1, 0.1);
     for (auto i = 0ul; i < cnt; ++i) {
         for (auto j = 0ul; j < cnt; ++j)
             //if((i + j) % 3)
-            pts.push_back({ 1.0 * i, 1.0 * j});
+            pts.push_back({ 1.0 * i + 0.1, 1.0 * j + 0.2});
             //pts.push_back({ di(mt)*cnt, di(mt)*cnt });
     }
     //for (auto i = 0ul; i < cnt * cnt; ++i) pts.push_back({ di(mt)*10, di(mt)*10 });
