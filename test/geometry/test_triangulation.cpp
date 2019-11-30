@@ -212,7 +212,7 @@ DEFINE_TEST(tri_plot)
     using namespace ouchi::geometry;
     using namespace ouchi::math;
     using pt = point_traits<fl_matrix<double, 2, 1>>;
-    constexpr auto cnt = 3;
+    constexpr auto cnt = 40;
     triangulation<fl_matrix<double, 2, 1>, 0> t;
     std::vector<fl_matrix<double, 2, 1>> pts;
     std::mt19937 mt;
