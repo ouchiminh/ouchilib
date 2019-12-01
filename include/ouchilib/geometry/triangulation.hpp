@@ -156,6 +156,13 @@ private:
 public:
     struct return_as_idx_tag {};
     static constexpr return_as_idx_tag return_as_idx{};
+
+    constexpr triangulation()
+        : epsilon(std::numeric_limits<coord_type>::epsilon())
+    {}
+    constexpr triangulation(coord_type epsilon)
+        : epsilon(epsilon)
+    {}
     
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
     std::vector<id_simplex> operator()(const Itr first, const Itr last, return_as_idx_tag)
@@ -189,7 +196,9 @@ public:
             return *std::next(first, id);
     }
 
+private:
 
+    coord_type epsilon;
     Pt cell_width_;
     Pt cell_min_, cell_max_;
     unsigned cell_cnt_for_d_;
@@ -417,7 +426,7 @@ public:
                                        [[maybe_unused]] const alpha_t& alpha, const std::array<size_t, V> c) const
     {
         if constexpr (V == dim + 1) return c;
-        else return make_first_simplex_impl(first, last, P, alpha, make_simplex<0>(first, last, P, detail::facet<size_t, V>(c)));
+        else return make_first_simplex_impl(first, last, P, alpha, make_simplex<1>(first, last, P, detail::facet<size_t, V>(c)));
     }
 
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
@@ -476,7 +485,7 @@ public:
                 using std::abs;
                 pts[V] = p;
                 auto r = ouchi::math::slow_det(PtoL(atomat(pts)));
-                return abs(r) < std::numeric_limits<coord_type>::epsilon() * 100 ? 0 
+                return abs(r) < epsilon ? 0 
                     : r < 0 ? -1
                     : 1;
             };
