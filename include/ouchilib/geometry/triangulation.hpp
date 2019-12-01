@@ -481,7 +481,7 @@ private:
         }
         if constexpr (V == dim && DD == 1) {
             int pth;
-            auto halfspace_pt = [&pts](const Pt& p) {
+            auto halfspace_pt = [epsilon = this->epsilon, &pts](const Pt& p) {
                 using std::abs;
                 pts[V] = p;
                 auto r = ouchi::math::slow_det(PtoL(atomat(pts)));

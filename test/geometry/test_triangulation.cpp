@@ -6,7 +6,7 @@
 
 #include <random>
 
-#if 1
+#if 0
 DEFINE_TEST(test_t_gcc)
 {
     {
