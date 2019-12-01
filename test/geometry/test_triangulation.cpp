@@ -159,12 +159,13 @@ DEFINE_TEST(test_tri)
         triangulation<point, 1000> t(1.0e-10);
         std::vector<point> pts;
         std::mt19937 mt;
-        std::normal_distribution<double> di(0, 1);
+        //std::normal_distribution<double> di(0, 1);
+        std::uniform_real_distribution<double> di(0, cnt);
         for (auto i = 0ul; i < cnt; ++i) {
             pts.push_back(
                 {
-                   di(mt) * cnt,
-                   di(mt) * cnt
+                   di(mt),
+                   di(mt)
                 });
         }
         auto beg = std::chrono::high_resolution_clock::now();
@@ -220,8 +221,8 @@ DEFINE_TEST(tri_plot)
     using namespace ouchi::geometry;
     using namespace ouchi::math;
     using pt = point_traits<fl_matrix<double, 2, 1>>;
-    //constexpr auto cnt = 969;
-    constexpr auto cnt = 34;
+    constexpr auto cnt = 969;
+    //constexpr auto cnt = 34;
     triangulation<fl_matrix<double, 2, 1>, 1000> t;
     std::vector<fl_matrix<double, 2, 1>> pts;
     std::mt19937 mt;
@@ -230,7 +231,7 @@ DEFINE_TEST(tri_plot)
         for (auto j = 0ul; j < cnt; ++j)
             //if((0 + j) % 3)
             //pts.push_back({di(mt) * i * 1., di(mt) * j * 1.});
-            //if(((i + j)&0b111) == 0)
+            if(((i + j)&0b111) == 0)
             pts.push_back({ i * 1.0, j * 1.0 });
     }
     //for (auto i = 0ul; i < cnt * cnt; ++i) pts.push_back({ di(mt)*10, di(mt)*10 });

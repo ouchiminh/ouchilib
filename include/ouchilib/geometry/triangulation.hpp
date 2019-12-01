@@ -157,10 +157,10 @@ public:
     struct return_as_idx_tag {};
     static constexpr return_as_idx_tag return_as_idx{};
 
-    constexpr triangulation()
-        : epsilon(std::numeric_limits<coord_type>::epsilon())
+    triangulation()
+        : triangulation(std::numeric_limits<coord_type>::epsilon())
     {}
-    constexpr triangulation(coord_type epsilon)
+    triangulation(coord_type epsilon)
         : epsilon(epsilon)
     {}
     
@@ -182,7 +182,7 @@ public:
     std::vector<et_simplex> operator()(const Itr first, const Itr last);
 
     template<size_t V, class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    constexpr std::array<Pt, V> id_to_et(const std::array<size_t, V>& s, const Itr first, [[maybe_unused]] const Itr last = {}) const
+    static constexpr std::array<Pt, V> id_to_et(const std::array<size_t, V>& s, const Itr first, [[maybe_unused]] const Itr last = {})
     {
         std::array<Pt, V> ret{};
         for (auto i = 0ul; i < s.size(); ++i) {
@@ -191,7 +191,7 @@ public:
         return ret;
     }
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
-    constexpr Pt id_to_et(size_t id, const Itr first, [[maybe_unused]] const Itr last = {}) const
+    static constexpr Pt id_to_et(size_t id, const Itr first, [[maybe_unused]] const Itr last = {})
     {
             return *std::next(first, id);
     }
@@ -207,10 +207,11 @@ private:
 
     std::array<long, dim> get_cell(const Pt& p) const noexcept
     {
+        using std::floor;
         auto diff = pt::sub(p, cell_min_);
         std::array<long, dim> rawidx{};
         for (auto d = 0ul; d < dim; ++d) {
-            rawidx[d] = (long)std::floor(pt::get(diff, d) / pt::get(cell_width_, d));
+            rawidx[d] = (long)floor(pt::get(diff, d) / pt::get(cell_width_, d));
         }
         return rawidx;
     }
@@ -289,19 +290,22 @@ private:
         size_t idx = invalid;
         auto result = std::numeric_limits<std::invoke_result_t<F, size_t>>::max();
         unsigned radii = 0u;
-        for (auto d = 0ul; d < dim; ++d) {
-            auto b = c;
-            pt::set(b, d, pt::get(c, d) + radius);
-            unsigned rb = get_cell(b)[d] - cell[d];
-            if (rb > radii) radii = rb;
-            pt::set(b, d, pt::get(c, d) - radius);
-            rb = cell[d] - get_cell(b)[d];
-            if (rb > radii) radii = rb;
+        if (radius > 0) {
+            for (auto d = 0ul; d < dim; ++d) {
+                auto b = c;
+                pt::set(b, d, pt::get(c, d) + radius);
+                unsigned rb = get_cell(b)[d] - cell[d];
+                if (rb > radii) radii = rb;
+                pt::set(b, d, pt::get(c, d) - radius);
+                rb = cell[d] - get_cell(b)[d];
+                if (rb > radii) radii = rb;
+            }
         }
         for (auto r = 0ul; ; ++r) {
             for_cell_minimum_impl<0>(cell, r, idx, result, first, last, P,
                                      pred, where);
-            if ((r >= radii && idx != invalid) || r >= cell_cnt_for_d_) break;
+            if ((radius > 0 && (r >= radii && idx != invalid) || r >= cell_cnt_for_d_) ||
+                (radius <= 0 && (idx != invalid || r >= cell_cnt_for_d_))) break;
         }
         return idx;
     }
@@ -377,12 +381,11 @@ private:
     template<class Itr>
     std::pair<bool, bool> is_intersected(Itr first, Itr last, const id_face& f, const alpha_t& alpha) const
     {
-        bool c1{}, c2{};
+        bool c1{ false }, c2{ false };
         // fの任意の点についてalphaで区切られた半空間１，２のどちらにあるか判定し、
-        // c1 && c2の値を返す
 
         for (auto idx : f) {
-            if (pt::get(id_to_et(idx, first, last), alpha.first) < alpha.second) c1 = true;
+            if (is_lower_space(id_to_et(idx, first, last), alpha)) c1 = true;
             else c2 = true;
         }
         return { c1, c2 };
@@ -432,10 +435,11 @@ private:
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
     id_simplex make_first_simplex(Itr first, Itr last, id_point_set& P, const alpha_t& alpha) const
     {
+        using std::abs;
         coord_type min_dist = std::numeric_limits<coord_type>::max();
         size_t min_idx = 0;
         for (auto p : P) {
-            auto d = std::abs(pt::get(id_to_et(p, first), alpha.first) - alpha.second);
+            auto d = abs(pt::get(id_to_et(p, first), alpha.first) - alpha.second);
             if (min_dist > d) {
                 min_dist = d;
                 min_idx = p;
@@ -443,12 +447,11 @@ private:
         }
         std::array<size_t, 2> segment{
             min_idx,
-            minimize_where(first, last, P,
-                           [pt = id_to_et(min_idx, first), &first, this](size_t pid)
-                           {return pt::sqdistance(pt, id_to_et(pid, first)); },
-                           [this, &first, &alpha, minus = pt::get(id_to_et(min_idx, first), alpha.first) < alpha.second](size_t pid)->bool
-                           {auto p = id_to_et(pid, first); return minus ? !(pt::get(p, alpha.first) < alpha.second) : pt::get(p, alpha.first) < alpha.second; })
-            .first
+            for_cell_minimize(id_to_et(min_idx, first), -1, first, last, P,
+                              [pt = id_to_et(min_idx, first), &first, this](size_t pid)
+                              {return pt::sqdistance(pt, id_to_et(pid, first)); },
+                              [&first, &alpha, low = is_lower_space(id_to_et(min_idx, first), alpha)](size_t pid)->bool
+                              {bool p = is_lower_space(id_to_et(pid, first), alpha); return low != p; })
         };
         return make_first_simplex_impl(first, last, P, alpha, segment);
     }
@@ -521,6 +524,10 @@ private:
         std::sort(id_pts.begin(), id_pts.end());
         return id_pts;
     }
+    static inline bool is_lower_space(const Pt& pt, const alpha_t& alpha)
+    {
+        return pt::get(pt, alpha.first) < alpha.second;
+    }
     template<class Itr, std::enable_if_t<std::is_same_v<typename std::iterator_traits<Itr>::value_type, Pt>, int> = 0>
     alpha_t pointset_partition(Itr first, Itr last, id_point_set& P, id_point_set& p1, id_point_set& p2) const
     {
@@ -546,13 +553,14 @@ private:
             }
         }
         auto t = pt::get(min, ret) + (diff / (coord_type)2);
+        alpha_t alpha{ ret, t };
         // p1, p2に分ける
         p1.reserve(P.size() / 2);
         p2.reserve(P.size() / 2);
         for (auto&& pid : P) {
-            (pt::get(id_to_et(pid, first, last), ret) < t ? p1 : p2).emplace(pid);
+            (is_lower_space(id_to_et(pid, first), alpha) ? p1 : p2).emplace(pid);
         }
-        return { ret, t };
+        return alpha;
     }
     template<size_t V>
     static auto PtoL(const ouchi::math::fl_matrix<coord_type, dim, V>& P)
@@ -601,8 +609,8 @@ private:
     static constexpr std::pair<Pt, coord_type> get_circumscribed_circle(const std::array<Pt, V>& s) noexcept
     {
         using namespace ouchi::math;
-        static constexpr fl_matrix<coord_type, dim, 1> one = detail::one<coord_type, dim>();
-        static constexpr fl_matrix<coord_type, V, 1> onep = detail::one<coord_type, V>();
+        static const fl_matrix<coord_type, dim, 1> one = detail::one<coord_type, dim>();
+        static const fl_matrix<coord_type, V, 1> onep = detail::one<coord_type, V>();
         if constexpr (V == 2) {
             auto sum = pt::add(s[0], s[1]);
             auto c = pt::mul(sum, (coord_type)0.5);
@@ -646,7 +654,7 @@ private:
             for (auto i = 0ul; i < V; ++i) {
                 rvec(i) = (P.column(i).transpose() * P.column(i))(0) / (coord_type)2;
             }
-            auto p0 = (P * co * onep) / den + ((P * cofactor_sum_mat(P)) / den) * rvec;
+            auto p0 = ((P * co * onep) + ((P * cofactor_sum_mat(P))) * rvec) / den;
             Pt o;
             for (auto i = 0ul; i < dim; ++i) {
                 pt::set(o, i, p0(i));
