@@ -463,7 +463,6 @@ private:
         auto min = initial;
         size_t ret = ~(size_t)0;
         for (auto i : p) {
-            auto pt = id_to_et(i, first, last);
             if (!std::invoke(where, i)) continue;
             auto res = std::invoke(pred, i);
             if (res < min) {
@@ -488,7 +487,7 @@ private:
                 using std::abs;
                 pts[V] = p;
                 auto r = ouchi::math::slow_det(PtoL(atomat(pts)));
-                return abs(r) < epsilon ? 0 
+                return abs(r) <= epsilon ? 0 
                     : r < 0 ? -1
                     : 1;
             };
@@ -496,8 +495,10 @@ private:
                 return halfspace_pt(id_to_et(id, first));
             };
             auto dd = [this, &halfspace_pt,&halfspace_id, &first, &pts, &pth](size_t id) -> coord_type {
+                using std::isnan;
                 pts[V] = id_to_et(id, first);
                 auto [c, r] = get_circumscribed_circle(pts);
+                if (isnan(r)) return std::numeric_limits<coord_type>::max();
                 auto lt0pt = pth;
                 auto lt0ct = halfspace_pt(c);
                 if (lt0ct == lt0pt) return r;
@@ -619,9 +620,8 @@ private:
         // 行列要素の総和
             auto sum_mat = [](auto&& mat)->coord_type {
                 coord_type sum{};
-                for (auto i = 0ul; i < mat.size().first; ++i) {
-                    for (auto j = 0ul; j < mat.size().second; ++j)
-                        sum += mat(i, j);
+                for (auto i = 0ul; i < mat.total_size(); ++i) {
+                        sum += mat(i);
                 }
                 return sum;
             };
