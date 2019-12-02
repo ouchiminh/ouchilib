@@ -153,6 +153,7 @@ private:
     using id_face_set = std::vector<id_face>;
     using id_simplex_set = std::vector<id_simplex>;
     using id_spatial_index = std::unordered_map<std::array<long, dim>, id_point_set, detail::hash_ids<long, dim>>;
+    using visited_cell_set = std::unordered_set<std::array<long, dim>, detail::hash_ids<long, dim>>;
 public:
     struct return_as_idx_tag {};
     static constexpr return_as_idx_tag return_as_idx{};
@@ -234,9 +235,12 @@ private:
             }
         }
         Pt diff = pt::sub(max, min);
+        coord_type diff_min = pt::get(diff, 0);
+        for (auto i = 1u; i < dim; ++i) if (diff_min > pt::get(diff, i)) diff_min = pt::get(diff, i);
         auto den = std::max<size_t>(detail::bits_msb((long)std::pow(std::distance(first, last), 1.0 / dim)) >> 2, 1ul);
         for (auto d = 0ul; d < dim; ++d) {
-            pt::set(diff, d, pt::get(diff, d) / den);
+            //pt::set(diff, d, pt::get(diff, d) / den);
+            pt::set(diff, d, diff_min / den);
         }
         cell_min_ = min;
         cell_max_ = max;
@@ -249,10 +253,11 @@ private:
         }
         spatial_index_.rehash(spatial_index_.size());
     }
-    template<size_t D, class Itr, class F, class Where>
-    auto for_cell_minimum_impl(std::array<long, dim> cell, long r, size_t& idx, std::invoke_result_t<F, size_t>& res,
-                               Itr first, Itr last, const id_point_set& P, F&& pred, Where&& w,
-                               bool is_edge = false) const
+    template<size_t D, class F, class Where>
+    auto for_cell_minimize_impl(visited_cell_set& si_visited, std::array<long, dim> cell, long r,
+                                size_t& idx, std::invoke_result_t<F, size_t>& res,
+                                const id_point_set& P, F&& pred, Where&& w,
+                                bool is_edge = false) const
         //-> std::pair<size_t, std::optional<std::invoke_result_t<F, size_t>>> 
         -> void
     {
@@ -263,9 +268,11 @@ private:
                 return P.count(id) > 0;
             };
             for (cell[D] = f; cell[D] <= l; ++cell[D]) {
-                if (!(is_edge || cell[D] == f || cell[D] == l) || !spatial_index_.count(cell)) continue;
-                auto [tmpidx, tmpr] = minimize_where(first, last,
-                                                     spatial_index_.at(cell),
+                if (!(is_edge || cell[D] == f || cell[D] == l) ||
+                    !spatial_index_.count(cell) ||
+                    si_visited.count(cell)) continue;
+                si_visited.emplace(cell);
+                auto [tmpidx, tmpr] = minimize_where(spatial_index_.at(cell),
                                                      pred,
                                                      [&w, &in](size_t id) {return in(id) && std::invoke(w, id); });
                 if (tmpidx != invalid) {
@@ -275,14 +282,15 @@ private:
         }
         else {
             for (cell[D] = f; cell[D] <= l; ++cell[D]) {
-                for_cell_minimum_impl<D + 1>(cell, r, idx, res, first, last, P, pred, w,
-                                             is_edge || cell[D] == f || cell[D] == l);
+                for_cell_minimize_impl<D + 1>(si_visited, cell, r, idx, res, P, pred, w,
+                                              is_edge || cell[D] == f || cell[D] == l);
             }
         }
     }
-    template<class Itr, class F, class Where>
-    size_t for_cell_minimize(const Pt& c, coord_type radius, Itr first, Itr last, const id_point_set& P,
+    template<class F, class Where>
+    auto for_cell_minimize(visited_cell_set& si_visited, const Pt& c, coord_type radius, const id_point_set& P,
                              F&& pred, Where&& where) const
+        ->std::pair<size_t, std::invoke_result_t<F, size_t>>
     {
         constexpr size_t invalid = ~(size_t)0;
         auto cell = get_cell(c);
@@ -302,12 +310,12 @@ private:
             }
         }
         for (auto r = 0ul; ; ++r) {
-            for_cell_minimum_impl<0>(cell, r, idx, result, first, last, P,
-                                     pred, where);
+            for_cell_minimize_impl<0>(si_visited, cell, r, idx, result, P,
+                                      pred, where);
             if ((radius > 0 && (r >= radii && idx != invalid) || r >= cell_cnt_for_d_) ||
                 (radius <= 0 && (idx != invalid || r >= cell_cnt_for_d_))) break;
         }
-        return idx;
+        return { idx, result };
     }
 
     template<class Itr>
@@ -447,16 +455,17 @@ private:
         }
         std::array<size_t, 2> segment{
             min_idx,
-            for_cell_minimize(id_to_et(min_idx, first), -1, first, last, P,
-                              [pt = id_to_et(min_idx, first), &first, this](size_t pid)
-                              {return pt::sqdistance(pt, id_to_et(pid, first)); },
-                              [&first, &alpha, low = is_lower_space(id_to_et(min_idx, first), alpha)](size_t pid)->bool
-                              {bool p = is_lower_space(id_to_et(pid, first), alpha); return low != p; })
+            minimize_where(P,
+                           [pt = id_to_et(min_idx, first), &first, this](size_t pid)
+                           {return pt::sqdistance(pt, id_to_et(pid, first)); },
+                           [&first, &alpha, low = is_lower_space(id_to_et(min_idx, first), alpha)](size_t pid)->bool
+                           {bool p = is_lower_space(id_to_et(pid, first), alpha); return low != p; })
+            .first
         };
         return make_first_simplex_impl(first, last, P, alpha, segment);
     }
-    template<class Pred, class Where, class Itr>
-    auto minimize_where(Itr first, Itr last, const id_point_set& p, Pred&& pred, Where&& where, std::invoke_result_t<Pred, size_t> initial = std::numeric_limits<std::invoke_result_t<Pred, size_t>>::max()) const
+    template<class Pred, class Where>
+    auto minimize_where(const id_point_set& p, Pred&& pred, Where&& where, std::invoke_result_t<Pred, size_t> initial = std::numeric_limits<std::invoke_result_t<Pred, size_t>>::max()) const
         -> std::pair<size_t, std::invoke_result_t<Pred, size_t>>
     {
         if (p.empty()) return { ~(size_t)0, initial};
@@ -475,6 +484,7 @@ private:
     template<int DD = 1, size_t V, class Itr>
     std::array<size_t, V+1> make_simplex(Itr first, Itr last, const id_point_set& p, const detail::facet<size_t, V>& f) const
     {
+        constexpr auto invalid_idx = ~(size_t)0;
         std::array<Pt, V + 1> pts;
         std::array<size_t, V + 1> id_pts;
         for (auto i = 0ul; i < V; ++i) {
@@ -512,12 +522,26 @@ private:
                 return foh != pth && pth != 0;
             };
             using std::sqrt;
-            auto [c, r] = get_circumscribed_circle(id_to_et(f.vertexes, first));
-            id_pts[V] = for_cell_minimize(c, sqrt(r), first, last, p, dd, where);
-            //id_pts[V] = minimize_where(first, last, p, dd, where).first;
+            auto cc = get_circumscribed_circle(id_to_et(f.vertexes, first));
+            size_t visited;
+            thread_local visited_cell_set si_visited;
+            coord_type res = std::numeric_limits<coord_type>::max();
+            id_pts[V] = invalid_idx;
+            do {
+                visited = si_visited.size();
+                auto local_res = for_cell_minimize(si_visited, cc.first, sqrt(cc.second), p, dd, where);
+                if (local_res.first != invalid_idx) {
+                    if (local_res.second < res) {
+                        res = local_res.second; id_pts[V] = local_res.first;
+                    }
+                    cc = get_circumscribed_circle(id_to_et(id_pts, first));
+                }
+            } while (visited != si_visited.size());
+            si_visited.clear();
+            //id_pts[V] = minimize_where(p, dd, where).first;
         }
         else {
-            id_pts[V] = minimize_where(first, last, p,
+            id_pts[V] = minimize_where(p,
                                        [&pts, &first, this](size_t id) mutable
                                        { pts[V] = id_to_et(id, first); return get_circumscribed_circle(pts).second; },
                                        [](...) {return true; }).first;

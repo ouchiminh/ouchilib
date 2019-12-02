@@ -155,8 +155,8 @@ DEFINE_TEST(test_tri)
         auto r = t(pts.begin(), pts.end(), t.return_as_idx);
         CHECK_EQUAL(r.size(), 2);
     }
-    //for(auto cnt = 0ul; cnt <= 2000ul; cnt += 100) {
-    //    triangulation<point, 1000> t(1.0e-10);
+    //for(auto cnt = 0ul; cnt <= 20000ul; cnt += 1000) {
+    //    triangulation<point, 1000> t;
     //    std::vector<point> pts;
     //    std::mt19937 mt;
     //    //std::normal_distribution<double> di(0, 1);
@@ -220,19 +220,21 @@ DEFINE_TEST(tri_plot)
 {
     using namespace ouchi::geometry;
     using namespace ouchi::math;
+    using point = fl_matrix<double, 2, 1>;
     using pt = point_traits<fl_matrix<double, 2, 1>>;
-    constexpr auto cnt = 18;
+    constexpr auto cnt = 3000;
     //constexpr auto cnt = 18;
-    triangulation<fl_matrix<double, 2, 1>, 0> t;
-    std::vector<fl_matrix<double, 2, 1>> pts;
+    triangulation<point, 1000> t;
+    std::vector<point> pts;
     std::mt19937 mt;
-    std::uniform_real_distribution<> di(0., cnt);
+    //std::normal_distribution<double> di(0, 1);
+    std::uniform_real_distribution<double> di(0, cnt);
     for (auto i = 0ul; i < cnt; ++i) {
-        for (auto j = 0ul; j < cnt; ++j)
-            //if((0 + j) % 3)
-            //pts.push_back({di(mt), di(mt)});
-            if(((i + j)&0x7) == 0)
-            pts.push_back({ i * 1.0, j * 1.0 });
+        pts.push_back(
+            {
+               di(mt),
+               di(mt)
+            });
     }
     //for (auto i = 0ul; i < cnt * cnt; ++i) pts.push_back({ di(mt)*10, di(mt)*10 });
     auto r = t(pts.begin(), pts.end(), t.return_as_idx);
