@@ -522,23 +522,23 @@ private:
                 return foh != pth && pth != 0;
             };
             using std::sqrt;
-            auto cc = get_circumscribed_circle(id_to_et(f.vertexes, first));
-            size_t visited;
-            thread_local visited_cell_set si_visited;
-            coord_type res = std::numeric_limits<coord_type>::max();
-            id_pts[V] = invalid_idx;
-            do {
-                visited = si_visited.size();
-                auto local_res = for_cell_minimize(si_visited, cc.first, sqrt(cc.second), p, dd, where);
-                if (local_res.first != invalid_idx) {
-                    if (local_res.second < res) {
-                        res = local_res.second; id_pts[V] = local_res.first;
-                    }
-                    cc = get_circumscribed_circle(id_to_et(id_pts, first));
-                }
-            } while (visited != si_visited.size());
-            si_visited.clear();
-            //id_pts[V] = minimize_where(p, dd, where).first;
+            //auto cc = get_circumscribed_circle(id_to_et(f.vertexes, first));
+            //size_t visited;
+            //thread_local visited_cell_set si_visited;
+            //coord_type res = std::numeric_limits<coord_type>::max();
+            //id_pts[V] = invalid_idx;
+            //do {
+            //    visited = si_visited.size();
+            //    auto local_res = for_cell_minimize(si_visited, cc.first, sqrt(cc.second), p, dd, where);
+            //    if (local_res.first != invalid_idx) {
+            //        if (local_res.second < res) {
+            //            res = local_res.second; id_pts[V] = local_res.first;
+            //        }
+            //        cc = get_circumscribed_circle(id_to_et(id_pts, first));
+            //    }
+            //} while (visited != si_visited.size());
+            //si_visited.clear();
+            id_pts[V] = minimize_where(p, dd, where).first;
         }
         else {
             id_pts[V] = minimize_where(p,
