@@ -162,11 +162,12 @@ DEFINE_TEST(test_tri)
         std::mt19937 mt;
         //std::normal_distribution<double> di(0, 1);
         std::uniform_real_distribution<double> di(0, cnt);
+        auto diff = double(mt.max() - mt.min());
         for (auto i = 0ul; i < cnt; ++i) {
             pts.push_back(
                 {
-                   di(mt),
-                   di(mt)
+                    mt() / diff * cnt,
+                    mt() / diff * cnt,
                 });
         }
         auto beg = std::chrono::high_resolution_clock::now();

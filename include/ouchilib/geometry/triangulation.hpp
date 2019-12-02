@@ -533,9 +533,9 @@ private:
                 if (local_res.first != invalid_idx) {
                     if (local_res.second < res) {
                         res = local_res.second; id_pts[V] = local_res.first;
-                    }
-                    cc = get_circumscribed_circle(id_to_et(id_pts, first));
-                }
+                        cc = get_circumscribed_circle(id_to_et(id_pts, first));
+                    } else break;
+                } else break;
             } while (visited != si_visited.size());
             si_visited.clear();
             //id_pts[V] = minimize_where(p, dd, where).first;
