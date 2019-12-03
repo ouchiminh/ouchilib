@@ -258,7 +258,6 @@ private:
                                 size_t& idx, std::invoke_result_t<F, size_t>& res,
                                 const id_point_set& P, F&& pred, Where&& w,
                                 bool is_edge = false) const
-        //-> std::pair<size_t, std::optional<std::invoke_result_t<F, size_t>>> 
         -> void
     {
         constexpr auto invalid = ~(size_t)0;
@@ -297,7 +296,7 @@ private:
         const auto dcell_cnt = (pt::get(cell_max_, 0) - pt::get(cell_min_, 0)) / pt::get(cell_width_, 0);
         size_t idx = invalid;
         auto result = std::numeric_limits<std::invoke_result_t<F, size_t>>::max();
-        unsigned radii = 0u;
+        unsigned radii = 0;
         if (radius > 0) {
             for (auto d = 0ul; d < dim; ++d) {
                 auto b = c;
@@ -522,18 +521,19 @@ private:
                 return foh != pth && pth != 0;
             };
             using std::sqrt;
-            auto cc = get_circumscribed_circle(id_to_et(f.vertexes, first));
+            auto cc = std::make_pair(get_circumscribed_circle(id_to_et(f.vertexes, first)).first, (coord_type)-1.0);
             size_t visited;
             thread_local visited_cell_set si_visited(spatial_index_.bucket_count());
             coord_type res = std::numeric_limits<coord_type>::max();
             id_pts[V] = invalid_idx;
             do {
                 visited = si_visited.size();
-                auto local_res = for_cell_minimize(si_visited, cc.first, sqrt(cc.second), p, dd, where);
+                auto local_res = for_cell_minimize(si_visited, cc.first, cc.second, p, dd, where);
                 if (local_res.first != invalid_idx) {
                     if (local_res.second < res) {
                         res = local_res.second; id_pts[V] = local_res.first;
                         cc = get_circumscribed_circle(id_to_et(id_pts, first));
+                        cc.second = sqrt(cc.second);
                     } else break;
                 } else break;
             } while (visited != si_visited.size());

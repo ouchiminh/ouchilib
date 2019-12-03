@@ -133,7 +133,6 @@ DEFINE_TEST(test_tri)
     {
         using tpt = point;
         triangulation<point> t;
-        // 面積2の三角形
         std::array<point, 4> pts = {
             point{ 0, 0 },
             point{ 3, 0 },
@@ -145,7 +144,6 @@ DEFINE_TEST(test_tri)
     }
     {
         triangulation<fl_matrix<double, 2, 1>> t;
-        // 面積2の三角形
         std::array<fl_matrix<double, 2, 1>, 4> pts = {
             fl_matrix<double, 2, 1>{ 0, 0 },
             fl_matrix<double, 2, 1>{ 3, 0 },
@@ -155,7 +153,7 @@ DEFINE_TEST(test_tri)
         auto r = t(pts.begin(), pts.end(), t.return_as_idx);
         CHECK_EQUAL(r.size(), 2);
     }
-#if 1
+#if 0
     for(auto cnt = 0ul; cnt <= 20000ul; cnt += 1000) {
         triangulation<point, 1000> t;
         std::vector<point> pts;
@@ -225,19 +223,20 @@ DEFINE_TEST(tri_plot)
     using namespace ouchi::math;
     using point = fl_matrix<double, 2, 1>;
     using pt = point_traits<fl_matrix<double, 2, 1>>;
-    constexpr auto cnt = 3000;
+    constexpr auto cnt = 18;
     //constexpr auto cnt = 18;
     triangulation<point, 1000> t;
     std::vector<point> pts;
     std::mt19937 mt;
     //std::normal_distribution<double> di(0, 1);
     std::uniform_real_distribution<double> di(0, cnt);
-    for (auto i = 0ul; i < cnt; ++i) {
-        pts.push_back(
-            {
-               di(mt),
-               di(mt)
-            });
+    constexpr point center{ cnt/2*1.0, cnt/2 * 1.0 };
+    for (auto i = 0u; i < cnt; ++i) {
+        for (auto j = 0u; j < cnt; ++j) {
+            point p{ i*1.0, j * 1.0 };
+            if (((i + j) & 7) == 0)
+                pts.push_back(p);
+        }
     }
     //for (auto i = 0ul; i < cnt * cnt; ++i) pts.push_back({ di(mt)*10, di(mt)*10 });
     auto r = t(pts.begin(), pts.end(), t.return_as_idx);
@@ -257,8 +256,8 @@ set output 'out.svg'
 
 # Key means label...
 set key outside bottom right
-set xrange[0:)" << cnt << "]\n"
-<<"set yrange[0:" << cnt <<"]\n";
+set xrange[-1:)" << cnt << "]\n"
+<<"set yrange[-1:" << cnt <<"]\n";
     ofs << R"(plot "-" w l lw 0.5)" "\n\n";
     for (auto& s : r) {
         std::array<fl_matrix<double, 2, 1>, 2 + 1> buf;
