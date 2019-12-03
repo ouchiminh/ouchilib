@@ -120,6 +120,17 @@ DEFINE_TEST(test_tri_volume)
         auto s = t.volume(pts);
         CHECK_EQUAL(s, 2);
     }
+    {
+        triangulation<fl_matrix<double, 2, 1>> t;
+        // 面積1の三角形
+        std::array<fl_matrix<double, 2, 1>, 3> pts = {
+            fl_matrix<double, 2, 1>{ 0+19, 0+3 },
+            fl_matrix<double, 2, 1>{ 1+19, 0+3 },
+            fl_matrix<double, 2, 1>{ 0+19, 2+3 }
+        };
+        auto s = t.volume(pts);
+        CHECK_EQUAL(s, 1);
+    }
 }
 #endif
 
@@ -225,7 +236,7 @@ DEFINE_TEST(tri_plot)
     using pt = point_traits<fl_matrix<double, 2, 1>>;
     constexpr auto cnt = 18;
     //constexpr auto cnt = 18;
-    triangulation<point, 1000> t;
+    triangulation<point, 0> t;
     std::vector<point> pts;
     std::mt19937 mt;
     //std::normal_distribution<double> di(0, 1);
@@ -234,7 +245,7 @@ DEFINE_TEST(tri_plot)
     for (auto i = 0u; i < cnt; ++i) {
         for (auto j = 0u; j < cnt; ++j) {
             point p{ i*1.0, j * 1.0 };
-            if (((i + j) & 7) == 0)
+            if (mt() & 1)
                 pts.push_back(p);
         }
     }
