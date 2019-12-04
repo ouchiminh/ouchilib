@@ -625,7 +625,7 @@ private:
     // N次元単体に外接する球の中心と半径の二乗を求める
     // https://img.atwikiimg.com/www7.atwiki.jp/neetubot/pub/neetubot-1.0.pdf
     template<size_t V>
-    static constexpr std::pair<Pt, coord_type> get_circumscribed_circle(const std::array<Pt, V>& s) noexcept
+    constexpr std::pair<Pt, coord_type> get_circumscribed_circle(const std::array<Pt, V>& s) const noexcept
     {
         using namespace ouchi::math;
         static const fl_matrix<coord_type, dim, 1> one = detail::one<coord_type, dim>();
@@ -663,6 +663,7 @@ private:
                 }
                 return ret;
             };
+            using std::abs;
             fl_matrix<coord_type, dim, V> P = atomat(s);
             const auto PTP = P.transpose() * P;
             const auto co = PTP.cofactor();
@@ -672,10 +673,12 @@ private:
             for (auto i = 0ul; i < V; ++i) {
                 rvec(i) = (P.column(i).transpose() * P.column(i))(0) / (coord_type)2;
             }
-            auto p0 = ((P * co * onep) + ((P * cofactor_sum_mat(P))) * rvec) / den;
+            auto po = ((P * co * onep) + ((P * cofactor_sum_mat(P))) * rvec);
+            if (abs(den) <= epsilon) return { Pt{}, std::numeric_limits<coord_type>::signaling_NaN() };
+            po = po / den;
             Pt o;
             for (auto i = 0ul; i < dim; ++i) {
-                pt::set(o, i, p0(i));
+                pt::set(o, i, po(i));
             }
             return { o, pt::sqdistance(o, s[0]) };
         }

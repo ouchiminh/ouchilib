@@ -234,9 +234,9 @@ DEFINE_TEST(tri_plot)
     using namespace ouchi::math;
     using point = fl_matrix<double, 2, 1>;
     using pt = point_traits<fl_matrix<double, 2, 1>>;
-    constexpr auto cnt = 31;
+    constexpr auto cnt = 3;
     //constexpr auto cnt = 18;
-    triangulation<point, 0> t;
+    triangulation<point, 0> t(DBL_EPSILON * 128);
     std::vector<point> pts;
     std::mt19937 mt;
     //std::normal_distribution<double> di(0, 1);
@@ -244,8 +244,8 @@ DEFINE_TEST(tri_plot)
     constexpr point center{ cnt/2*1.0, cnt/2 * 1.0 };
     for (auto i = 0u; i < cnt; ++i) {
         for (auto j = 0u; j < cnt; ++j) {
-            point p{ i*1.0, j * 1.0 };
-            if (mt() & 1)
+            point p{ i*1.0 + 0.1, j * 1.0 + 0.2 };
+            //if (mt() & 1)
                 pts.push_back(p);
         }
     }
