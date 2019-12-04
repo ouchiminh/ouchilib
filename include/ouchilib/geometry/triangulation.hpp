@@ -120,21 +120,6 @@ constexpr size_t fact(size_t i)
     return ret;
 }
 
-template<size_t C, size_t ...I>
-constexpr std::array<size_t, C> root_id_impl(std::index_sequence<I...>)
-{
-    constexpr size_t ff = ~(size_t)0;
-    std::array<size_t, C> ret;
-    ((ret[I] = ff - I), ...);
-    return ret;
-}
-
-template<size_t C>
-constexpr std::array<size_t, C> root_id()
-{
-    return root_id_impl<C>(std::make_index_sequence<C>{});
-}
-
 }
 
 template<class Pt, unsigned Parallel = 0>
@@ -494,6 +479,14 @@ private:
         }
         if constexpr (V == dim && DD == 1) {
             int pth;
+            using std::sqrt;
+            auto cc = std::make_pair(get_circumscribed_circle(id_to_et(f.vertexes, first)).first,
+                                     (coord_type)-1.0);
+            size_t visited;
+            thread_local visited_cell_set si_visited(spatial_index_.bucket_count());
+            auto res = std::make_pair(std::numeric_limits<coord_type>::max(),
+                                      std::numeric_limits<coord_type>::max());
+            id_pts[V] = invalid_idx;
             auto halfspace_pt = [epsilon = this->epsilon, &pts](const Pt& p) {
                 using std::abs;
                 pts[V] = p;
@@ -511,10 +504,10 @@ private:
                 auto [c, r] = get_circumscribed_circle(pts);
                 if (isnan(r)) return std::make_pair(std::numeric_limits<coord_type>::max(),
                                                     std::numeric_limits<coord_type>::max());
-                auto lt0pt = pth;
+                auto hspt = pth;
                 auto v = volume(pts);
-                auto lt0ct = halfspace_pt(c);
-                if (lt0ct != lt0pt) r = -r;
+                auto hsct = halfspace_pt(c);
+                if (hsct != hspt) r = -r;
                 return std::make_pair(r, v);
             };
             auto where = [this, &f, &halfspace_id, &first, &pth](size_t id) -> bool
@@ -524,14 +517,6 @@ private:
                 auto foh = halfspace_id(f.opposite.value());
                 return foh != pth && pth != 0;
             };
-            using std::sqrt;
-            auto cc = std::make_pair(get_circumscribed_circle(id_to_et(f.vertexes, first)).first,
-                                     (coord_type)-1.0);
-            size_t visited;
-            thread_local visited_cell_set si_visited(spatial_index_.bucket_count());
-            auto res = std::make_pair(std::numeric_limits<coord_type>::max(),
-                                      std::numeric_limits<coord_type>::max());
-            id_pts[V] = invalid_idx;
             do {
                 visited = si_visited.size();
                 auto local_res = for_cell_minimize(si_visited, cc.first, cc.second, p, dd, where);
@@ -544,6 +529,8 @@ private:
                 } else break;
             } while (visited != si_visited.size());
             //auto [miniidx, miniresult] = minimize_where(p, dd, where);
+            //if (miniidx != invalid_idx && miniresult.value() != res)
+            //    throw std::runtime_error("error triangulation");
             si_visited.clear();
             //id_pts[V] = minimize_where(p, dd, where).first;
         }

@@ -175,17 +175,17 @@ DEFINE_TEST(test_tri)
         for (auto i = 0ul; i < cnt; ++i) {
             pts.push_back(
                 {
-                    mt() / diff * cnt,
-                    mt() / diff * cnt,
+                    di(mt),
+                    di(mt)
                 });
         }
         auto beg = std::chrono::high_resolution_clock::now();
         auto r = t(pts.begin(), pts.end(), t.return_as_idx);
         auto d = std::chrono::high_resolution_clock::now() - beg;
         auto bf = r.size();
-        std::sort(r.begin(), r.end());
-        r.erase(std::unique(r.begin(), r.end()), r.end());
-        CHECK_EQUAL(bf, r.size());
+        //std::sort(r.begin(), r.end());
+        //r.erase(std::unique(r.begin(), r.end()), r.end());
+        //CHECK_EQUAL(bf, r.size());
         std::cout << cnt << ' ' << d.count() / (double)std::chrono::high_resolution_clock::period::den << std::endl;
     }
 #endif
@@ -234,7 +234,7 @@ DEFINE_TEST(tri_plot)
     using namespace ouchi::math;
     using point = fl_matrix<double, 2, 1>;
     using pt = point_traits<fl_matrix<double, 2, 1>>;
-    constexpr auto cnt = 18;
+    constexpr auto cnt = 31;
     //constexpr auto cnt = 18;
     triangulation<point, 0> t;
     std::vector<point> pts;
