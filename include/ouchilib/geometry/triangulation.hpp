@@ -498,17 +498,26 @@ private:
             auto halfspace_id = [this, &first, &halfspace_pt](size_t id) {
                 return halfspace_pt(id_to_et(id, first));
             };
-            auto dd = [this, &halfspace_pt,&halfspace_id, &first, &pts, &pth](size_t id) {
+            auto perturbation = [this, &first](size_t id) -> Pt {
+                Pt p = id_to_et(id, first);
+                for (auto d = 0u; d < dim; ++d) {
+                    pt::set(p, d, pt::get(p, d) + epsilon / (id * dim + d));
+                }
+                return p;
+            };
+            auto dd = [this, &halfspace_pt,&halfspace_id, &first, &pts, &pth, &perturbation](size_t id) {
                 using std::isnan;
                 pts[V] = id_to_et(id, first);
                 auto [c, r] = get_circumscribed_circle(pts);
                 if (isnan(r)) return std::make_pair(std::numeric_limits<coord_type>::max(),
-                                                    std::numeric_limits<coord_type>::max());
+                                                    coord_type{});
                 auto hspt = pth;
-                auto v = volume(pts);
+                pts[V] = perturbation(id);
+                auto [c2, r2] = get_circumscribed_circle(pts);
+
                 auto hsct = halfspace_pt(c);
-                if (hsct != hspt) r = -r;
-                return std::make_pair(r, v);
+                if (hsct != hspt) { r = -r, r2 = -r2; };
+                return std::make_pair(r, r2);
             };
             auto where = [this, &f, &halfspace_id, &first, &pth](size_t id) -> bool
             {
@@ -528,6 +537,7 @@ private:
                     } else break;
                 } else break;
             } while (visited != si_visited.size());
+
             //auto [miniidx, miniresult] = minimize_where(p, dd, where);
             //if (miniidx != invalid_idx && miniresult.value() != res)
             //    throw std::runtime_error("error triangulation");
