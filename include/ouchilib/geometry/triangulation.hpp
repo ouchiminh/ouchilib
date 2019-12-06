@@ -484,8 +484,9 @@ private:
                                      (coord_type)-1.0);
             size_t visited;
             thread_local visited_cell_set si_visited(spatial_index_.bucket_count());
-            auto res = std::make_pair(std::numeric_limits<coord_type>::max(),
-                                      std::numeric_limits<coord_type>::max());
+            //auto res = std::make_pair(std::numeric_limits<coord_type>::max(),
+            //                          std::numeric_limits<coord_type>::max());
+            coord_type res = std::numeric_limits<coord_type>::max();
             id_pts[V] = invalid_idx;
             auto halfspace_pt = [epsilon = this->epsilon, &pts](const Pt& p) {
                 using std::abs;
@@ -498,26 +499,14 @@ private:
             auto halfspace_id = [this, &first, &halfspace_pt](size_t id) {
                 return halfspace_pt(id_to_et(id, first));
             };
-            auto perturbation = [this, &first](size_t id) -> Pt {
-                Pt p = id_to_et(id, first);
-                for (auto d = 0u; d < dim; ++d) {
-                    pt::set(p, d, pt::get(p, d) + epsilon / (id * dim + d));
-                }
-                return p;
-            };
-            auto dd = [this, &halfspace_pt,&halfspace_id, &first, &pts, &pth, &perturbation](size_t id) {
+            auto dd = [this, &halfspace_pt,&halfspace_id, &first, &pts, &pth](size_t id) {
                 using std::isnan;
                 pts[V] = id_to_et(id, first);
                 auto [c, r] = get_circumscribed_circle(pts);
-                if (isnan(r)) return std::make_pair(std::numeric_limits<coord_type>::max(),
-                                                    coord_type{});
+                if (isnan(r)) return std::numeric_limits<coord_type>::max();
                 auto hspt = pth;
-                pts[V] = perturbation(id);
-                auto [c2, r2] = get_circumscribed_circle(pts);
-
                 auto hsct = halfspace_pt(c);
-                if (hsct != hspt) { r = -r, r2 = -r2; };
-                return std::make_pair(r, r2);
+                return hsct == hspt ? r : -r;
             };
             auto where = [this, &f, &halfspace_id, &first, &pth](size_t id) -> bool
             {
@@ -530,7 +519,7 @@ private:
                 visited = si_visited.size();
                 auto local_res = for_cell_minimize(si_visited, cc.first, cc.second, p, dd, where);
                 if (local_res.first != invalid_idx) {
-                    if (local_res.second < res) {
+                    if (local_res.second.value() < res) {
                         res = local_res.second.value(); id_pts[V] = local_res.first;
                         cc = get_circumscribed_circle(id_to_et(id_pts, first));
                         cc.second = sqrt(cc.second);

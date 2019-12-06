@@ -236,11 +236,12 @@ DEFINE_TEST(tri_plot)
     using pt = point_traits<fl_matrix<boost::multiprecision::cpp_dec_float_100, 2, 1>>;
     constexpr auto cnt = 60;
     //constexpr auto cnt = 18;
-    triangulation<point, 0> t(1.0e-8);
+    triangulation<point, 0> t(1.0e-12);
     std::vector<point> pts;
     std::mt19937 mt;
     //std::normal_distribution<double> di(0, 1);
-    std::uniform_real_distribution<double> di(-0.1, 0.1);
+    //std::uniform_real_distribution<double> di(-0.1, 0.1);
+    auto di = [](...) {return 0; };
     const point center{ cnt/2*1.0, cnt/2 * 1.0 };
     for (auto i = 0u; i < cnt; ++i) {
         for (auto j = 0u; j < cnt; ++j) {
