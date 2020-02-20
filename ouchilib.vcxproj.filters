@@ -114,9 +114,6 @@
     <ClInclude Include="include\ouchilib\crypto\algorithm\sha.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\ouchilib\data_structure\ring_buffer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\ouchilib\crypto\algorithm\mugi.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -136,9 +133,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\ouchilib\geometry\triangulation.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ouchilib\data_structure\tree.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
