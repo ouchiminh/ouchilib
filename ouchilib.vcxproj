@@ -130,6 +130,9 @@
     <ClInclude Include="include\ouchilib\crypto\common.hpp" />
     <ClInclude Include="include\ouchilib\crypto\block_encoder.hpp" />
     <ClInclude Include="include\ouchilib\data_structure\ring_buffer.hpp" />
+    <ClInclude Include="include\ouchilib\data_structure\tree.hpp" />
+    <ClInclude Include="include\ouchilib\geometry\point_traits.hpp" />
+    <ClInclude Include="include\ouchilib\geometry\triangulation.hpp" />
     <ClInclude Include="include\ouchilib\log\format.hpp" />
     <ClInclude Include="include\ouchilib\log\out.hpp" />
     <ClInclude Include="include\ouchilib\log\rule.hpp" />

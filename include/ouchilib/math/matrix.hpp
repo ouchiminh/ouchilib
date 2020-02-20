@@ -165,7 +165,7 @@ public:
         , values_{}
     {}
     template<class S = Size, std::enable_if_t<is_fixed_length_v<S>>* = nullptr>
-    constexpr basic_matrix(const T& fill_value)
+    explicit constexpr basic_matrix(const T& fill_value)
         : row_size_{S::row_size}
         , column_size_{S::column_size}
         , values_{}
@@ -277,17 +277,65 @@ public:
         values_.resize(total_size(), v);
     }
 
-    // 余因子
+    template<class S = Size>
+    constexpr auto row(size_t i) const noexcept(is_fixed_length_v<S>)
+        -> basic_matrix<T, std::conditional_t<is_fixed_length_v<S>, fixed_length<1, mat_size_c<S>>, variable_length>>
+    {
+        using ret_t = basic_matrix<T, std::conditional_t<is_fixed_length_v<S>, fixed_length<1, mat_size_c<S>>, variable_length>>;
+        ret_t ret{};
+        if constexpr (is_variable_length_v<S>) {
+            ret.resize(1, size().second);
+        }
+        for (auto j = 0ul; j < size().second; ++j) {
+            ret(j) = (*this)(i, j);
+        }
+        return std::move(ret);
+    }
+    template<class S = Size>
+    constexpr auto column(size_t i) const noexcept(is_fixed_length_v<S>)
+        -> basic_matrix<T, std::conditional_t<is_fixed_length_v<S>, fixed_length<mat_size_r<S>, 1>, variable_length>>
+    {
+        using ret_t = basic_matrix<T, std::conditional_t<is_fixed_length_v<S>, fixed_length<mat_size_r<S>, 1>, variable_length>>;
+        ret_t ret{};
+        if constexpr (is_variable_length_v<S>) {
+            ret.resize(size().first, 1);
+        }
+        for (auto j = 0ul; j < size().first; ++j) {
+            ret(j) = (*this)(j, i);
+        }
+        return std::move(ret);
+    }
+
+    // 転置
     template<class S = Size>
     [[nodiscard]]
-    constexpr auto cofactor(size_t i, size_t j) const noexcept(is_fixed_length_v<S>)
+    constexpr auto transpose() const noexcept(is_fixed_length_v<S>)
+        -> basic_matrix<T, std::conditional_t<is_fixed_length_v<S>, fixed_length<mat_size_c<Size>, mat_size_r<Size>>, variable_length>>
+    {
+        using ret_t = basic_matrix<T, std::conditional_t<is_fixed_length_v<S>, fixed_length<mat_size_c<Size>, mat_size_r<Size>>, variable_length>>;
+        ret_t ret{};
+        if constexpr (is_variable_length_v<S>) {
+            ret.resize(size().second, size().first);
+        }
+        for (auto i = 0ul; i < size().first; ++i) {
+            for (auto j = 0ul; j < size().second; ++j) {
+                ret(j, i) = (*this)(i, j);
+            }
+        }
+        return std::move(ret);
+    }
+
+    // 小行列
+    template<class S = Size>
+    [[nodiscard]]
+    constexpr auto minor(size_t i, size_t j) const noexcept(is_fixed_length_v<S>)
         -> std::enable_if_t<(detail::is_n_by_n_or_larger_v<S, 2> > detail::condvalue::no),
                             basic_matrix<T, std::conditional_t<is_fixed_length_v<S>, fixed_length<mat_size_r<Size> - 1, mat_size_c<S> - 1>, variable_length>>>
     {
         using mat_t = basic_matrix<T, std::conditional_t<is_fixed_length_v<S>, fixed_length<mat_size_r<S> - 1, mat_size_c<S> - 1>, variable_length>>;
         mat_t ret;
         if constexpr (is_variable_length_v<S>) {
-            if (size().first != size().second) throw std::domain_error("non-square matrix have no cofactor");
+            if (size().first != size().second) throw std::domain_error("non-square matrix have no minor determinant");
             size_t n = size().first - 1;
             ret.resize(n, n);
         }
@@ -301,6 +349,26 @@ public:
                 ret(p, q++) = (*this)(l, m);
             }
             ++p;
+        }
+        return std::move(ret);
+    }
+    // 余因子行列
+    template<class S = Size>
+    [[nodiscard]]
+    constexpr auto cofactor() const noexcept(is_fixed_length_v<S>)
+        -> std::enable_if_t<(detail::is_square_v<S> > detail::condvalue::no), basic_matrix>
+    {
+        auto sgn = [](auto i, auto j) { return (i + j) & 1 ? -1 : 1; };
+        basic_matrix ret;
+        if constexpr (is_variable_length_v<S>) {
+            if (size().first != size().second) throw std::domain_error("non-square matrix have no cofactor");
+            size_t n = size().first;
+            ret.resize(n, n);
+        }
+        for (auto i = 0ul; i<ret.size().first; ++i) {
+            for (auto j = 0ul; j<ret.size().second; ++j) {
+                ret(i, j) = sgn(i, j) * slow_det(minor(j, i));
+            }
         }
         return std::move(ret);
     }
@@ -411,6 +479,30 @@ public:
     {
         return a * scalar;
     }
+    [[nodiscard]]
+    friend constexpr auto operator/(const basic_matrix& a, const T& scalar)
+        noexcept(is_fixed_length_v<Size> && noexcept(std::declval<T>() * std::declval<T>()))
+        -> basic_matrix<T, Size>
+    {
+        basic_matrix<T, Size> ret;
+        if constexpr (is_variable_length_v<Size>) {
+            ret.resize(a.size().first, a.size().second);
+        }
+        for (auto i = 0ul; i < a.total_size(); ++i) {
+            ret(i) = a(i) / scalar;
+        }
+        return std::move(ret);
+    }
+
+    // 比較演算
+    friend constexpr bool operator==(const basic_matrix& m1, const basic_matrix& m2) noexcept
+    {
+        if (m1.size() != m2.size()) return false;
+        for (auto i = 0ul; i < m1.total_size(); ++i) {
+            if (m1(i) != m2(i)) return false;
+        }
+        return true;
+    }
 };
 
 template<class T, class S>
@@ -454,7 +546,7 @@ constexpr auto slow_det(const basic_matrix<T, S>& m)
     T ret = T{};
     if constexpr (detail::is_n_by_n_or_larger_v<S, 2> > detail::condvalue::no) {
         for (auto i = 0ul; i < m.size().first; ++i) {
-            ret += sgn(i, 0) * m(i, 0) * slow_det(m.cofactor(i, 0));
+            ret += sgn(i, 0) * m(i, 0) * slow_det(m.minor(i, 0));
         }
     }
     return ret;

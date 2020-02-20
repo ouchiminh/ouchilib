@@ -100,7 +100,7 @@ public:
     auto find_separator(string_view c) const
     {
         auto retcond = [c](auto p, auto cnt, const auto& cur_ret) {
-            return p <= std::distance(c.begin(), cur_ret.first) &&
+            return (size_t)p <= (size_t)std::distance(c.begin(), cur_ret.first) &&
                 cnt > cur_ret.second;
         };
         constexpr size_t invalid = ~(size_t)0;

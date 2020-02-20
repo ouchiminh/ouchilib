@@ -134,7 +134,7 @@ struct aes {
         cin[3] = sbox[cin[3]];
         return (inw);
     }
-    static constexpr std::uint32_t subchar(std::uint8_t in) noexcept
+    static constexpr std::uint8_t subchar(std::uint8_t in) noexcept
     {
         return sbox[in];
     }
