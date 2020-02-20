@@ -91,4 +91,7 @@ struct variant_compatible<void> { using type = std::monostate; };
 template<class T>
 using variant_compatible_t = typename variant_compatible<T>::type;
 
+template<class Itr, class T>
+concept type_specified_iterator = std::is_same_v<typename std::iterator_traits<Itr>::value_type, T>;
+
 }

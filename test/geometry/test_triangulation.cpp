@@ -228,6 +228,7 @@ DEFINE_TEST(test_tri)
 }
 #include <fstream>
 #include <iostream>
+#if 0
 DEFINE_TEST(tri_plot)
 {
     using namespace ouchi::geometry;
@@ -286,3 +287,5 @@ set xrange[-1:)" << cnt << "]\n"
     }
     ofs << "e\n";
 }
+#endif
+
