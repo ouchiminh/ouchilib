@@ -61,14 +61,12 @@ private:
     template<size_t ...S>
     inline [[nodiscard]] __m128i enc_round(__m128i state, std::index_sequence<S...>) const noexcept
     {
-        ((state = _mm_aesenc_si128(state, w128[S + 1])), ...);
-        return state;
+        return ((state = _mm_aesenc_si128(state, w128[S + 1])), ...);
     }
     template<size_t ...S>
     inline [[nodiscard]] __m128i dec_round(__m128i state, std::index_sequence<S...>) const noexcept
     {
-        ((state = _mm_aesdec_si128(state, dw128[nr - S - 1])), ...);
-        return state;
+        return ((state = _mm_aesdec_si128(state, dw128[nr - S - 1])), ...);
     }
 
     void expand_key()
