@@ -15,7 +15,6 @@
 #include "ouchilib/crypto/common.hpp" // for hash
 #include "ouchilib/crypto/algorithm/aes.hpp" // for hash
 
-#include "ouchilib/data_structure/tree.hpp"
 #include "ouchilib/math/matrix.hpp"
 #include "point_traits.hpp"
 
