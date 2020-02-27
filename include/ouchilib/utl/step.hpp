@@ -37,11 +37,11 @@ public:
             , width_{ width }
         {}
 
-        iterator& operator++() {
+        constexpr iterator& operator++() {
             cur_ = std::min(cur_ + width_, end_);
             return *this;
         }
-        iterator operator++(int) { auto cp = *this; ++(*this); return cp; }
+        constexpr iterator operator++(int) { auto cp = *this; ++(*this); return cp; }
         constexpr Int operator*() const noexcept { return cur_; }
         constexpr friend bool operator==(const iterator& a, const iterator& b) {
             return a.cur_ == b.cur_ && a.end_ == b.end_;
