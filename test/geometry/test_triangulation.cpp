@@ -228,14 +228,14 @@ DEFINE_TEST(test_tri)
 }
 #include <fstream>
 #include <iostream>
-#if 0
+#if 1
 DEFINE_TEST(tri_plot)
 {
     using namespace ouchi::geometry;
     using namespace ouchi::math;
     using point = fl_matrix<double, 2, 1>;
     using pt = point_traits<fl_matrix<boost::multiprecision::cpp_dec_float_100, 2, 1>>;
-    constexpr auto cnt = 60;
+    constexpr auto cnt = 10;
     //constexpr auto cnt = 18;
     triangulation<point, 0> t(1.0e-12);
     std::vector<point> pts;

@@ -192,8 +192,9 @@ private:
 
     std::array<long, dim> get_cell(const Pt& p) const noexcept
     {
+        namespace og = ouchi::geometry;
         using std::floor;
-        auto diff = pt::sub(p, cell_min_);
+        auto diff = og::sub(p, cell_min_);
         std::array<long, dim> rawidx{};
         for (auto d = 0ul; d < dim; ++d) {
             rawidx[d] = (long)floor(pt::get(diff, d) / pt::get(cell_width_, d));
@@ -204,6 +205,7 @@ private:
     void make_spatial_index(Itr first, Itr last)
     {
         using std::ceil, std::floor;
+        namespace og = ouchi::geometry;
         Pt min = *first; // 各次元ごとの最大値
         Pt max = *first;
         for (auto d = 0u; d < dim; ++d) {
@@ -218,7 +220,7 @@ private:
                 else if (pt::get(min, d) > c) pt::set(min, d, floor(c));
             }
         }
-        Pt diff = pt::sub(max, min);
+        Pt diff = og::sub(max, min);
         coord_type diff_min = pt::get(diff, 0);
         for (auto i = 1u; i < dim; ++i) if (diff_min > pt::get(diff, i)) diff_min = pt::get(diff, i);
         auto den = std::max<size_t>(detail::bits_msb((long)std::pow(std::distance(first, last), 1.0 / dim)) >> 2, 1ul);
@@ -427,6 +429,7 @@ private:
     id_simplex make_first_simplex(Itr first, Itr last, id_point_set& P, const alpha_t& alpha) const
     {
         using std::abs;
+        namespace og = ouchi::geometry;
         coord_type min_dist = std::numeric_limits<coord_type>::max();
         size_t min_idx = 0;
         for (auto p : P) {
@@ -440,7 +443,7 @@ private:
             min_idx,
             minimize_where(P,
                            [pt = id_to_et(min_idx, first), &first, this](size_t pid)
-                           {return pt::sqdistance(pt, id_to_et(pid, first)); },
+                           {return og::sqdistance(pt, id_to_et(pid, first)); },
                            [&first, &alpha, low = is_lower_space(id_to_et(min_idx, first), alpha)](size_t pid)->bool
                            {bool p = is_lower_space(id_to_et(pid, first), alpha); return low != p; })
             .first
@@ -626,12 +629,13 @@ private:
     constexpr std::pair<Pt, coord_type> get_circumscribed_circle(const std::array<Pt, V>& s) const noexcept
     {
         using namespace ouchi::math;
+        namespace og = ouchi::geometry;
         static const fl_matrix<coord_type, dim, 1> one = detail::one<coord_type, dim>();
         static const fl_matrix<coord_type, V, 1> onep = detail::one<coord_type, V>();
         if constexpr (V == 2) {
-            auto sum = pt::add(s[0], s[1]);
-            auto c = pt::mul(sum, (coord_type)0.5);
-            return { c, pt::sqdistance(s[0], s[1]) };
+            auto sum = og::add(s[0], s[1]);
+            auto c = og::mul(sum, (coord_type)0.5);
+            return { c, og::sqdistance(s[0], s[1]) };
         } else {
         // 行列要素の総和
             auto sum_mat = [](auto&& mat)->coord_type {
@@ -678,7 +682,7 @@ private:
             for (auto i = 0ul; i < dim; ++i) {
                 pt::set(o, i, po(i));
             }
-            return { o, pt::sqdistance(o, s[0]) };
+            return { o, og::sqdistance(o, s[0]) };
         }
     }
 
