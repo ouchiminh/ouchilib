@@ -8,6 +8,14 @@
 
 #include <random>
 
+DEFINE_TEST(test_point_traits)
+{
+    using namespace ouchi::geometry;
+    auto p = construct<ouchi::math::fl_matrix<int, 2, 1>>(1, 33);
+    CHECK_EQUAL(p(0), 1);
+    CHECK_EQUAL(p(1), 33);
+}
+
 #if 0
 DEFINE_TEST(test_t_gcc)
 {

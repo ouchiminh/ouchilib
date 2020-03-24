@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include <type_traits>
 #include <cmath>
+#include <concepts>
+#include <utility>
 #include "ouchilib/math/matrix.hpp"
 
 namespace ouchi::geometry {
@@ -22,6 +24,7 @@ struct point_traits<ouchi::math::fl_matrix<T, Dim, 1>> {
     static constexpr T& set(type& p, size_t d, const coord_type& v) noexcept { return p(d) = v; }
     [[nodiscard]]
     static constexpr type zero() { return type{}; }
+
     [[nodiscard]]
     [[deprecated]]
     static constexpr type add(const type& lhs, const type rhs) { return lhs + rhs; }
@@ -63,6 +66,28 @@ struct point_traits<ouchi::math::fl_matrix<T, Dim, 1>> {
         return sqrt(sqdistance(lhs, rhs));
     }
 };
+
+namespace detail {
+
+template<class P, class A, size_t ...Idx>
+P construct_impl(A&& args, std::index_sequence<Idx...>)
+{
+    P p;
+    (point_traits<P>::set(p, Idx,
+                          static_cast<typename point_traits<P>::coord_type>(std::get<Idx>(args))), ...);
+    return p;
+}
+
+}
+
+template<class P, std::convertible_to<typename point_traits<P>::coord_type> ...V>
+constexpr auto construct(V&& ...values)
+->std::enable_if_t<sizeof...(V) == point_traits<P>::dim, typename point_traits<P>::type>
+{
+    auto args = std::tie(values...);
+    return detail::construct_impl<P>(std::forward<decltype(args)>(args),
+                                     std::make_index_sequence<point_traits<P>::dim>());
+}
 
 template<class P>
 constexpr auto add(const P& lhs, const P& rhs)
