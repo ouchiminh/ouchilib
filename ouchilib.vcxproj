@@ -150,6 +150,8 @@
     <ClInclude Include="include\ouchilib\tokenizer\separator.hpp" />
     <ClInclude Include="include\ouchilib\tokenizer\tokenizer.hpp" />
     <ClInclude Include="include\ouchilib\tokenizer\tokenize_algorithm.hpp" />
+    <ClInclude Include="include\ouchilib\units\si.hpp" />
+    <ClInclude Include="include\ouchilib\units\units.hpp" />
     <ClInclude Include="include\ouchilib\utl\constexpr_for.h" />
     <ClInclude Include="include\ouchilib\utl\fps-counter.hpp" />
     <ClInclude Include="include\ouchilib\utl\indexed_iterator.hpp" />

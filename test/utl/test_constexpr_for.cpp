@@ -3,11 +3,6 @@
 #include "../test.hpp"
 #include "ouchilib/utl/constexpr_for.h"
 
-template<size_t I>
-struct f {
-    void operator()(){}
-};
-
 DEFINE_TEST(test_constexpr_for)
 {
     std::vector<size_t> ans{ 0,1,2,3,4 }, res;

@@ -77,5 +77,8 @@
     <ClCompile Include="..\utl\test_constexpr_for.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="..\units\test_units.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

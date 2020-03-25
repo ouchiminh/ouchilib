@@ -138,5 +138,11 @@
     <ClInclude Include="include\ouchilib\utl\constexpr_for.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\ouchilib\units\units.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ouchilib\units\si.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

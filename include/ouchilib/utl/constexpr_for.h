@@ -15,7 +15,7 @@ constexpr auto constexpr_for_impl(F&& f, std::index_sequence<Ints...>)
 template<std::invocable<> F, size_t ...Ints>
 constexpr auto constexpr_for_impl(F&& f, std::index_sequence<Ints...>)
 {
-    return ((Ints, f()), ...);
+    return (((void)Ints, f()), ...);
 }
 
 }
