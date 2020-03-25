@@ -19,7 +19,7 @@ static_assert(
 
 DEFINE_TEST(quantity_instantiate)
 {
-    quantity<double, si::length> l = 2.0 * si::meter;
+    quantity<double, si::length> l = 2.0 * si::m;
     CHECK_EQUAL(l.get_value(), 2.0);
 }
 
