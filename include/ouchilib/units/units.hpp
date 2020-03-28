@@ -3,147 +3,176 @@
 #include <type_traits>
 #include <concepts>
 #include <string_view>
+#include <ratio>
+
+#include "dimension.hpp"
+#include "detail.hpp"
 
 namespace ouchi::units {
 
-namespace detail {
-
-template<class, class>
-class add_sequence;
-
-template<class Int, Int ...I, Int ...J>
-struct add_sequence<
-    std::integer_sequence<Int, I...>,
-    std::integer_sequence<Int, J...>>
-{
-    using result = std::enable_if_t<
-        sizeof...(I) == sizeof...(J),
-        std::integer_sequence<Int, (I + J)...>>;
-};
-
-
-template<class, class>
-class sub_sequence;
-
-template<class Int, Int ...I, Int ...J>
-struct sub_sequence<
-    std::integer_sequence<Int, I...>,
-    std::integer_sequence<Int, J...>>
-{
-    using result = std::enable_if_t<
-        sizeof...(I) == sizeof...(J),
-        std::integer_sequence<Int, (I - J)...>>;
-};
-
-template<class T>
-concept arithmetic = std::is_arithmetic_v<T>;
-}
-
-template<detail::arithmetic T, class SystemOfUnits>
+template<class T, class Unit>
 class quantity;
 
-template<class SystemOfUnits, int ...Exponents>
-struct basic_system_of_units{
-    template<int ...Is>
-    static auto seq_to(std::integer_sequence<int, Is...>)
-        ->basic_system_of_units<SystemOfUnits, Is...>;
-    template<int ...Es>
-    using mul_t = decltype(seq_to(std::declval<typename detail::add_sequence<std::integer_sequence<int, Exponents...>, std::integer_sequence<int, Es...>>::result>()));
-    template<int ...Es>
-    using div_t = decltype(seq_to(std::declval<typename detail::sub_sequence<std::integer_sequence<int, Exponents...>, std::integer_sequence<int, Es...>>::result>()));
-    using inv_t = basic_system_of_units<SystemOfUnits, (-Exponents)...>;
+template<class ...>
+struct basic_units;
 
-    template<int ...Es>
-    friend auto operator*(basic_system_of_units, basic_system_of_units<SystemOfUnits, Es...>)
-        -> mul_t<Es...>
+template<class ...Tags, int ...Exs, class ...Ratio>
+struct basic_units<basic_dimension<Tags, Exs, Ratio>...> {
+    template<class Unit>
+    friend constexpr auto operator*(basic_units, Unit) noexcept
+        -> typename detail::mul_unit<basic_units, Unit>::type
     { return {}; }
-    template<int ...Es>
-    friend auto operator/(basic_system_of_units, basic_system_of_units<SystemOfUnits, Es...>)
-        -> div_t<Es...>
+
+    template<class Unit>
+    friend constexpr auto operator/(basic_units, Unit) noexcept
+        -> typename detail::div_unit<basic_units, Unit>::type
     { return {}; }
-    template<detail::arithmetic T>
-    friend quantity<T, basic_system_of_units> operator*(T value, basic_system_of_units) noexcept
+    template<class T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
+    friend constexpr auto operator|(T&& val, basic_units)
+        -> quantity<T, basic_units>
     {
-        return quantity<T, basic_system_of_units>{ value };
+        return quantity<T, basic_units>{val};
     }
+    template<class Unit, std::enable_if_t<detail::is_convertible_unit<Unit, basic_units>::value, int> = 0>
+    static constexpr auto ratio(Unit = Unit{}) noexcept
+    {
+        using diff_t = typename detail::div_unit<Unit, basic_units>::type;
+        constexpr auto num = (detail::find_dim_from_unit<Tags, diff_t>::type::ratio::num * ... * 1);
+        constexpr auto den = (detail::find_dim_from_unit<Tags, diff_t>::type::ratio::den * ... * 1);
+        return typename std::ratio<num, den>::type{};
+    }
+    template<class Unit, std::enable_if_t<detail::is_convertible_unit<Unit, basic_units>::value, int> = 0>
+    friend constexpr bool operator<(basic_units, Unit) noexcept
+    {
+        using r = decltype(ratio<Unit>());
+        return r::num > r::den;
+    }
+    template<class Unit, std::enable_if_t<detail::is_convertible_unit<Unit, basic_units>::value, int> = 0>
+    friend constexpr bool operator>(basic_units r, Unit l) noexcept { return l < r; }
+
+    template<class Unit, std::enable_if_t<detail::is_convertible_unit<Unit, basic_units>::value, int> = 0>
+    inline static constexpr bool lt = decltype(ratio<Unit>())::num > decltype(ratio<Unit>())::den;
 };
 
-template<detail::arithmetic T, class SystemOfUnits, int ...Exponents>
-class quantity<T, basic_system_of_units<SystemOfUnits, Exponents...>> {
+template<class T, class ...Tags, int ...Exs, class ...Ratio>
+class quantity<T, basic_units<basic_dimension<Tags, Exs, Ratio>...>> {
 private:
-    T value_;
+    template<class U>
+    inline static constexpr bool is_operator_noexcept =
+        noexcept(std::declval<T>() * std::declval<U>()) &&
+        noexcept(std::declval<T>() / std::declval<U>()) &&
+        noexcept(std::declval<T>() - std::declval<U>()) &&
+        noexcept(std::declval<T>() + std::declval<U>()) &&
+        std::is_nothrow_copy_constructible_v<std::common_type_t<T, U>>;
+
 public:
-    using units = basic_system_of_units<SystemOfUnits, Exponents...>;
+    using unit_type = basic_units<basic_dimension<Tags, Exs, Ratio>...>;
+    using value_type = std::remove_cvref_t<T>;
 
-    quantity() noexcept
-        : value_{}
+public:
+    constexpr quantity() noexcept(std::is_nothrow_default_constructible_v<T>) = default;
+    constexpr quantity(const quantity&) noexcept(std::is_nothrow_copy_constructible_v<T>) = default;
+    constexpr quantity(quantity&&) noexcept(std::is_nothrow_move_constructible_v<T>) = default;
+    explicit constexpr quantity(T val) noexcept(std::is_nothrow_copy_constructible_v<T>)
+        : value_{ val }
     {}
-    explicit quantity(T value) noexcept
-        :value_{ value }
+    template<class U, class Unit, std::enable_if_t<detail::is_convertible_unit_v<unit_type, Unit>, int> = 0>
+    constexpr quantity(quantity<U, Unit> q) noexcept(std::is_nothrow_copy_constructible_v<T>)
+        : value_{ q.convert<unit_type, T>().get_value() }
     {}
-    T get_value() const noexcept { return value_; }
 
-    template<detail::arithmetic U>
-    friend auto operator+(const quantity& rhs, const quantity<U, units>& lhs) noexcept
-        -> quantity<std::common_type_t<T, U>, units>
+    template<class U, class Unit, std::enable_if_t<detail::is_convertible_unit_v<unit_type, Unit>, int> = 0>
+    quantity& operator=(const quantity<U, Unit>& q)
     {
-        using result_t = std::common_type_t<T, U>;
-        return quantity<result_t, units>{ static_cast<result_t>(rhs.get_value()) + static_cast<result_t>(lhs.get_value()) };
+        value_ = q.convert<unit_type, T>().get_value();
+        return *this;
     }
-    template<detail::arithmetic U>
-    friend auto operator-(const quantity& rhs, const quantity<U, units>& lhs) noexcept
-        -> quantity<std::common_type_t<T, U>, units>
-    {
-        using result_t = std::common_type_t<T, U>;
-        return quantity<result_t, units>{ static_cast<result_t>(rhs.get_value()) - static_cast<result_t>(lhs.get_value()) };
-    }
+    
+    [[nodiscard]]
+    const T& get_value() const noexcept { return value_; }
 
-    template<detail::arithmetic U, int ...Es>
-    friend auto operator*(const quantity& rhs,
-                          const quantity<U, basic_system_of_units<SystemOfUnits, Es...>>& lhs) noexcept
-        -> quantity<std::common_type_t<T, U>, typename units:: template mul_t<Es...>>
+    [[nodiscard]]
+    friend constexpr quantity operator-(const quantity& q) noexcept(std::is_nothrow_copy_constructible_v<T>)
     {
-        using nt = std::common_type_t<T, U>;
-        using qt = quantity<std::common_type_t<T, U>, typename units:: template mul_t<Es...>>;
-        return qt{ static_cast<nt>(rhs.get_value()) * static_cast<nt>(lhs.get_value()) };
-    }
-    template<detail::arithmetic U, int ...Es>
-    friend auto operator/(const quantity& rhs,
-                          const quantity<U, basic_system_of_units<SystemOfUnits, Es...>>& lhs) noexcept
-        -> quantity<std::common_type_t<T, U>, typename units:: template div_t<Es...>>
-    {
-        using nt = std::common_type_t<T, U>;
-        using qt = quantity<std::common_type_t<T, U>, typename units:: template div_t<Es...>>;
-        return qt{ static_cast<nt>(rhs.get_value()) / static_cast<nt>(lhs.get_value()) };
+        return quantity{ -q.get_value() };
     }
 
-    template<detail::arithmetic U>
-    friend auto operator*(U&& rhs, const quantity& lhs) noexcept
-        -> quantity<std::common_type_t<T, U>, units>
+    template<class Unit, class U = T, std::enable_if_t<detail::is_convertible_unit_v<unit_type, Unit>, int> = 0>
+    [[nodiscard]]
+    constexpr auto convert(Unit = Unit{}) const
+        -> quantity<std::common_type_t<U, T>, Unit>
     {
-        using result_t = std::common_type_t<T, U>;
-        return quantity<result_t, units>{ static_cast<result_t>(rhs) * static_cast<result_t>(lhs.get_value()) };
+        using r = typename decltype(unit_type::template ratio<Unit>())::type;
+        using ct = std::common_type_t<U, T>;
+        return quantity<std::common_type_t<U, T>, Unit>{ static_cast<ct>(value_) * r::den / r::num };
     }
-    template<detail::arithmetic U>
-    friend auto operator*(const quantity& rhs, U&& lhs) noexcept
-        -> quantity<std::common_type_t<T, U>, units>
+    template<class U, class Unit>
+    [[nodiscard]]
+    friend constexpr auto operator*(const quantity& lhs,
+                                    const quantity<U, Unit>& rhs)
+        noexcept(is_operator_noexcept<U>)
+        -> quantity<std::common_type_t<T, U>, typename detail::mul_unit<unit_type, Unit>::type>
     {
-        return lhs * rhs;
+        using ct = std::common_type_t<T, U>;
+        return quantity<std::common_type_t<T, U>, typename detail::mul_unit<unit_type, Unit>::type>
+        {static_cast<ct>(lhs.get_value()) * static_cast<ct>(rhs.get_value())};
     }
-    template<detail::arithmetic U>
-    friend auto operator/(U&& rhs, const quantity& lhs) noexcept
-        -> quantity<std::common_type_t<T, U>, typename units::inv_t>
+    template<class U, class Unit>
+    [[nodiscard]]
+    friend constexpr auto operator/(const quantity& lhs,
+                                    const quantity<U, Unit>& rhs)
+        noexcept(is_operator_noexcept<U>)
+        -> quantity<std::common_type_t<T, U>, typename detail::div_unit<unit_type, Unit>::type>
     {
-        using result_t = std::common_type_t<T, U>;
-        return quantity<result_t, typename units::inv_t>{ static_cast<result_t>(rhs) / static_cast<result_t>(lhs.get_value()) };
+        using ct = std::common_type_t<T, U>;
+        return quantity<std::common_type_t<T, U>, typename detail::div_unit<unit_type, Unit>::type>
+        {static_cast<ct>(lhs.get_value()) / static_cast<ct>(rhs.get_value())};
     }
-    template<detail::arithmetic U>
-    friend auto operator/(const quantity& rhs, U&& lhs) noexcept
-        -> quantity<std::common_type_t<T, U>, units>
+    template<class U, class Unit, std::enable_if_t<detail::is_convertible_unit<unit_type, Unit>::value, int> = 0>
+    [[nodiscard]]
+    friend constexpr auto operator+(const quantity& lhs,
+                                    const quantity<U, Unit>& rhs)
+        noexcept(is_operator_noexcept<U>)
+        ->quantity<std::common_type_t<T, U>, std::conditional_t<unit_type:: template lt<Unit>, unit_type, Unit>>
     {
-        using nt = std::common_type_t<T, U>;
-        return quantity<nt, units>{static_cast<nt>(rhs.get_value()) / static_cast<nt>(lhs)};
+        using ut = std::conditional_t<unit_type:: template lt<Unit>, unit_type, Unit>;
+        using ct = std::common_type_t<T, U>;
+
+        return quantity<ct, ut>{lhs.convert<ut, ct>().get_value() + rhs.convert<ut, ct>().get_value()};
     }
+    template<class U, class Unit, std::enable_if_t<detail::is_convertible_unit<unit_type, Unit>::value, int> = 0>
+    [[nodiscard]]
+    friend constexpr auto operator-(const quantity& lhs,
+                                    const quantity<U, Unit>& rhs)
+        noexcept(is_operator_noexcept<U>)
+        ->quantity<std::common_type_t<T, U>, std::conditional_t<unit_type:: template lt<Unit>, unit_type, Unit>>
+    {
+        return lhs + (-rhs);
+    }
+private:
+    value_type value_;
+};
+
+template<class ...DimensionTags>
+struct system_of_units {
+    template<class D, int E = 1, class Ratio = std::ratio<1, 1>>
+    using unit_t = std::enable_if_t<
+        detail::belongs_v<D, std::tuple<DimensionTags...>>,
+        basic_units<basic_dimension<
+            DimensionTags,
+            std::is_same_v<D, DimensionTags> ? E : 0,
+            std::conditional_t<std::is_same_v<D, DimensionTags>, Ratio, std::ratio<1, 1>>
+        >...>
+    >;
+
+    template<class D, int E = 1, class Ratio = std::ratio<1, 1>>
+    static constexpr auto make_unit() noexcept
+        -> unit_t<D, E, Ratio>
+    { return {}; }
+    using dimensionless_t = basic_units<basic_dimension<DimensionTags, 0, std::ratio<1, 1>>...>;
+    static constexpr auto dimensionless() noexcept
+        -> dimensionless_t
+    { return {}; }
 };
 
 }

@@ -3,81 +3,98 @@
 #include "ouchilib/units/si.hpp"
 #include <type_traits>
 
-static_assert(
-    std::is_same_v<std::integer_sequence<int, 2, 4>, ouchi::units::detail::add_sequence<std::integer_sequence<int, 1, 3>, std::integer_sequence<int, 1, 1>>::result>
-);
-
-
-using namespace ouchi::units;
-
-static_assert(
-    std::is_same_v<
-    typename si::length::template mul_t<1,0,0,0,0,0,0>,
-    basic_system_of_units<si::detail::si_tag, 2,0,0,0,0,0,0>
-    >
-);
-
-DEFINE_TEST(quantity_instantiate)
-{
-    quantity<double, si::length> l = 2.0 * si::m;
-    CHECK_EQUAL(l.get_value(), 2.0);
+struct l {};
+struct m {};
+struct t {};
+using system_t = ouchi::units::system_of_units<l, m, t>;
+using meter_t = typename system_t::template unit_t<l>;
+using kg_t = typename system_t::template unit_t<m, 1, std::kilo>;
+using g_t = typename system_t::template unit_t<m, 1>;
+namespace {
+constexpr auto meter = system_t::make_unit<l>();
+constexpr auto kg = system_t::make_unit<m, 1, std::kilo>();
+constexpr auto g = system_t::make_unit<m>();
 }
 
-DEFINE_TEST(quantity_mul_test)
+DEFINE_TEST(units_instantiate)
 {
-    quantity<double, si::length> l{ 1 }, m{ 2 };
-    auto m2 = l * m;
-    static_assert(
-        std::is_same_v<
-        typename decltype(m2)::units,
-        basic_system_of_units<si::detail::si_tag, 2,0,0,0,0,0,0>
-        >
-    );
-    CHECK_EQUAL(m2.get_value(), 2);
+    
+    using namespace ouchi::units;
 
-    auto bai = 2 * m;
-    static_assert(
-        std::is_same_v<
-        typename decltype(bai)::units,
-        basic_system_of_units<si::detail::si_tag, 1,0,0,0,0,0,0>
-        >
-    );
-    CHECK_EQUAL(bai.get_value(), 4);
+    static_assert(detail::belongs<int, std::tuple<int, long>>::value);
+    static_assert(!detail::belongs<int, std::tuple<double, long>>::value);
+    static_assert(!detail::includes<std::tuple<int, long>, std::tuple<int, float>>::value);
+    static_assert(detail::includes_v<std::tuple<int, long>, std::tuple<int, float, long>>);
+    static_assert(detail::set_equal_v<std::tuple<int, long>, std::tuple<long, int>>);
+    static_assert(!detail::set_equal_v<std::tuple<int, float>, std::tuple<long, int>>);
 
+    [[maybe_unused]]
+    basic_dimension<l, 1, std::kilo> km;
+    using len = basic_dimension<l, 1>;
+    using mass = basic_dimension<m, 1, std::kilo>;
+    using time = basic_dimension<t, 1>;
+    using time0 = basic_dimension<t, 0>;
+    [[maybe_unused]]
+    basic_units<len, mass, time> mks;
+    static_assert(std::is_same_v<
+                  typename detail::mul_unit<basic_units<len, mass, time>, basic_units<len, time, mass>>::type,
+                  basic_units<basic_dimension<l, 2>, basic_dimension<m, 2, std::mega>, basic_dimension<t, 2>>>);
+    static_assert(detail::is_convertible_unit<decltype(mks), decltype(mks)>::value);
+    static_assert(detail::is_convertible_unit<decltype(mks), basic_units<len, time, mass>>::value);
+    static_assert(!detail::is_convertible_unit<decltype(mks), basic_units<len, time0, mass>>::value);
+
+    typedef system_of_units<l, m, t> mks_system;
+    static_assert(std::is_same_v<
+                  decltype(mks_system::make_unit<l>()),
+                  basic_units<len, basic_dimension<m, 0>, time0>>);
 }
 
-DEFINE_TEST(quantity_div_test)
+DEFINE_TEST(unit_operator_test)
 {
-    quantity<double, si::length> l{ 1 }, m{ 2 };
-    {
-        auto dl = l / m;
-        static_assert(
-            std::is_same_v<
-            typename decltype(dl)::units,
-            basic_system_of_units<si::detail::si_tag, 0, 0, 0, 0, 0, 0, 0>
-            >
-            );
-        CHECK_EQUAL(dl.get_value(), 0.5);
-    }
-    {
-        auto inv = 2 / m;
-        static_assert(
-            std::is_same_v<
-            typename decltype(inv)::units,
-            basic_system_of_units<si::detail::si_tag, -1, 0, 0, 0, 0, 0, 0>
-            >
-            );
-        CHECK_EQUAL(inv.get_value(), 1);
-    }
-    {
-        auto bai = m / 2;
-        static_assert(
-            std::is_same_v<
-            typename decltype(bai)::units,
-            basic_system_of_units<si::detail::si_tag, 1, 0, 0, 0, 0, 0, 0>
-            >
-            );
-        CHECK_EQUAL(bai.get_value(), 1);
-    }
+    using namespace ouchi::units;
+
+    static_assert(std::is_same_v<
+                  std::remove_cvref_t<decltype(kg)>,
+                  basic_units<basic_dimension<l, 0>, basic_dimension<m, 1, std::kilo>, basic_dimension<t, 0>>>);
+
+    static_assert(std::is_same_v<
+                  decltype(kg / g),
+                  decltype(system_t::make_unit<m, 0, std::kilo>())>);
+
+    static_assert(std::is_same_v<
+                  decltype(kg.ratio(g)),
+                  std::milli>);
+    static_assert(std::is_same_v<
+                  decltype(g.ratio(kg)),
+                  std::kilo>);
+    static_assert(g < kg);
+}
+
+DEFINE_TEST(quantity_conversion_test)
+{
+    using namespace ouchi::units;
+
+    auto q = 1 | g;
+    auto r = 1 | kg;
+    static_assert(std::is_same_v<
+                  std::remove_cvref_t<decltype(q)>,
+                  quantity<int, std::remove_cvref_t<decltype(g)>>
+    >);
+    static_assert(std::is_same_v<
+                  std::remove_cvref_t<decltype(q + r)>,
+                  quantity<int, std::remove_cvref_t<decltype(g)>>
+    >);
+    auto tg = r.convert(g);
+    CHECK_EQUAL(tg.get_value(), 1000);
+    tg = r;
+    CHECK_EQUAL(tg.get_value(), 1000);
+    auto sum = q + r;
+    CHECK_EQUAL(sum.get_value(), 1001);
+    auto diff = r - q;
+    CHECK_EQUAL(diff.get_value(), 999);
+    static_assert(std::is_same_v<
+                  std::remove_cvref_t<decltype(diff)>,
+                  quantity<int, g_t>
+    >);
 }
 
