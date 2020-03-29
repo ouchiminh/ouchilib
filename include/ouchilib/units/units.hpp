@@ -18,6 +18,8 @@ struct basic_units;
 
 template<class ...Tags, int ...Exs, class ...Ratio>
 struct basic_units<basic_dimension<Tags, Exs, Ratio>...> {
+    using unit_type = basic_units;
+
     template<class Unit>
     friend constexpr auto operator*(basic_units, Unit) noexcept
         -> typename detail::mul_unit<basic_units, Unit>::type
