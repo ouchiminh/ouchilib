@@ -4,6 +4,7 @@
 #include <concepts>
 #include <string_view>
 #include <ratio>
+#include <compare>
 
 #include "dimension.hpp"
 #include "detail.hpp"
@@ -151,6 +152,19 @@ public:
     {
         return lhs + (-rhs);
     }
+
+    template<class U, class Unit, std::enable_if_t<detail::is_convertible_unit<unit_type, Unit>::value, int> = 0>
+    constexpr auto operator<=>(const quantity<U, Unit>& rhs)
+    {
+        using ut = std::conditional_t<(unit_type{} < Unit{}), unit_type, Unit>;
+        using ct = std::common_type_t<T, U>;
+        return this->convert<ut, ct>().get_value() <=> rhs.convert<ut, ct>().get_value();
+    }
+    template<class U, class Unit, std::enable_if_t<detail::is_convertible_unit<unit_type, Unit>::value, int> = 0>
+    constexpr bool operator==(const quantity<U, Unit>& rhs)
+    {
+        return std::strong_ordering::equal == ((*this) <=> rhs);
+    }
 private:
     value_type value_;
 };
@@ -160,11 +174,12 @@ struct system_of_units {
     template<class D, int E = 1, class Ratio = std::ratio<1, 1>>
     using unit_t = std::enable_if_t<
         detail::belongs_v<D, std::tuple<DimensionTags...>>,
+        typename detail::power<
         basic_units<basic_dimension<
             DimensionTags,
-            std::is_same_v<D, DimensionTags> ? E : 0,
+            std::is_same_v<D, DimensionTags> ? 1 : 0,
             std::conditional_t<std::is_same_v<D, DimensionTags>, Ratio, std::ratio<1, 1>>
-        >...>
+        >...>, E>::type
     >;
 
     template<class D, int E = 1, class Ratio = std::ratio<1, 1>>

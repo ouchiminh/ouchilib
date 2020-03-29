@@ -128,5 +128,27 @@ struct is_convertible_unit<S<basic_dimension<T1, E1, R1>...>, S<basic_dimension<
 template<class S1, class S2>
 inline static constexpr bool is_convertible_unit_v = is_convertible_unit<S1, S2>::value;
 
+template<class T, T Val>
+struct abs {
+    inline static constexpr T value = Val < 0 ? -Val : Val;
+};
+
+template<class Unit, int N, class = void>
+struct power;
+
+template<class ...Tags, int ...E, class ...R, template<class ...> class U>
+struct power<U<basic_dimension<Tags, E, R>...>, 0> {
+    using type = U<basic_dimension<Tags, 0>...>;
+};
+
+template<class ...Tags, int ...E, class ...R, template<class ...> class U, int N>
+struct power<U<basic_dimension<Tags, E, R>...>, N, std::enable_if_t<(N > 0)>> {
+    using type = typename mul_unit<typename power<U<basic_dimension<Tags, E, R>...>, N - 1>::type, U<basic_dimension<Tags, E, R>...>>::type;
+};
+
+template<class ...Tags, int ...E, class ...R, template<class ...> class U, int N>
+struct power<U<basic_dimension<Tags, E, R>...>, N, std::enable_if_t<(N < 0)>> {
+    using type = typename div_unit<U<basic_dimension<Tags, 0>...>, typename power<U<basic_dimension<Tags, E, R>...>, abs<int, N>::value>::type>::type;
+};
 }
 

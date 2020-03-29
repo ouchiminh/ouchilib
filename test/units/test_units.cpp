@@ -58,8 +58,8 @@ DEFINE_TEST(unit_operator_test)
                   basic_units<basic_dimension<l, 0>, basic_dimension<m, 1, std::kilo>, basic_dimension<t, 0>>>);
 
     static_assert(std::is_same_v<
-                  decltype(kg / g),
-                  decltype(system_t::make_unit<m, 0, std::kilo>())>);
+                  std::remove_cvref_t<decltype(kg / g)>,
+                  basic_units<basic_dimension<l, 0>, basic_dimension<m, 0, std::kilo>, basic_dimension<t, 0>>>);
 
     static_assert(std::is_same_v<
                   decltype(kg.ratio(g)),
@@ -96,5 +96,21 @@ DEFINE_TEST(quantity_conversion_test)
                   std::remove_cvref_t<decltype(diff)>,
                   quantity<int, g_t>
     >);
+}
+
+DEFINE_TEST(quantity_compare_test)
+{
+    using namespace ouchi::units;
+    auto q = 1 | g;
+    auto r = 1 | kg;
+    auto s = 1 | kg;
+    q <=> r;
+    CHECK_TRUE(q < r);
+    CHECK_TRUE(q <= r);
+    CHECK_TRUE(r > q);
+    CHECK_TRUE(r >= q);
+    CHECK_TRUE(r == s);
+    CHECK_TRUE(q != r);
+
 }
 
