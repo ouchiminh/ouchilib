@@ -5,7 +5,7 @@
 
 struct l {};
 struct m {};
-struct t {};
+struct t;
 using system_t = ouchi::units::system_of_units<l, m, t>;
 using meter_t = typename system_t::template unit_t<l>;
 using kg_t = typename system_t::template unit_t<m, 1, std::kilo>;
