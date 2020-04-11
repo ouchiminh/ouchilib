@@ -34,7 +34,7 @@ public:
 
         decltype(auto) operator*() const
         {
-            return std::make_pair(idx_, *first_);
+            return std::pair<idx_t, decltype(*first_)>{ idx_, *first_ };
         }
         iterator& operator++()
         {
