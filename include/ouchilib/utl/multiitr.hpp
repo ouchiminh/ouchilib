@@ -11,7 +11,7 @@ namespace detail {
 
 const auto dereference_impl = [](auto&& ...args)
 {
-    return std::tie((*args)...);
+    return std::tuple<decltype(*args)...>((*args)...);
 };
 template<class ...Args>
 [[nodiscard]]
