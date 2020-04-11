@@ -16,13 +16,6 @@ constexpr auto kg = system_t::make_unit<m, 1, std::kilo>();
 constexpr auto g = system_t::make_unit<m>();
 }
 
-DEFINE_TEST(unit_operator_test)
-{
-    using namespace ouchi::units;
-
-    1 | kg / (meter * meter * meter);
-}
-
 DEFINE_TEST(quantity_conversion_test)
 {
     using namespace ouchi::units;
@@ -65,5 +58,17 @@ DEFINE_TEST(quantity_compare_test)
     CHECK_TRUE(r == s);
     CHECK_TRUE(q != r);
 
+}
+
+DEFINE_TEST(quantity_operator_test)
+{
+    using namespace ouchi::units;
+
+    auto d1 = 1 | kg / (meter * meter * meter);
+    auto mass = 1 | std::kilo{} * g;
+    auto volume = 1 | meter * meter * meter;
+    auto d2 = mass / volume;
+
+    CHECK_EQUAL(d1, d2);
 }
 
