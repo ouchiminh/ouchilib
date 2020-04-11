@@ -57,18 +57,28 @@ DEFINE_TEST(quantity_compare_test)
     CHECK_TRUE(r >= q);
     CHECK_TRUE(r == s);
     CHECK_TRUE(q != r);
-
 }
 
 DEFINE_TEST(quantity_operator_test)
 {
     using namespace ouchi::units;
 
-    auto d1 = 1 | kg / (meter * meter * meter);
-    auto mass = 1 | std::kilo{} * g;
-    auto volume = 1 | meter * meter * meter;
-    auto d2 = mass / volume;
+    {
+        auto d1 = 1 | kg / (meter * meter * meter);
+        auto mass = 1 | std::kilo{} * g;
+        auto volume = 1 | meter * meter * meter;
+        auto d2 = mass / volume;
 
-    CHECK_EQUAL(d1, d2);
+        CHECK_EQUAL(d1, d2);
+    }
+    {
+        auto are = system_t::make_unit<l, 2, std::deca>();
+        auto hectare = std::hecto{} * are;
+        static_assert(decltype(are)::ratio::num == 100);
+        static_assert(decltype(hectare)::ratio::num == 10'000);
+        auto onemeter = 1 | std::deca{}*meter;
+        auto oneare = onemeter * onemeter;
+        CHECK_EQUAL(1 | are, oneare);
+    }
 }
 
