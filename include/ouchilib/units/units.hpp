@@ -40,6 +40,11 @@ public:
         -> typename detail::mul_unit<unit_type, Unit>::type
     { return {}; }
 
+    template<std::intmax_t Num, std::intmax_t Den>
+    friend constexpr auto operator*(std::ratio<Num, Den>, basic_units)
+        -> basic_units<std::ratio<ratio::num * Num, ratio::den * Den>, basic_dimension<Tags, Exs>...>
+    { return {}; }
+
     template<class Unit>
     friend constexpr auto operator/(basic_units, Unit) noexcept
         -> typename detail::div_unit<basic_units, Unit>::type
