@@ -14,7 +14,7 @@ namespace ouchi::units {
 template<class T, class Unit>
 class quantity;
 
-template<class ...>
+template<class R, class ...>
 struct basic_units;
 
 /// <summary>
@@ -23,15 +23,21 @@ struct basic_units;
 /// <remarks>
 /// 単位系の各次元はその次元の指数及びSI接頭辞に相当する倍数の情報を保持します。
 /// ある次元の量を二乗するとSI接頭辞に相当する倍数の情報も二乗されます。
-/// 例えば km + km = km^2ですが、km^2の単位はこの型ではbasic_units<basic_dimension<length, 2, std::ratio<1'000'000>>...>と表されます。
 /// </remarks>
-template<class ...Tags, int ...Exs, class ...Ratio>
-struct basic_units<basic_dimension<Tags, Exs, Ratio>...> {
+template<std::intmax_t Num, std::intmax_t Den, class ...Tags, int ...Exs>
+struct basic_units<std::ratio<Num, Den>, basic_dimension<Tags, Exs>...> {
+private:
+
+public:
     using unit_type = basic_units;
+    using ratio = typename std::ratio<Num, Den>::type;
+
+    template<class R>
+    using ratio_of_R_to_this = typename std::ratio<R::num * Den, R::den * Num>::type;
 
     template<class Unit>
     friend constexpr auto operator*(basic_units, Unit) noexcept
-        -> typename detail::mul_unit<basic_units, Unit>::type
+        -> typename detail::mul_unit<unit_type, Unit>::type
     { return {}; }
 
     template<class Unit>
@@ -45,31 +51,23 @@ struct basic_units<basic_dimension<Tags, Exs, Ratio>...> {
         return quantity<T, basic_units>{val};
     }
     template<class Unit, std::enable_if_t<detail::is_convertible_unit<Unit, basic_units>::value, int> = 0>
-    static constexpr auto ratio(Unit = Unit{}) noexcept
-    {
-        using diff_t = typename detail::div_unit<Unit, basic_units>::type;
-        constexpr auto num = (detail::find_dim_from_unit<Tags, diff_t>::type::ratio::num * ... * 1);
-        constexpr auto den = (detail::find_dim_from_unit<Tags, diff_t>::type::ratio::den * ... * 1);
-        return typename std::ratio<num, den>::type{};
-    }
-    template<class Unit, std::enable_if_t<detail::is_convertible_unit<Unit, basic_units>::value, int> = 0>
     friend constexpr bool operator<(basic_units, Unit) noexcept
     {
-        using r = decltype(ratio<Unit>());
+        using r = ratio_of_R_to_this<typename Unit::ratio>;
         return r::num > r::den;
     }
     template<class Unit, std::enable_if_t<detail::is_convertible_unit<Unit, basic_units>::value, int> = 0>
     friend constexpr bool operator>(basic_units r, Unit l) noexcept { return l < r; }
 
     template<class Unit, std::enable_if_t<detail::is_convertible_unit<Unit, basic_units>::value, int> = 0>
-    inline static constexpr bool lt = decltype(ratio<Unit>())::num > decltype(ratio<Unit>())::den;
+    inline static constexpr bool lt = ratio_of_R_to_this<typename Unit::ratio>::num > ratio_of_R_to_this<typename Unit::ratio>::den;
 };
 
 /// <summary>
 /// 量を表す型です。
 /// </summary>
-template<class T, class ...Tags, int ...Exs, class ...Ratio>
-class quantity<T, basic_units<basic_dimension<Tags, Exs, Ratio>...>> {
+template<class T, class R, class ...Tags, int ...Exs>
+class quantity<T, basic_units<R, basic_dimension<Tags, Exs>...>> {
 private:
     template<class U>
     inline static constexpr bool is_operator_noexcept =
@@ -80,7 +78,7 @@ private:
         std::is_nothrow_copy_constructible_v<std::common_type_t<T, U>>;
 
 public:
-    using unit_type = basic_units<basic_dimension<Tags, Exs, Ratio>...>;
+    using unit_type = basic_units<R, basic_dimension<Tags, Exs>...>;
     using value_type = std::remove_cvref_t<T>;
 
 public:
@@ -130,7 +128,7 @@ public:
     constexpr auto convert(Unit = Unit{}) const
         -> quantity<std::common_type_t<U, T>, Unit>
     {
-        using r = typename decltype(unit_type::template ratio<Unit>())::type;
+        using r = typename decltype(unit_type::template ratio_of_R_to_this<typename Unit::ratio>())::type;
         using ct = std::common_type_t<U, T>;
         return quantity<std::common_type_t<U, T>, Unit>{ static_cast<ct>(value_) * r::den / r::num };
     }
@@ -212,27 +210,26 @@ struct system_of_units {
     /// <summary>
     /// 指定された次元, 指数, プレフィクスをもつ単位の型です。
     /// </summary>
-    template<class D, int E = 1, class Ratio = std::ratio<1, 1>>
+    template<class D, int E = 1, class R = std::ratio<1, 1>>
     using unit_t = std::enable_if_t<
         detail::belongs_v<D, std::tuple<DimensionTags...>>,
         typename detail::power<
-        basic_units<basic_dimension<
+        basic_units<R, basic_dimension<
             DimensionTags,
-            std::is_same_v<D, DimensionTags> ? 1 : 0,
-            std::conditional_t<std::is_same_v<D, DimensionTags>, Ratio, std::ratio<1, 1>>
+            std::is_same_v<D, DimensionTags> ? 1 : 0
         >...>, E>::type
     >;
     /// <summary>
     /// <see cref="unit_t"/>の値です。
     /// </summary>
-    template<class D, int E = 1, class Ratio = std::ratio<1, 1>>
+    template<class D, int E = 1, class R = std::ratio<1, 1>>
     static constexpr auto make_unit() noexcept
-        -> unit_t<D, E, Ratio>
+        -> unit_t<D, E, R>
     { return {}; }
     /// <summary>
     /// この単位系における無次元の単位です。
     /// </summary>
-    using dimensionless_t = basic_units<basic_dimension<DimensionTags, 0, std::ratio<1, 1>>...>;
+    using dimensionless_t = basic_units<std::ratio<1, 1>, basic_dimension<DimensionTags, 0>...>;
     /// <summary>
     /// <see cref="dimensionless_t"/>の値です。
     /// </summary>
