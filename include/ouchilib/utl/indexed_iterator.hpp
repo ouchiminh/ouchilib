@@ -15,8 +15,12 @@ public:
 
     template<class Container>
     indexed_iterator(Container& c)
-        : indexed_iterator(c.begin(), c.end())
-    {}
+        : first_pos_{}
+    {
+        using std::begin, std::end;
+        first_ = begin(c);
+        last_ = end(c);
+    }
     indexed_iterator(Iter first, Iter last, idx_t first_pos = 0)
         : first_(first)
         , last_(last)
