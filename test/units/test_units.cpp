@@ -49,7 +49,7 @@ DEFINE_TEST(quantity_compare_test)
     using namespace ouchi::units;
     auto q = 1 | g;
     auto r = 1 | kg;
-    auto s = 1 | kg;
+    auto s = 1000.0 | g;
     q <=> r;
     CHECK_TRUE(q < r);
     CHECK_TRUE(q <= r);

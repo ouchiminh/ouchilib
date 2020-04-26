@@ -207,7 +207,7 @@ private:
 /// struct l{}; // 長さ
 /// struct m{}; // 質量
 /// struct t{}; // 時間
-/// using system_t = system_of_units<l, m, t>; // 単位系
+/// using mks_system = system_of_units<l, m, t>; // 単位系
 /// </code>
 /// </example>
 template<class ...DimensionTags>
