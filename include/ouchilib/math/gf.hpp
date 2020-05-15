@@ -79,6 +79,7 @@ struct gf {
         constexpr auto r = std::numeric_limits<Int>::max() - 1;
         return power(v, r);
     }
+    constexpr gf inv() const noexcept { return gf::inv(value); }
     friend constexpr bool operator<(gf lhs, gf rhs) noexcept { return lhs.value < rhs.value; }
     friend constexpr bool operator>(gf lhs, gf rhs) noexcept { return rhs < lhs; }
     friend constexpr bool operator==(gf lhs, gf rhs) noexcept { return lhs.value == rhs.value; }
@@ -90,10 +91,10 @@ struct gf {
     friend constexpr bool operator<=(gf lhs, gf rhs) noexcept { return (lhs < rhs) || (lhs == rhs); }
     friend constexpr bool operator>=(gf lhs, gf rhs) noexcept { return (lhs > rhs) || (lhs == rhs); }
 
-    friend constexpr gf operator+(gf lhs, gf rhs) noexcept { return gf{ add((Int)lhs, (Int)rhs) }; }
-    friend constexpr gf operator-(gf lhs, gf rhs) noexcept { return gf{ add((Int)lhs, (Int)rhs) }; }
-    friend constexpr gf operator*(gf lhs, gf rhs) noexcept { return gf{ mul((Int)lhs, (Int)rhs) }; }
-    friend constexpr gf operator/(gf lhs, gf rhs) noexcept { return gf{ mul((Int)lhs, gf::inv((Int)rhs)) }; }
+    friend constexpr gf operator+(gf lhs, gf rhs) noexcept { return gf{ gf::add((Int)lhs, (Int)rhs) }; }
+    friend constexpr gf operator-(gf lhs, gf rhs) noexcept { return gf{ gf::add((Int)lhs, (Int)rhs) }; }
+    friend constexpr gf operator*(gf lhs, gf rhs) noexcept { return gf{ gf::mul((Int)lhs, (Int)rhs) }; }
+    friend constexpr gf operator/(gf lhs, gf rhs) noexcept { return gf{ gf::mul((Int)lhs, gf::inv((Int)rhs)) }; }
     constexpr gf& operator+=(gf rhs) noexcept { return *this = *this + rhs; }
     constexpr gf& operator-=(gf rhs) noexcept { return *this = *this - rhs; }
     constexpr gf& operator*=(gf rhs) noexcept { return *this = *this * rhs; }

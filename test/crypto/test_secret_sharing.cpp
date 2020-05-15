@@ -2,7 +2,7 @@
 #include "ouchilib/crypto/algorithm/secret_sharing.hpp"
 #include <random>
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 
 DEFINE_TEST(test_secret_sharing_solve)
 {

@@ -5,15 +5,26 @@
 
 struct l {};
 struct m {};
-struct t;
-using system_t = ouchi::units::system_of_units<l, m, t>;
+struct t {};
+struct b {};
+using system_t = ouchi::units::system_of_units<l, m, t, b>;
 using meter_t = typename system_t::template unit_t<l>;
 using kg_t = typename system_t::template unit_t<m>;
 using g_t = typename system_t::template unit_t<m>;
+using bit_t = typename system_t::template unit_t<b>;
+using s_t = typename system_t::template unit_t<t>;
 namespace {
 constexpr auto meter = system_t::make_unit<l>();
 constexpr auto kg = system_t::make_unit<m, 1, std::kilo>();
 constexpr auto g = system_t::make_unit<m>();
+constexpr auto bit = system_t::make_unit<b>();
+constexpr auto byte = std::ratio<8>{} * bit;
+constexpr auto gb = std::giga{} * byte;
+constexpr auto sec = system_t::make_unit<t>();
+constexpr auto min = std::ratio<60>{} * sec;
+constexpr auto h = std::ratio<60>{} * min;
+constexpr auto day = std::ratio<24>{} * h;
+constexpr auto mon = std::ratio<30>{} * day;
 }
 
 DEFINE_TEST(quantity_conversion_test)
@@ -81,4 +92,14 @@ DEFINE_TEST(quantity_operator_test)
         CHECK_EQUAL(1 | are, oneare);
     }
 }
+#if 0
+DEFINE_TEST(quantity_test)
+{
+    using namespace ouchi::units;
+    auto data_q = 100 | std::mega{} * bit / sec;
+    auto gbpmon = gb / mon;
+    auto data_p_mon = data_q.convert<decltype(gbpmon)::unit_type>();
+    std::cout << data_p_mon.get_value() << std::endl;
+}
+#endif
 

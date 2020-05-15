@@ -153,7 +153,7 @@ public:
         }
         return ouchi::result::ok(s_len - 1);
     }
-#if !defined(_DEBUG)
+#if defined(NDEBUG)
 private:
 #endif
     /// <summary>

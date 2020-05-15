@@ -354,8 +354,8 @@ private:
                 t[1] = std::async((id_p_2.size() > Parallel ? normal : std::launch::deferred),
                                   [this, &id_p_2, &afl_2, &sigma, &first, &last]()
                                   {dewall(first, last, id_p_2, afl_2, sigma); });
-            if (t[0].valid()) t[0].get();
-            if (t[1].valid()) t[1].get();
+            t[0].get();
+            t[1].get();
         }
         else {
             if (!afl_1.empty()) dewall(first, last, id_p_1, afl_1, sigma);
