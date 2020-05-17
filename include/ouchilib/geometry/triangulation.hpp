@@ -651,7 +651,7 @@ private:
             {
                 auto L = PtoL(P);
                 fl_matrix<coord_type, V, V> ret{};
-                auto co = (L.transpose() * L).cofactor();
+                auto co = (L.transpose() * L).cofactor_matrix();
                 //ret(0, 0) = (detail::one<coord_type, V-1>().transpose() * co * detail::one<coord_type, V-1>())(0);
                 ret(0, 0) = sum_mat(co);
                 auto ru = (-detail::one<coord_type, V-1>()).transpose() * co;
@@ -668,7 +668,7 @@ private:
             using std::abs;
             fl_matrix<coord_type, dim, V> P = atomat(s);
             const auto PTP = P.transpose() * P;
-            const auto co = PTP.cofactor();
+            const auto co = PTP.cofactor_matrix();
             //const auto den = (onep.transpose() * co * onep)(0);
             const auto den = sum_mat(co);
             auto rvec = fl_matrix<coord_type, V, 1>{};

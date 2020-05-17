@@ -355,13 +355,13 @@ public:
     // 余因子行列
     template<class S = Size>
     [[nodiscard]]
-    constexpr auto cofactor() const noexcept(is_fixed_length_v<S>)
+    constexpr auto cofactor_matrix() const noexcept(is_fixed_length_v<S>)
         -> std::enable_if_t<(detail::is_square_v<S> > detail::condvalue::no), basic_matrix>
     {
         auto sgn = [](auto i, auto j) { return (i + j) & 1 ? -1 : 1; };
         basic_matrix ret;
         if constexpr (is_variable_length_v<S>) {
-            if (size().first != size().second) throw std::domain_error("non-square matrix have no cofactor");
+            if (size().first != size().second) throw std::domain_error("non-square matrix have no cofactor matrix");
             size_t n = size().first;
             ret.resize(n, n);
         }
@@ -371,6 +371,11 @@ public:
             }
         }
         return std::move(ret);
+    }
+    [[nodiscard]]
+    constexpr T cofactor(size_t i, size_t j) const noexcept
+    {
+        return ((i + j & 1) ? -1 : 1) * slow_det(minor(i, j));
     }
     
     /******** 算術演算 ********/

@@ -7,6 +7,7 @@
 
 #include "ouchilib/utl/step.hpp"
 #include "ouchilib/utl/multiitr.hpp"
+#include "ouchilib/utl/constexpr_for.h"
 
 namespace ouchi::crypto {
 

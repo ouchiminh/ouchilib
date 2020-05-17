@@ -187,7 +187,7 @@ DEFINE_TEST(test_minor)
     CHECK_EQUAL(co2.total_size(), 1);
 }
 
-DEFINE_TEST(test_cofactor)
+DEFINE_TEST(test_cofactor_matrix)
 {
     using namespace ouchi::math;
     constexpr fl_matrix<double, 3, 3> m1{
@@ -200,7 +200,7 @@ DEFINE_TEST(test_cofactor)
         -11, 32,-51,
         11, -19, -1
     };
-    auto c = m1.cofactor();
+    auto c = m1.cofactor_matrix();
 
     CHECK_EQUAL(c, mc);
 }
@@ -250,3 +250,16 @@ DEFINE_TEST(test_transpose)
         }
     }
 }
+
+DEFINE_TEST(test_cofactor)
+{
+    using namespace ouchi::math;
+    fl_matrix<int, 4, 4> m{
+        3,4,1,2,
+        7,5,6,7,
+        8,6,7,5,
+        1,3,2,2
+    };
+    CHECK_EQUAL(m.cofactor(1, 2), 17);
+}
+

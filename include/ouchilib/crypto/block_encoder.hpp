@@ -60,10 +60,11 @@ public:
     /// <param name="dest_size">バッファのサイズ</param>
     /// <param name="thread_cnt">スレッド数</param>
     /// <returns>暗号文のサイズ</returns>
-    template<class Cm = CipherMode<Algorithm>, std::enable_if_t<Cm::is_encrypt_parallelizable>* = nullptr>
-    size_t encrypt_parallel(const void* src, size_t size,
+    template<class Cm = CipherMode<Algorithm>>
+    auto encrypt_parallel(const void* src, size_t size,
                             void* dest, size_t dest_size,
                             unsigned thread_cnt)
+        ->std::enable_if_t<Cm::is_encrypt_parallelizable, size_t>
     {
         assert(thread_cnt);
         auto device = cipher_device_;
@@ -100,10 +101,11 @@ public:
         tp.wait();
         return dest_size;
     }
-    template<class Cm = CipherMode<Algorithm>, std::enable_if_t<Cm::is_decrypt_parallelizable>* = nullptr>
-    size_t decrypt_parallel(const void* src, size_t size,
+    template<class Cm = CipherMode<Algorithm>>
+    auto decrypt_parallel(const void* src, size_t size,
                             void* dest, size_t dest_size,
                             unsigned thread_cnt)
+        ->std::enable_if_t<Cm::is_decrypt_parallelizable, size_t>
     {
         assert(thread_cnt);
         check_ddestsize(size, dest_size);
@@ -143,38 +145,38 @@ public:
         check_pad(padsize, destptr + dest_size - padsize);
         return dest_size - padsize;
     }
-    void encrypt(std::istream& in, std::ostream& out)
+    void encrypt(std::istream& plain, std::ostream& crypto)
     {
         constexpr auto cnt = Algorithm::block_size;
         memory_entity<cnt> block;
-        while (in.read(reinterpret_cast<char*>(block.data), cnt).gcount() == cnt) {
+        while (plain.read(reinterpret_cast<char*>(block.data), cnt).gcount() == cnt) {
             cipher_device_.encrypt(block.data, block.data);
-            out.write(reinterpret_cast<char*>(block.data), cnt);
+            crypto.write(reinterpret_cast<char*>(block.data), cnt);
         }
-        auto padbegin = in.gcount();
+        auto padbegin = plain.gcount();
         auto padsize = cnt - padbegin;
         std::fill(block.data + padbegin, std::end(block.data), (std::uint8_t)padsize);
         cipher_device_.encrypt(block.data, block.data);
-        out.write(reinterpret_cast<char*>(block.data), cnt);
+        crypto.write(reinterpret_cast<char*>(block.data), cnt);
     }
-    void decrypt(std::istream& in, std::ostream& out)
+    void decrypt(std::istream& crypto, std::ostream& plain)
     {
         constexpr auto cnt = Algorithm::block_size;
         memory_entity<Algorithm::block_size> block;
         while (true) {
-            in.read(reinterpret_cast<char*>(block.data), cnt);
-            if (in.gcount() != cnt) throw std::runtime_error("decryption failed. invalid length");
+            crypto.read(reinterpret_cast<char*>(block.data), cnt);
+            if (crypto.gcount() != cnt) throw std::runtime_error("decryption failed. invalid length");
             cipher_device_.decrypt(block.data, block.data);
-            in.ignore(1);
-            if (!in.eof()) {
-                out.write(reinterpret_cast<char*>(block.data), cnt);
+            crypto.ignore(1);
+            if (!crypto.eof()) {
+                plain.write(reinterpret_cast<char*>(block.data), cnt);
             } else {
                 auto padsize = block[cnt - 1];
                 check_pad(padsize, block.data + cnt - padsize);
-                out.write(reinterpret_cast<char*>(block.data), cnt - padsize);
+                plain.write(reinterpret_cast<char*>(block.data), cnt - padsize);
                 break;
             }
-            in.seekg(-1, std::ios_base::cur);
+            crypto.seekg(-1, std::ios_base::cur);
         }
     }
 private:
