@@ -131,25 +131,11 @@ DEFINE_TEST(test_matrix_resize)
         CHECK_EQUAL(vm(i), 0);
 }
 
-DEFINE_TEST(test_lu)
-{
-    using namespace ouchi::math;
-    vl_matrix<double> m2(
-        {
-            3.,1.,1.,2.,
-            5.,1.,3.,4.,
-            2.,0.,1.,0.,
-            1.,3.,2.,1.
-        }, 4, 4
-    );
-    // lu_pivoting(m2);
-}
-
 DEFINE_TEST(test_det)
 {
     using namespace ouchi::math;
     fl_matrix<double, 2, 2> m1{ 0, 0, 0, 0 };
-    CHECK_EQUAL(slow_det(m1), 0);
+    CHECK_EQUAL(det(m1), 0);
     vl_matrix<double> m2(
         {
             3,1,1,2,
@@ -158,8 +144,8 @@ DEFINE_TEST(test_det)
             1,3,2,1
         }, 4, 4
     );
-    auto d = slow_det(m2);
-    auto d2 = det(m2);
+    auto d = det(m2);
+    auto d2 = fast_det(m2);
     CHECK_EQUAL(d, -22);
     CHECK_TRUE(std::abs(d - d2) < 1e-8);
 }
@@ -261,5 +247,63 @@ DEFINE_TEST(test_cofactor)
         1,3,2,2
     };
     CHECK_EQUAL(m.cofactor(1, 2), 17);
+    vl_matrix<int> mv{
+        {3,4,1,2,
+         7,5,6,7,
+         8,6,7,5,
+         1,3,2,2},
+        4, 4
+    };
+}
+
+DEFINE_TEST(test_matrix_lu)
+{
+    using namespace ouchi::math;
+    fl_matrix<double, 2, 2> m{
+        2, 16,
+        4, 8
+    };
+    vl_matrix<double> mv{
+        {
+        4, 8,
+        2, 16
+        }, 2, 2
+    };
+    auto lu = m.lu();
+    auto luv = m.lu();
+    fl_matrix<double, 2, 2>ans{
+        4.0, 8.0,
+        0.5, 12.0
+    };
+    fl_matrix<double, 2, 2>P{
+        0,1,
+        1,0
+    };
+    CHECK_EQUAL(ans, lu.second);
+    CHECK_EQUAL(ans, luv.second);
+    CHECK_EQUAL(luv.first, P);
+}
+
+DEFINE_TEST(test_matrix_inv)
+{
+    using namespace ouchi::math;
+    fl_matrix<double, 2, 2> m{
+        2, 0,
+        4, 2
+    };
+    vl_matrix<double> mv{
+        {
+        2, 0,
+        4, 2
+        }, 2, 2
+    };
+    fl_matrix<double, 2, 2> ans{
+        .5, 0,
+        -1,.5
+    };
+    auto inv = m.inv().unwrap();
+    auto vinv = mv.inv().unwrap();
+    CHECK_EQUAL(inv, ans);
+    CHECK_EQUAL(vinv, ans);
 }
 

@@ -493,7 +493,7 @@ private:
             auto halfspace_pt = [epsilon = this->epsilon, &pts](const Pt& p) {
                 using std::abs;
                 pts[V] = p;
-                auto r = ouchi::math::slow_det(PtoL(atomat(pts)));
+                auto r = ouchi::math::det(PtoL(atomat(pts)));
                 return abs(r) <= epsilon ? 0 
                     : r < 0 ? -1
                     : 1;
@@ -620,7 +620,7 @@ private:
                 a(i, j) = (i != dim ? pt::get(s[j], i) : 1);
             }
         }
-        return abs(slow_det(a)) / den;
+        return abs(det(a)) / den;
     }
 
     // N次元単体に外接する球の中心と半径の二乗を求める

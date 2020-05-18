@@ -8,6 +8,8 @@
 #include <cstddef>
 #include <cassert>
 
+#include "ouchilib/result/result.hpp"
+
 namespace ouchi::math {
 
 inline namespace matrix_size_specifier {
@@ -305,6 +307,16 @@ public:
         }
         return std::move(ret);
     }
+    void swap_row(size_t i, size_t j) noexcept
+    {
+        using std::swap;
+        for (int k = 0; k < size().second; ++k) swap((*this)(i, k), (*this)(j, k));
+    }
+    void swap_column(size_t i, size_t j) noexcept
+    {
+        using std::swap;
+        for (int k = 0; k < size().first; ++k) swap((*this)(k, i), (*this)(k, j));
+    }
 
     // 転置
     template<class S = Size>
@@ -367,7 +379,7 @@ public:
         }
         for (auto i = 0ul; i<ret.size().first; ++i) {
             for (auto j = 0ul; j<ret.size().second; ++j) {
-                ret(i, j) = sgn(i, j) * slow_det(minor(j, i));
+                ret(i, j) = sgn(i, j) * det(minor(j, i));
             }
         }
         return std::move(ret);
@@ -375,9 +387,67 @@ public:
     [[nodiscard]]
     constexpr T cofactor(size_t i, size_t j) const noexcept
     {
-        return ((i + j & 1) ? -1 : 1) * slow_det(minor(i, j));
+        return ((i + j & 1) ? -1 : 1) * det(minor(i, j));
     }
-    
+    template<class S = Size>
+    [[nodiscard]]
+    constexpr auto lu() const noexcept(is_fixed_length_v<S>)
+        -> std::enable_if_t<(detail::is_square_v<S> > detail::condvalue::no), std::pair<basic_matrix, basic_matrix>>
+    {
+        basic_matrix P;
+        basic_matrix cp = *this;
+        size_t ipv = 0;
+        auto find_pivot = [cp, ipv, n = size().first](){
+            T max = std::numeric_limits<T>::min();
+            size_t idx = ipv;
+            for (auto i = ipv; i < n; ++i) {
+                if (std::abs(cp(i, ipv)) > max) {
+                    max = std::abs(cp(i, ipv));
+                    idx = i;
+                }
+            }
+            return idx;
+        };
+        if constexpr (is_variable_length_v<S>) {
+            if (size().first != size().second) throw std::domain_error("size error. designate square matrix");
+            P.resize(size().first, size().first);
+        }
+        for (auto i = 0u; i < size().first; ++i) P(i, i) = T{ 1 };
+        for (; ipv < size().first - 1; ++ipv) {
+            auto local_pivot_index = find_pivot();
+            T r = T{ 1 } / cp(local_pivot_index, ipv);
+            P.swap_row(ipv, local_pivot_index);
+            cp.swap_row(ipv, local_pivot_index);
+            if (cp(ipv, ipv) == T{ 0 }) continue;
+            for (auto j = ipv+1; j < cp.size().first; ++j) {
+                cp(j, ipv) *= r;
+                for (auto k = ipv+1; k < cp.size().second; ++k) {
+                    cp(j, k) -= cp(j, ipv)*cp(ipv, k);
+                }
+            }
+        }
+        return { P, cp };
+    }
+
+    template<class S = Size>
+    [[nodiscard]]
+    constexpr auto inv() const noexcept(is_fixed_length_v<S>)
+        -> std::enable_if_t<(detail::is_square_v<S> > detail::condvalue::no), result::result<basic_matrix, std::string_view>>
+    {
+        basic_matrix inv;
+        if constexpr (is_variable_length_v<S>) {
+            if (size().first != size().second) return result::err("matrix needs to be square");
+            inv.resize(size().first, size().first);
+        }
+        auto determinant = det(*this);
+        if (determinant == T{ 0 }) return result::err("matrix needs to be regular");
+        auto r = T{ 1 } / det(*this);
+        for (int i = 0; i < size().first; ++i) {
+            for (int j = 0; j < size().second; ++j)
+                inv(i, j) = cofactor(j, i) * r;
+        }
+        return result::ok(inv);
+    }
     /******** 算術演算 ********/
 
 private:
@@ -500,7 +570,8 @@ public:
     }
 
     // 比較演算
-    friend constexpr bool operator==(const basic_matrix& m1, const basic_matrix& m2) noexcept
+    template<class U, class S>
+    friend constexpr bool operator==(const basic_matrix& m1, const basic_matrix<U, S>& m2) noexcept
     {
         if (m1.size() != m2.size()) return false;
         for (auto i = 0ul; i < m1.total_size(); ++i) {
@@ -508,11 +579,16 @@ public:
         }
         return true;
     }
+    template<class U, class S>
+    friend constexpr bool operator!=(const basic_matrix& m1, const basic_matrix<U, S> m2) noexcept
+    {
+        return !(m1 == m2);
+    }
 };
 
 template<class T, class S>
 [[nodiscard]]
-constexpr auto det(const basic_matrix<T, S>& m)
+constexpr auto fast_det(const basic_matrix<T, S>& m)
     noexcept(detail::is_square_v<S> == detail::condvalue::yes)
     ->std::enable_if_t<(detail::is_square_v<S> > detail::condvalue::no), T>
 {
@@ -539,7 +615,7 @@ constexpr auto det(const basic_matrix<T, S>& m)
 }
 
 template<class T, class S>
-constexpr auto slow_det(const basic_matrix<T, S>& m)
+constexpr auto det(const basic_matrix<T, S>& m)
     noexcept(detail::is_square_v<S> == detail::condvalue::yes)
     ->std::enable_if_t<(detail::is_square_v<S> > detail::condvalue::no), T>
 {
@@ -551,7 +627,7 @@ constexpr auto slow_det(const basic_matrix<T, S>& m)
     T ret = T{};
     if constexpr (detail::is_n_by_n_or_larger_v<S, 2> > detail::condvalue::no) {
         for (auto i = 0ul; i < m.size().first; ++i) {
-            ret += sgn(i, 0) * m(i, 0) * slow_det(m.minor(i, 0));
+            ret += sgn(i, 0) * m(i, 0) * det(m.minor(i, 0));
         }
     }
     return ret;
@@ -564,4 +640,12 @@ using fl_matrix = basic_matrix<T, fixed_length<R, C>>;
 template<class T>
 using vl_matrix = basic_matrix<T, variable_length>;
 
+template<class T, class S>
+auto begin(basic_matrix<T, S>& m) { return m.begin(); }
+template<class T, class S>
+auto begin(const basic_matrix<T, S>& m) { return m.begin(); }
+template<class T, class S>
+auto end(basic_matrix<T, S>& m) { return m.end(); }
+template<class T, class S>
+auto end(const basic_matrix<T, S>& m) { return m.end(); }
 }
