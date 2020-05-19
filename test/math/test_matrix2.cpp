@@ -50,6 +50,8 @@ DEFINE_TEST(test_matrix2_initialization)
         1,2,3,
         4,5,6
     };
+    constexpr auto i = fl_matrix<int, 4, 4>::identity();
+    vl_matrix<int>::identity(3);
 }
 
 DEFINE_TEST(test_matrix2_addition)
@@ -259,7 +261,7 @@ DEFINE_TEST(test_cofactor)
 DEFINE_TEST(test_matrix_lu)
 {
     using namespace ouchi::math;
-    fl_matrix<double, 2, 2> m{
+    constexpr fl_matrix<double, 2, 2> m{
         2, 16,
         4, 8
     };
@@ -269,8 +271,9 @@ DEFINE_TEST(test_matrix_lu)
         2, 16
         }, 2, 2
     };
-    auto lu = m.lu();
-    auto luv = m.lu();
+    auto lu = m.pivot_lu();
+    auto luv = m.pivot_lu();
+    auto nlu = mv.lu();
     fl_matrix<double, 2, 2>ans{
         4.0, 8.0,
         0.5, 12.0
@@ -281,7 +284,9 @@ DEFINE_TEST(test_matrix_lu)
     };
     CHECK_EQUAL(ans, lu.second);
     CHECK_EQUAL(ans, luv.second);
+    CHECK_EQUAL(ans, nlu);
     CHECK_EQUAL(luv.first, P);
+    CHECK_EQUAL(det(m), fast_det(m));
 }
 
 DEFINE_TEST(test_matrix_inv)

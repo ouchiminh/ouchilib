@@ -12,6 +12,9 @@
 
 namespace ouchi::math {
 
+template<class T>
+inline constexpr T abs(T value) { return value < T{ 0 } ? -value : value; }
+
 inline namespace matrix_size_specifier {
 namespace detail {
 struct size_base {};
@@ -198,6 +201,20 @@ public:
         , values_{il}
     {
         assert(il.size() == row_size_ * column_size_);
+    }
+    template<class S = Size>
+    static constexpr auto identity() noexcept(is_fixed_length_v<S>)
+        -> std::enable_if_t<(detail::is_square_v<S> == detail::condvalue::yes), basic_matrix<T, S>>
+    {
+        basic_matrix<T, S> E{};
+        for (auto i = 0u; i < E.size().first; ++i) E(i, i) = T{ 1 };
+        return E;
+    }
+    static basic_matrix<T, variable_length> identity(size_t n)
+    {
+        basic_matrix<T, variable_length> E(n, n, T{ 0 });
+        for (auto i = 0u; i < E.size().first; ++i) E(i, i) = T{ 1 };
+        return E;
     }
 
     constexpr void assign(std::initializer_list<T> il) noexcept
@@ -391,10 +408,9 @@ public:
     }
     template<class S = Size>
     [[nodiscard]]
-    constexpr auto lu() const noexcept(is_fixed_length_v<S>)
-        -> std::enable_if_t<(detail::is_square_v<S> > detail::condvalue::no), std::pair<basic_matrix, basic_matrix>>
+    auto pivot_lu() const noexcept(is_fixed_length_v<S>)
+        ->std::enable_if_t<(detail::is_square_v<S> > detail::condvalue::no), std::pair<basic_matrix, basic_matrix>>
     {
-        using std::abs;
         basic_matrix P;
         basic_matrix cp = *this;
         size_t ipv = 0;
@@ -414,7 +430,7 @@ public:
             P.resize(size().first, size().first);
         }
         for (auto i = 0u; i < size().first; ++i) P(i, i) = T{ 1 };
-        for (; ipv < size().first - 1; ++ipv) {
+        for (ipv = 0; ipv < size().first - 1; ++ipv) {
             auto local_pivot_index = find_pivot();
             P.swap_row(ipv, local_pivot_index);
             cp.swap_row(ipv, local_pivot_index);
@@ -429,6 +445,29 @@ public:
         }
         return { P, cp };
     }
+    template<class S = Size>
+    [[nodiscard]]
+    constexpr auto lu() const noexcept(detail::is_square_v<S> == detail::condvalue::yes)
+        ->std::enable_if_t<(detail::is_square_v<S> > detail::condvalue::no), basic_matrix>
+    {
+        if constexpr (detail::is_square_v<S> == detail::condvalue::maybe) {
+            if (size().first != size().second) throw std::domain_error("non-square matrix doesn't have determinant");
+        }
+        const size_t n = size().first;
+        basic_matrix cp = *this;
+        for (auto i = 0ul; i<n-1; ++i) {
+            if (cp(i, i) == T{ 0 }) continue;
+            T r = T{ 1 }/cp(i, i);
+            for (auto j = i + 1; j<n; ++j) {
+                cp(j, i) *= r;
+                for (auto k = i+1; k<n; ++k) {
+                    cp(j, k) -= cp(j, i)*cp(i, k);
+                }
+            }
+        }
+        return cp;
+    }
+
 
     template<class S = Size>
     [[nodiscard]]
@@ -597,19 +636,8 @@ constexpr auto fast_det(const basic_matrix<T, S>& m)
         if (m.size().first != m.size().second) throw std::domain_error("non-square matrix doesn't have determinant");
     }
     size_t n = m.size().first;
-    T res = T{ 1 }, buf;
-    basic_matrix<T, S> mat = m;
-    for (auto i = 0ul; i<n; i++) {
-        if (mat(i, i) == T{ 0 }) continue;
-        T r = T{ 1 }/mat(i, i);
-        for (auto j = i + 1; j<n; j++) {
-            buf = mat(j, i)*r;
-            for (auto k = 0ul; k<n; k++) {
-                mat(j, k) -= mat(i, k)*buf;
-            }
-        }
-    }
-
+    T res = T{ 1 };
+    basic_matrix<T, S> mat = m.lu();
     //対角部分の積
     for (auto i = 0ul; i<n; i++) {
         res *= mat(i, i);
