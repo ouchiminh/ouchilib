@@ -394,15 +394,16 @@ public:
     constexpr auto lu() const noexcept(is_fixed_length_v<S>)
         -> std::enable_if_t<(detail::is_square_v<S> > detail::condvalue::no), std::pair<basic_matrix, basic_matrix>>
     {
+        using std::abs;
         basic_matrix P;
         basic_matrix cp = *this;
         size_t ipv = 0;
-        auto find_pivot = [cp, ipv, n = size().first](){
-            T max = std::numeric_limits<T>::min();
+        auto find_pivot = [&cp, &ipv, n = size().first](){
+            T max = abs(cp(ipv, ipv));
             size_t idx = ipv;
-            for (auto i = ipv; i < n; ++i) {
-                if (std::abs(cp(i, ipv)) > max) {
-                    max = std::abs(cp(i, ipv));
+            for (auto i = ipv + 1; i < n; ++i) {
+                if (abs(cp(i, ipv)) > max) {
+                    max = abs(cp(i, ipv));
                     idx = i;
                 }
             }
@@ -415,10 +416,10 @@ public:
         for (auto i = 0u; i < size().first; ++i) P(i, i) = T{ 1 };
         for (; ipv < size().first - 1; ++ipv) {
             auto local_pivot_index = find_pivot();
-            T r = T{ 1 } / cp(local_pivot_index, ipv);
             P.swap_row(ipv, local_pivot_index);
             cp.swap_row(ipv, local_pivot_index);
             if (cp(ipv, ipv) == T{ 0 }) continue;
+            T r = T{ 1 } / cp(ipv, ipv);
             for (auto j = ipv+1; j < cp.size().first; ++j) {
                 cp(j, ipv) *= r;
                 for (auto k = ipv+1; k < cp.size().second; ++k) {
