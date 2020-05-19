@@ -305,5 +305,11 @@ DEFINE_TEST(test_matrix_inv)
     auto vinv = mv.inv().unwrap();
     CHECK_EQUAL(inv, ans);
     CHECK_EQUAL(vinv, ans);
+    fl_matrix<double, 2, 2> erm{
+        0, 0,
+        0, 0
+    };
+    auto er = erm.inv();
+    CHECK_TRUE(!er);
 }
 
