@@ -600,8 +600,10 @@ constexpr auto fast_det(const basic_matrix<T, S>& m)
     T res = T{ 1 }, buf;
     basic_matrix<T, S> mat = m;
     for (auto i = 0ul; i<n; i++) {
+        if (mat(i, i) == T{ 0 }) continue;
+        T r = T{ 1 }/mat(i, i);
         for (auto j = i + 1; j<n; j++) {
-            buf = mat(j, i)/mat(i, i);
+            buf = mat(j, i)*r;
             for (auto k = 0ul; k<n; k++) {
                 mat(j, k) -= mat(i, k)*buf;
             }
