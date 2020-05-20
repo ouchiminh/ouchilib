@@ -1,6 +1,7 @@
 ﻿#include "../test.hpp"
 #include "ouchilib/crypto/algorithm/secret_sharing.hpp"
 #include <random>
+#include <string_view>
 
 #ifndef NDEBUG
 
@@ -23,7 +24,7 @@ DEFINE_TEST(test_secret_sharing_share_creation_and_recover)
 {
     using namespace ouchi::crypto;
     using ouchi::math::gf256;
-    using namespace std::string_literals;
+    using namespace std::string_view_literals;
     char ans[256] = {};
     secret_sharing<> ss([r = std::mt19937{ std::random_device{}() }]() mutable {return gf256<>{r() & 0xff}; },
                         2);
@@ -31,14 +32,13 @@ DEFINE_TEST(test_secret_sharing_share_creation_and_recover)
     ss.push("fugafuga");
     auto share = { ss.get_share(1),ss.get_share(2),ss.get_share(3) };
     CHECK_EQUAL(ss.recover_secret(ans, sizeof(ans), share).unwrap(), 16);
-    CHECK_EQUAL(ans, "hogehogefugafuga"s);
+    CHECK_EQUAL(ans, "hogehogefugafuga"sv);
 }
 
 DEFINE_TEST(test_secret_sharing_error_handling)
 {
     using namespace ouchi::crypto;
     using ouchi::math::gf256;
-    using namespace std::string_literals;
     char ans[256] = {};
     secret_sharing<> ss([r = std::mt19937{ std::random_device{}() }]() mutable {return gf256<>{r() & 0xff}; },
                         2);
