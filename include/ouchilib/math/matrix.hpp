@@ -680,3 +680,4 @@ auto end(basic_matrix<T, S>& m) { return m.end(); }
 template<class T, class S>
 auto end(const basic_matrix<T, S>& m) { return m.end(); }
 }
+

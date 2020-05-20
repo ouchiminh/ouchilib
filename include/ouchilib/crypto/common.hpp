@@ -21,7 +21,7 @@ inline void secure_memset(volatile T& ptr, std::uint8_t ch)
     }
 }
 template<class T, size_t N>
-inline void secure_memset(volatile T(&array)[N], std::uint8_t ch)
+inline void secure_memset(volatile T(&array)[N], std::uint8_t ch) noexcept
 {
     using vp = volatile std::uint8_t*;
     auto* dest = reinterpret_cast<vp>(array);
@@ -29,7 +29,7 @@ inline void secure_memset(volatile T(&array)[N], std::uint8_t ch)
         dest[i] = ch;
     }
 }
-inline void secure_memset(volatile void* ptr, std::uint8_t ch, size_t size)
+inline void secure_memset(volatile void* ptr, std::uint8_t ch, size_t size) noexcept
 {
     auto* dest = static_cast<volatile std::uint8_t*>(ptr);
     for (auto i : ouchi::step(size)) {
@@ -38,13 +38,13 @@ inline void secure_memset(volatile void* ptr, std::uint8_t ch, size_t size)
 }
 
 template<class Int, std::enable_if_t<std::is_integral_v<Int> && std::is_unsigned_v<Int>>* = nullptr>
-inline constexpr Int rotr(Int x, unsigned nbit)
+inline constexpr Int rotr(Int x, unsigned nbit) noexcept
 {
     constexpr unsigned w = sizeof(Int) * CHAR_BIT;
     return (x >> nbit) | (x << (w - nbit));
 }
 template<class Int, std::enable_if_t<std::is_integral_v<Int> && std::is_unsigned_v<Int>>* = nullptr>
-inline constexpr Int rotl(Int x, unsigned nbit)
+inline constexpr Int rotl(Int x, unsigned nbit) noexcept
 {
     constexpr unsigned w = sizeof(Int) * CHAR_BIT;
     return (x << nbit) | (x >> (w - nbit));

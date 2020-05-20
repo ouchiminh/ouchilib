@@ -35,13 +35,13 @@ struct mugi {
         secure_memset(b_, 0);
     }
 
-    result_type operator()()
+    result_type operator()() noexcept
     {
         auto cp = a_[2];
         update();
         return cp;
     }
-    void discard(size_t n)
+    void discard(size_t n) noexcept
     {
         for (auto i = 0ull; i < n; ++i) (void)operator()();
     }
@@ -52,19 +52,19 @@ private:
     static constexpr std::uint64_t c[3] = {
         0x6A09E667F3BCC908,0xBB67AE8584CAA73B,0x3C6EF372FE94F82B
     };
-    void update()
+    void update() noexcept
     {
         std::uint64_t at[3] = { a_[0], a_[1], a_[2] };
         rho(b_); lambda(at);
     }
-    void rho(const std::uint64_t (&b)[16])
+    void rho(const std::uint64_t (&b)[16]) noexcept
     {
         std::uint64_t a0 = a_[0], a1 = a_[1];
         a_[0] = a_[1];
         a_[1] = a_[2] ^ F(a_[1], b[4]) ^ c[1];
         a_[2] = a0 ^ F(a1, rotl(b[10], 17)) ^ c[2];
     }
-    void lambda(const std::uint64_t (&a)[3])
+    void lambda(const std::uint64_t (&a)[3]) noexcept
     {
         std::uint64_t bt[16];
         std::memcpy(bt, b_, sizeof(bt));
@@ -75,7 +75,7 @@ private:
         b_[4] = bt[3] ^ bt[7];
         b_[10] = bt[9] ^ rotl(bt[13], 32);
     }
-    std::uint64_t F(std::uint64_t x, std::uint64_t b) const
+    std::uint64_t F(std::uint64_t x, std::uint64_t b) const noexcept
     {
         std::uint8_t o[8] = {};
         detail::unpack(x ^ b, o);
@@ -93,7 +93,7 @@ private:
             (((ql >> 8) & 0xFFull) << 8) |
             ((ql >> 0) & 0xFFull);
     }
-    std::uint32_t M(std::uint32_t x) const
+    std::uint32_t M(std::uint32_t x) const noexcept
     {
         using gf256 = ouchi::math::gf<unsigned char, 0x1b>;
         constexpr ouchi::math::fl_matrix<gf256, 4, 4> m{
@@ -102,7 +102,7 @@ private:
             gf256{0x01},gf256{0x01},gf256{0x02},gf256{0x03},
             gf256{0x03},gf256{0x01},gf256{0x01},gf256{0x02}
         };
-        const ouchi::math::fl_matrix<gf256, 4, 1> xm({
+        ouchi::math::fl_matrix<gf256, 4, 1> xm({
             gf256{(x >> 24)&0xff},
             gf256{(x >> 16)&0xff},
             gf256{(x >> 8)&0xff},
