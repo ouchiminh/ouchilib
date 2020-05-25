@@ -150,6 +150,15 @@ DEFINE_TEST(test_det)
     auto d2 = fast_det(m2);
     CHECK_EQUAL(d, -22);
     CHECK_TRUE(std::abs(d - d2) < 1e-8);
+    constexpr fl_matrix<double, 3, 3> m3{
+        1, 0, 0,
+        2, 1, 4,
+        3, 3, 0
+    }; // det(m3) == -12
+    constexpr auto lu = m3.lu();
+    constexpr auto d3 = det(m3);
+    constexpr auto df3 = fast_det(m3);
+    CHECK_EQUAL(fast_det(m3), det(m3));
 }
 
 DEFINE_TEST(test_minor)
@@ -287,12 +296,16 @@ DEFINE_TEST(test_matrix_lu)
     CHECK_EQUAL(ans, nlu);
     CHECK_EQUAL(luv.first, P);
     CHECK_EQUAL(det(m), fast_det(m));
+    auto [l, u] = extract_lu(nlu);
+    auto [lf, uf] = extract_lu(lu.second);
+    CHECK_EQUAL(lf*uf, lu.first * m);
+    CHECK_EQUAL(l*u, mv);
 }
 
 DEFINE_TEST(test_matrix_inv)
 {
     using namespace ouchi::math;
-    fl_matrix<double, 2, 2> m{
+    constexpr fl_matrix<double, 2, 2> m{
         2, 0,
         4, 2
     };
@@ -306,7 +319,7 @@ DEFINE_TEST(test_matrix_inv)
         .5, 0,
         -1,.5
     };
-    auto inv = m.inv().unwrap();
+    constexpr auto inv = m.inv().unwrap();
     auto vinv = mv.inv().unwrap();
     CHECK_EQUAL(inv, ans);
     CHECK_EQUAL(vinv, ans);

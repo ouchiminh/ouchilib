@@ -664,6 +664,29 @@ constexpr auto det(const basic_matrix<T, S>& m)
     return ret;
 }
 
+template<class T, class S>
+constexpr auto extract_lu(const basic_matrix<T, S>& lu) noexcept(is_fixed_length_v<S>)
+->std::enable_if_t<(detail::is_square_v<S> > detail::condvalue::no),
+                   std::pair<basic_matrix<T, S>, basic_matrix<T, S>>>
+{
+    basic_matrix<T, S> l, u;
+    if constexpr (is_variable_length_v<S>) {
+        if (lu.size().first != lu.size().second) throw std::domain_error("lu matrix needs to be square matrix");
+        l.resize(lu.size().first, lu.size().first);
+        u.resize(lu.size().first, lu.size().first);
+    }
+    for (auto i = 0ul; i < lu.size().first; ++i) {
+        for (auto j = 0ul; j < lu.size().first; ++j) {
+            l(i, j) = j < i ? lu(i, j) : j == i ? T{ 1 } : T{ 0 };
+            u(i, j) = j >= i ? lu(i, j) : T{ 0 };
+        }
+    }
+    return { l, u };
+}
+
+template<class T, class S>
+constexpr auto solve(const basic_matrix<T, S>& m);
+
 // 固定長の行列(constexpr)
 template<class T, size_t R, size_t C>
 using fl_matrix = basic_matrix<T, fixed_length<R, C>>;
