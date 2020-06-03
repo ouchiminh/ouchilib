@@ -150,5 +150,8 @@
     <ClInclude Include="include\ouchilib\units\dimension.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\ouchilib\geometry\metric.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

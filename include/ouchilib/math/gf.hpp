@@ -63,15 +63,6 @@ struct gf {
         return c == 0 ? 1
             : c & 1 ? mul(v, power(v, c - 1))
             : power(mul(v, v), c >> 1);
-        //return [v, c,
-        //    impl = [](auto val, auto n, auto f) -> Int {
-        //        return n == 0 ? 1
-        //            : n & 1 ? mul(val, f(val, n - 1, f))
-        //            : f(mul(val, val), n >> 1, f);
-        //    }
-        //]() -> Int {
-        //    return impl(v, c, impl);
-        //}();
     }
     friend constexpr gf pow(gf v, size_t c) noexcept { return gf{ gf::power((Int)v, c) }; }
     static constexpr Int inv(Int v) noexcept
