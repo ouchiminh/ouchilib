@@ -443,7 +443,7 @@ private:
             min_idx,
             minimize_where(P,
                            [pt = id_to_et(min_idx, first), &first, this](size_t pid)
-                           {return og::sqdistance(pt, id_to_et(pid, first)); },
+                           {return og::sqrdistance(pt, id_to_et(pid, first)); },
                            [&first, &alpha, low = is_lower_space(id_to_et(min_idx, first), alpha)](size_t pid)->bool
                            {bool p = is_lower_space(id_to_et(pid, first), alpha); return low != p; })
             .first
@@ -635,7 +635,7 @@ private:
         if constexpr (V == 2) {
             auto sum = og::add(s[0], s[1]);
             auto c = og::mul(sum, (coord_type)0.5);
-            return { c, og::sqdistance(s[0], s[1]) };
+            return { c, og::sqrdistance(s[0], s[1]) };
         } else {
         // 行列要素の総和
             auto sum_mat = [](auto&& mat)->coord_type {
@@ -682,7 +682,7 @@ private:
             for (auto i = 0ul; i < dim; ++i) {
                 pt::set(o, i, po(i));
             }
-            return { o, og::sqdistance(o, s[0]) };
+            return { o, og::sqrdistance(o, s[0]) };
         }
     }
 
