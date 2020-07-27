@@ -137,7 +137,7 @@ constexpr auto mul(const P& vec, const typename point_traits<P>::coord_type& sca
 }
 
 template<class P>
-constexpr auto sqdistance(const P& lhs, const P& rhs)
+constexpr auto sqrdistance(const P& lhs, const P& rhs)
 ->typename point_traits<P>::coord_type
 {
     using T = typename point_traits<P>::coord_type;
@@ -154,7 +154,7 @@ constexpr auto distance(const P& lhs, const P& rhs)
 ->typename point_traits<P>::coord_type
 {
     using std::sqrt;
-    return sqrt(sqdistance(lhs, rhs));
+    return sqrt(sqrdistance(lhs, rhs));
 }
 }
 
