@@ -71,9 +71,6 @@
     <ClCompile Include="..\geometry\test_triangulation.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\utl\test_step.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="..\utl\test_constexpr_for.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>

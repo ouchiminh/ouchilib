@@ -42,7 +42,6 @@
     <ClCompile Include="..\utl\test_constexpr_for.cpp" />
     <ClCompile Include="..\utl\test_indexed_iterator.cpp" />
     <ClCompile Include="..\utl\test_multiitr.cpp" />
-    <ClCompile Include="..\utl\test_step.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

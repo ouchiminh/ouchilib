@@ -1,6 +1,7 @@
 ﻿#include "../test.hpp"
 #include "ouchilib/math/gf.hpp"
 #include "ouchilib/utl/step.hpp"
+#include "ouchilib/math/infinity.hpp"
 
 DEFINE_TEST(test_gf)
 {
@@ -63,3 +64,11 @@ DEFINE_TEST(test_gfinv)
         CHECK_EQUAL(gf2_32<>::mul(gf2_32<>::inv((std::uint8_t)i), (std::uint8_t)i), 1);
     }
 }
+
+DEFINE_TEST(test_inf)
+{
+    using namespace ouchi::math;
+    CHECK_TRUE(inf > 1);
+    CHECK_TRUE(1 < inf);
+}
+

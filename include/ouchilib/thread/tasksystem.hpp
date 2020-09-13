@@ -1,99 +1,73 @@
 ﻿#pragma once
+#include <type_traits>
+#include <functional>
+#include <variant>
+#include <compare>
+#include <memory>
+#include <future>
 #include <list>
-#include <vector>
-#include <chrono>
+#include <map>
+#include <cstdint>
 #include "task.hpp"
 
-namespace ouchi::task{
+namespace ouchi::thread {
 
-/***
-ex)
-task t1{[](){}, key};
-task t2{[](){}, key};
-tasksystem<key> ts;
-ts.register_task(t1, t2);
-
-ts.launch(1); // thread count
-***/
-
-template<class Key>
 class tasksystem {
-    std::list<std::reference_wrapper<taskinfo<Key>>> tasks_;
-    std::list<std::pair<std::future<void>, std::reference_wrapper<taskinfo<Key>>>>
-        working_threads_;
-    std::future<void> mainthread_;
-
-    template<class Head, class ...Task>
-    void register_task_impl(Head& head, Task& ...tasks)
-    {
-        static_assert(std::is_base_of_v<taskinfo<Key>, Head>,
-                      "task must be derived from taskinfo<T>");
-        tasks_.emplace_back(head);
-        register_task_impl(tasks...);
-    }
-    void register_task_impl(){}
 public:
-    using key_type = std::remove_reference_t<Key>;
-
-    // tasksystem doesn't own each task.
-    // just have reference.
-    // please make sure that the tasks' lifetime is long enough.
-    template<class ...Task>
-    void register_task(Task& ...tasks)
+    template<class F>
+    auto create_task(F&& func)
+        -> std::enable_if_t<std::is_invocable_v<std::remove_cvref_t<F>>, task_base&>
     {
-        register_task_impl(tasks...);
-    }
-    template<class It,
-             std::enable_if_t<std::is_base_of_v<taskinfo<Key>,
-                                                typename std::iterator_traits<It>::value_type>>*
-             = nullptr>
-    void register_task(It first, It last)
-    {
-        tasks_.insert(tasks_.end(), first, last);
+        return *tasks_.emplace_back(new basic_task<F>(std::forward<F>(func)));
     }
 
-    // run tasks async. 0 is no limit.
-    void launch(unsigned thread_count = 0)
+    template<class F>
+    auto create_task(F&& func, const retry_on_fail& r)
+        -> std::enable_if_t<std::is_invocable_v<std::remove_cvref_t<F>>, task_base&>
     {
-        mainthread_ = std::async(std::launch::async,
-                                 [this, thread_count]() {run(thread_count); });
+        return create_task(std::forward<F>(func), r, [](...) {});
     }
-    // launch and wait
-    void run(unsigned thread_count = 0)
-    {
-        size_t launched = 0;
-        thread_count = thread_count ? thread_count : (unsigned)tasks_.size();
-        for (auto& i : tasks_) {
-            if (!i.get().is_ready()) continue;
-            if (working_threads_.size() < thread_count) {
-                i.get().called_ = true;
-                working_threads_.push_back(std::make_pair(std::async(std::launch::async,
-                                                                     [&i]() {i.get()(); }),
-                                                          i));
-            }
-            else i.get()();
-            ++launched;
-        }
-        // poll thread status
-        while(launched < tasks_.size()){
 
-            for (auto begin = working_threads_.begin();
-                 begin != working_threads_.end();) {
-                using namespace std::chrono_literals;
-                if (begin->first.wait_for(0ms) == std::future_status::ready) {
-                    launched += begin->second.get().run_posttask(working_threads_, thread_count + 1);
-                    begin = working_threads_.erase(begin);
-                } else ++begin;
+    template<class F, class ErrorHandler>
+    auto create_task(F&& func, const retry_on_fail& r, ErrorHandler&& error_handler)
+        -> std::enable_if_t<std::is_invocable_v<std::remove_cvref_t<F>>, task_base&>
+    {
+        return *tasks_.emplace_back(new failable_task<F, ErrorHandler>(std::forward<F>(func), r, std::forward<ErrorHandler>(error_handler)));
+    }
+
+    void launch(size_t max_thread_count = 0) {
+        size_t completed = 0;
+        std::map<std::intptr_t, std::future<void>> results;
+        while (completed != tasks_.size()) {
+            completed = 0;
+            for (auto& taskptr : tasks_) {
+                if (taskptr->done()) {
+                    ++completed;
+                    continue;
+                }
+                if (taskptr->get_status() == task_base::status::working) {
+                    using namespace std::literals::chrono_literals;
+                    auto& f = results[(std::intptr_t)taskptr.get()];
+                    if (std::future_status::ready == f.wait_for(1us)) {
+                        (void)f.get();
+                        results.erase((std::intptr_t)taskptr.get());
+                    }
+                }
+                if (taskptr->ready() && results.size() < max_thread_count) {
+                    results.emplace(std::piecewise_construct,
+                                    std::forward_as_tuple((std::intptr_t)taskptr.get()),
+                                    std::forward_as_tuple(std::async(std::launch::async, [&taskptr]() { (void)taskptr->execute(); })));
+                }
+                else if (taskptr->ready()) {
+                    (void)taskptr->execute();
+                }
             }
         }
-        for (auto& i : working_threads_)
-            i.first.wait();
-        //working_threads_.clear();
     }
-    void wait()
-    {
-        mainthread_.wait();
-    }
+
+private:
+    std::list<std::unique_ptr<task_base>> tasks_;
 };
 
 }
+
