@@ -39,7 +39,7 @@ struct interval_divide {
 
     constexpr std::pair<additive_t, additive_t> divide(size_t current, size_t total)
     {
-        size_t interval_count = end_ - begin_;
+        size_t interval_count = static_cast<size_t>(end_ - begin_);
         size_t r = interval_count % total;
         size_t b = interval_count / total;
         auto begin = begin_ + current * b + std::min(current, r);
