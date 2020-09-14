@@ -38,6 +38,7 @@ public:
     bool ready() const noexcept
     {
         std::lock_guard<std::recursive_mutex> lock(mtx_);
+        if (status_ != status::waiting) return false;
         for (const task_base* p : preprocesses_) {
             if (!p->done()) return false;
         }
@@ -69,7 +70,7 @@ template<class F>
 class basic_task<F, std::enable_if_t<std::is_invocable_v<F>>> : public task_base {
 public:
     using func_type = std::remove_reference_t<F>;
-    basic_task(F&& func)
+    explicit basic_task(F&& func)
         : func_{ std::forward<F>(func) }
     {}
     virtual ~basic_task() = default;

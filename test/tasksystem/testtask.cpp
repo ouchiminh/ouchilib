@@ -51,6 +51,8 @@ DEFINE_TEST(task_paralel_test)
     ts.launch(4);
     // 01ab
     CHECK_EQUAL(sn.str(), "01");
+    std::cout << sn.str() << '\n';
     CHECK_EQUAL(sa.str(), "ab");
+    std::cout << sa.str() << '\n';
 }
 

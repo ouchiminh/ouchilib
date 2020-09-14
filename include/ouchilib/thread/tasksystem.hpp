@@ -52,11 +52,13 @@ public:
                         (void)f.get();
                         results.erase((std::intptr_t)taskptr.get());
                     }
+                    continue;
                 }
                 if (taskptr->ready() && results.size() < max_thread_count) {
                     results.emplace(std::piecewise_construct,
                                     std::forward_as_tuple((std::intptr_t)taskptr.get()),
                                     std::forward_as_tuple(std::async(std::launch::async, [&taskptr]() { (void)taskptr->execute(); })));
+                    continue;
                 }
                 else if (taskptr->ready()) {
                     (void)taskptr->execute();
