@@ -41,6 +41,7 @@
     <ClCompile Include="..\units\test_units.cpp" />
     <ClCompile Include="..\utl\test_constexpr_for.cpp" />
     <ClCompile Include="..\utl\test_indexed_iterator.cpp" />
+    <ClCompile Include="..\utl\test_interval_divide.cpp" />
     <ClCompile Include="..\utl\test_multiitr.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
