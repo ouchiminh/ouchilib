@@ -15,6 +15,7 @@ DEFINE_TEST(test_interval_divide_instantiate)
 
 DEFINE_TEST(test_interval_divide_integral)
 {
+    // [1, 9)
     interval_divide<int> id{ 1, 9 };
     int sum = 0;
     int count;

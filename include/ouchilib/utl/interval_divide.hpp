@@ -43,7 +43,8 @@ struct interval_divide {
         size_t r = interval_count % total;
         size_t b = interval_count / total;
         auto begin = begin_ + current * b + std::min(current, r);
-        return { begin, begin + b + (current < r ? 1 : 0) };
+        return { static_cast<additive_t>(begin),
+                 static_cast<additive_t>(begin + b + (current < r ? 1 : 0)) };
     }
     constexpr step<additive_t> divide_into_steps(size_t current, size_t total)
     {
