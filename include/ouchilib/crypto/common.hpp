@@ -12,10 +12,11 @@
 namespace ouchi::crypto {
 
 template<class T>
-inline void secure_memset(volatile T& ptr, std::uint8_t ch)
+inline auto secure_memset(volatile T& obj, std::uint8_t ch)
+-> std::enable_if_t<!std::is_pointer_v<T>>
 {
     using vp = volatile std::uint8_t*;
-    auto* dest = reinterpret_cast<vp>(&ptr);
+    auto* dest = reinterpret_cast<vp>(&obj);
     for (auto i : ouchi::step(sizeof T)) {
         dest[i] = ch;
     }

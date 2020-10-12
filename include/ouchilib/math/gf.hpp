@@ -23,7 +23,7 @@ inline constexpr auto ex_gcd(Int a, Int b)
 /// <summary>
 /// F : Intで表現される拡大体の既約多項式のビット表現
 /// </summary>
-template<class Int, Int F, std::enable_if_t<std::is_integral_v<Int> && std::is_unsigned_v<Int>>* = nullptr>
+template<class Int, Int F, std::enable_if_t<std::is_integral_v<Int> && std::is_unsigned_v<Int>, int> = 0>
 struct gf {
     Int value;
     gf() = default;

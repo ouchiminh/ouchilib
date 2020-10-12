@@ -86,8 +86,8 @@ DEFINE_TEST(test_aes_encode_speed)
     static constexpr char plain[4096*2] = { 1, 2, 3 };
     constexpr char key[32] =   "!!!!!!!!!?!!!!!!!!!!!!!!!!!!!!!";
     char dest[8300];
-    block_encoder<cbc, aes256> soft{ std::in_place, key, key };
-    block_encoder<cbc, aes256_ni> ni{ std::in_place, key, key };
+    block_encoder<cbc, aes128> soft{ std::in_place, key, key };
+    block_encoder<cbc, aes128_ni> ni{ std::in_place, key, key };
     //block_encoder<ecb, aes256> soft{ std::in_place, key };
     //block_encoder<ecb, aes256_ni> ni{ std::in_place, key };
     auto t1 = ouchi::measure([&soft](auto a, auto b, auto c, auto d) {soft.encrypt(a, b, c, d); },
