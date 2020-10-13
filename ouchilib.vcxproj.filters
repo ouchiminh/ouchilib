@@ -156,5 +156,8 @@
     <ClInclude Include="include\ouchilib\utl\interval_divide.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\ouchilib\math\modint.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

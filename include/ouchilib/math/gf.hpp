@@ -8,6 +8,7 @@ namespace ouchi::math {
 
 /// <summary>
 /// 拡張ユークリッド互除法 
+/// bに素数を指定し、有限体Z/bZ上でaの逆元を求める。
 /// </summary>
 /// <returns>d = ax + byとなるような{d, x, y}</returns>
 template<class Int>
@@ -15,7 +16,7 @@ inline constexpr auto ex_gcd(Int a, Int b)
 -> std::tuple<Int, Int, Int>
 {
     if (b == 0) return std::make_tuple((Int)a, (Int)1, (Int)0);
-    auto [d, x, y] = ex_gcd(b, a % b);
+    auto [d, y, x] = ex_gcd(b, a % b);
     y -= a / b * x;
     return std::make_tuple(d, x, y);
 }
