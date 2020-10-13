@@ -48,9 +48,6 @@
     <ClInclude Include="include\ouchilib\utl\time_keeper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="test\time\measure-time-test.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\ouchilib\parser\csv.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -151,6 +148,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\ouchilib\geometry\metric.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ouchilib\math\infinity.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ouchilib\utl\interval_divide.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ouchilib\math\modint.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
