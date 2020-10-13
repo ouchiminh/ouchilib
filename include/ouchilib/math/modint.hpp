@@ -1,4 +1,5 @@
-﻿#include <type_traits>
+﻿#pragma once
+#include <type_traits>
 #include <numeric>
 #include <limits>
 #include <concepts>
@@ -7,12 +8,7 @@
 
 namespace ouchi::math {
 
-namespace detail {
-template<class T>
-concept integral = std::is_integral_v<T>;
-}
-
-template<detail::integral Int, detail::integral Internal = Int>
+template<class Int, class Internal = Int>
 class modint {
 public:
     static constexpr bool nothrow_mod = noexcept(std::declval<Int>() % std::declval<Int>());

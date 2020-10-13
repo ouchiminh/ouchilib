@@ -88,4 +88,3 @@ DEFINE_TEST(test_modint)
     CHECK_EQUAL(a - b, a + (-b));
     CHECK_EQUAL(a / b, 7);
 }
-
