@@ -11,9 +11,10 @@ namespace ouchi::math {
 template<class Int, class Internal = Int>
 class modint {
 public:
+    static constexpr bool nothrow_copy = std::is_nothrow_assignable_v<Int, Int> && std::is_nothrow_assignable_v<Int, Internal> && std::is_nothrow_copy_assignable_v<Int> && std::is_nothrow_copy_constructible_v<Int>;
     static constexpr bool nothrow_mod = noexcept(std::declval<Int>() % std::declval<Int>());
-    static constexpr bool nothrow_add = nothrow_mod && noexcept(std::declval<Int>() + std::declval<Int>());
-    static constexpr bool nothrow_mul = nothrow_mod && noexcept(std::declval<Internal>() * std::declval<Int>());
+    static constexpr bool nothrow_add = nothrow_copy && nothrow_mod && noexcept(std::declval<Int>() + std::declval<Int>());
+    static constexpr bool nothrow_mul = nothrow_copy && nothrow_mod && noexcept(std::declval<Internal>() * std::declval<Int>());
     constexpr modint(const Int& value, const Int& mod)
     {
         if (value % mod < 0) value_ = value % mod + mod;
@@ -26,6 +27,8 @@ public:
     {}
 
     constexpr operator const Int&() const noexcept(noexcept(std::is_nothrow_copy_constructible_v<Int>)) { return value_; }
+    constexpr const Int& mod() const noexcept { return mod_; }
+    constexpr Int& mod() noexcept { return mod_; }
 
     constexpr modint operator-() const noexcept(std::is_copy_constructible_v<Int>)
     {
@@ -78,10 +81,36 @@ public:
         auto ret = a;
         return ret /= b;
     }
+    auto operator<=>(const modint& i) const
+    {
+        return this->value_ <=> i;
+    }
+    bool operator==(const modint& i) const
+    {
+        return this->value_ == i;
+    }
 private:
     Int value_;
     Int mod_;
 };
+
+template<class T>
+inline modint<T> pow(const modint<T>& a, const int e)
+{
+    if (e == 0) return modint<T>(1, a.mod());
+    int ec = e < 0 ? -e : e;
+    auto c = modint<T>(a, a.mod());
+    while (ec) {
+        if (ec & 1) {
+            c *= a;
+        } else {
+            c *= c;
+            ec /= 2;
+        }
+        --ec;
+    }
+    return e < 0 ? modint<T>(1, a.mod()) / c : c;
+}
 
 }
 

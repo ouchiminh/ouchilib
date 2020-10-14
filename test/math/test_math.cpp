@@ -88,3 +88,17 @@ DEFINE_TEST(test_modint)
     CHECK_EQUAL(a - b, a + (-b));
     CHECK_EQUAL(a / b, 7);
 }
+
+DEFINE_TEST(test_modint_cipher)
+{
+    using namespace ouchi::math;
+    modint<int> g(2, 997);
+    constexpr int a = 2, b = 5;
+    auto alpha = g*g, beta = g*g*g*g*g;
+    modint<int> M(8, 997);
+    auto K = alpha * beta;
+    CHECK_EQUAL(beta * alpha, K);
+    CHECK_EQUAL(alpha, pow(g, 2));
+    CHECK_EQUAL(beta, pow(g, 5));
+}
+
