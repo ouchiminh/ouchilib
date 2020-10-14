@@ -94,8 +94,8 @@ private:
     Int mod_;
 };
 
-template<class T>
-inline modint<T> pow(const modint<T>& a, const int e)
+template<class T, class Int>
+inline modint<T> pow(const modint<T>& a, const Int e)
 {
     if (e == 0) return modint<T>(1, a.mod());
     int ec = e < 0 ? -e : e;
