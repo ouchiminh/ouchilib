@@ -98,8 +98,8 @@ template<class T, class Int>
 inline modint<T> pow(const modint<T>& a, const Int e)
 {
     if (e == 0) return modint<T>(1, a.mod());
-    int ec = e < 0 ? -e : e;
     auto c = modint<T>(a, a.mod());
+    auto ec = e;
     while (ec) {
         if (ec & 1) {
             c *= a;
