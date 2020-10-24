@@ -94,12 +94,12 @@ private:
     Int mod_;
 };
 
-template<class T, class Int>
-inline modint<T> pow(const modint<T>& a, const Int e)
+template<class T, class Int, class Internal>
+inline modint<T, Internal> pow(const modint<T, Internal>& a, const Int e)
 {
     using std::abs;
-    if (e == 0) return modint<T>(1, a.mod());
-    auto c = modint<T>(a, a.mod());
+    if (e == 0) return modint<T, Internal>(1, a.mod());
+    auto c = modint<T, Internal>(a, a.mod());
     auto ec = abs(e);
     while (ec) {
         if (ec & 1) {
@@ -110,7 +110,7 @@ inline modint<T> pow(const modint<T>& a, const Int e)
         }
         --ec;
     }
-    return e < 0 ? modint<T>(1, a.mod()) / c : c;
+    return e < 0 ? modint<T, Internal>(1, a.mod()) / c : c;
 }
 
 }
