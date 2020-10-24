@@ -48,7 +48,7 @@ public:
     modint& operator*=(const Int& i) & noexcept(nothrow_mul)
     {
         const Internal buf = value_;
-        value_ = (const Int&)(buf * i % mod_);
+        value_ = (Int&)(buf * i % mod_);
         return *this;
     }
     modint& operator/=(const Int& i) & noexcept(nothrow_mul)
