@@ -97,9 +97,10 @@ private:
 template<class T, class Int>
 inline modint<T> pow(const modint<T>& a, const Int e)
 {
+    using std::abs;
     if (e == 0) return modint<T>(1, a.mod());
     auto c = modint<T>(a, a.mod());
-    auto ec = e;
+    auto ec = abs(e);
     while (ec) {
         if (ec & 1) {
             c *= a;
