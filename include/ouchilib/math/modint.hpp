@@ -2,7 +2,6 @@
 #include <type_traits>
 #include <numeric>
 #include <limits>
-#include <concepts>
 #include <cassert>
 #include "gf.hpp"
 
@@ -81,13 +80,30 @@ public:
         auto ret = a;
         return ret /= b;
     }
-    auto operator<=>(const modint& i) const
+    friend bool operator<(const modint& i, const modint& j) noexcept
     {
-        return this->value_ <=> i;
+        return i.value_ < j.value_;
     }
+    friend bool operator>(const modint& i, const modint j)noexcept
+    {
+        return j < i;
+    }
+    friend bool operator<=(const modint& i, const modint& j)noexcept
+    {
+        return !(i > j);
+    }
+    friend bool operator>=(const modint& i, const modint& j)noexcept
+    {
+        return !(i < j);
+    }
+
     bool operator==(const modint& i) const
     {
         return this->value_ == i;
+    }
+    bool operator!=(const modint& i) const
+    {
+        return !(*this == i);
     }
 private:
     Int value_;
