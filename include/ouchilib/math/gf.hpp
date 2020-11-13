@@ -16,7 +16,7 @@ inline constexpr auto ex_gcd(Int a, Int b)
 -> std::tuple<Int, Int, Int>
 {
     if (b == 0) return std::make_tuple((Int)a, (Int)1, (Int)0);
-    auto [d, y, x] = ex_gcd(b, a % b);
+    auto [d, y, x] = ex_gcd<Int>(b, a % b);
     y -= a / b * x;
     return std::make_tuple(d, x, y);
 }
