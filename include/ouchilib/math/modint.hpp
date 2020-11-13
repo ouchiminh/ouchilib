@@ -116,15 +116,16 @@ inline modint<T, Internal> pow(const modint<T, Internal>& a, const Int e)
     using std::abs;
     if (e == 0) return modint<T, Internal>(1, a.mod());
     auto c = modint<T, Internal>(a, a.mod());
-    Int ec = abs(e);
+    Int ec = abs(e) - 1;
+    if (e == 0) return modint<T, Internal>(1, a.mod());
     while (ec) {
         if (ec & 1) {
             c *= a;
+            --ec;
         } else {
             c *= c;
             ec /= 2;
         }
-        --ec;
     }
     return e < 0 ? modint<T, Internal>(1, a.mod()) / c : c;
 }

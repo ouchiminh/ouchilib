@@ -89,6 +89,24 @@ DEFINE_TEST(test_modint)
     CHECK_EQUAL(a / b, 7);
 }
 
+DEFINE_TEST(test_modpow)
+{
+    using namespace ouchi::math;
+    modint<int> g(2, 997);
+    constexpr int a = 2, b = 5;
+    auto res =
+        g * g * g * g * g * g * g * g *
+        g * g * g * g * g * g * g * g *
+        g * g * g * g * g * g * g * g *
+        g * g * g * g * g * g * g * g *
+
+        g * g * g * g * g * g * g * g *
+        g * g * g * g * g * g * g * g *
+        g * g * g * g * g * g * g * g *
+        g * g * g * g * g * g * g * g * g;
+    CHECK_EQUAL(res, pow(g, 65));
+}
+
 DEFINE_TEST(test_modint_cipher)
 {
     using namespace ouchi::math;
