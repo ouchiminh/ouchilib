@@ -92,19 +92,13 @@ DEFINE_TEST(test_modint)
 DEFINE_TEST(test_modpow)
 {
     using namespace ouchi::math;
-    modint<int> g(2, 997);
-    constexpr int a = 2, b = 5;
-    auto res =
-        g * g * g * g * g * g * g * g *
-        g * g * g * g * g * g * g * g *
-        g * g * g * g * g * g * g * g *
-        g * g * g * g * g * g * g * g *
-
-        g * g * g * g * g * g * g * g *
-        g * g * g * g * g * g * g * g *
-        g * g * g * g * g * g * g * g *
-        g * g * g * g * g * g * g * g * g;
-    CHECK_EQUAL(res, pow(g, 65));
+    modint<int, long long> g(2, 997);
+    for (int i = 0; i < 100; i++) {
+        modint<int, long long> res(1, g.mod());
+        int j = i;
+        while (j-->0) res *= g;
+        CHECK_EQUAL(res, pow(g, i));
+    }
 }
 
 DEFINE_TEST(test_modint_cipher)

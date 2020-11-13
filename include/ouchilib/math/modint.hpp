@@ -111,23 +111,18 @@ private:
 };
 
 template<class T, class Int, class Internal>
-inline modint<T, Internal> pow(const modint<T, Internal>& a, const Int e)
+inline modint<T, Internal> pow(modint<T, Internal> a, const Int e)
 {
     using std::abs;
-    if (e == 0) return modint<T, Internal>(1, a.mod());
-    auto c = modint<T, Internal>(a, a.mod());
-    Int ec = abs(e) - 1;
-    if (e == 0) return modint<T, Internal>(1, a.mod());
-    while (ec) {
-        if (ec & 1) {
-            c *= a;
-            --ec;
-        } else {
-            c *= c;
-            ec /= 2;
-        }
+    auto k = modint<T, Internal>(1, a.mod());
+    Int ec = abs(e);
+    if (e == 0) return k;
+    while (ec > 0) {
+        if (ec & 1) k *= a;
+        a *= a;
+        ec >>= 1;
     }
-    return e < 0 ? modint<T, Internal>(1, a.mod()) / c : c;
+    return e < 0 ? modint<T, Internal>(1, a.mod()) / k : k;
 }
 
 }
